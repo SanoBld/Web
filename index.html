@@ -7,13 +7,6 @@
     <style>
         /* --- CHARGEMENT DES POLICES LOCALES --- */
         @font-face {
-            font-family: 'Ndot';
-            src: url('Ndot-55.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
-        }
-
-        @font-face {
             font-family: 'NothingSerif';
             src: url('NothingSerif-5px.otf') format('opentype');
             font-weight: normal;
@@ -29,7 +22,6 @@
             --accent-color: #ff0037; 
             --dynamic-color: inherit; 
             --reveal-color: #ffffff; 
-            --font-nothing: 'Ndot', sans-serif;
             --font-serif: 'NothingSerif', serif;
             --card-bg: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.1);
@@ -53,6 +45,8 @@
             transition: background-color 0.4s ease;
         }
 
+        .container { position: relative; width: 100%; max-width: 500px; padding: 40px 24px 80px; display: flex; flex-direction: column; align-items: center; z-index: 10; }
+
         .top-controls { display: flex; justify-content: space-between; width: 100%; max-width: 500px; margin-bottom: 20px; }
 
         .ctrl-btn, .widget, .link-item, .about-section {
@@ -60,20 +54,18 @@
             transition: transform 0.1s ease-out, background 0.3s, color 0.3s, border-color 0.4s ease;
         }
 
-        /* Police Serif pour les boutons ronds du haut */
         .ctrl-btn {
             background: transparent; color: var(--text-main); width: 65px; height: 65px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; 
-            font-family: var(--font-serif); font-size: 10px; font-weight: bold; letter-spacing: 0.5px;
+            font-family: var(--font-serif); font-size: 10px; font-weight: bold;
         }
 
         .widget {
             background: var(--card-bg); border-radius: 16px; padding: 12px; backdrop-filter: blur(12px);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; text-align: center; min-height: 80px; width: 100%;
+            cursor: pointer; text-align: center; min-height: 80px; width: 100%; font-family: var(--font-serif);
         }
 
-        /* Police Serif pour les liens de navigation */
         .link-item, .about-section {
             background: var(--card-bg); border-radius: 16px; padding: 22px 28px;
             text-decoration: none; color: var(--text-main); backdrop-filter: blur(12px); 
@@ -88,24 +80,18 @@
         
         .widget:hover .dyn-txt, .about-section:hover .dyn-txt { color: var(--bg-color); }
 
-        #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; pointer-events: none; }
-        
-        #cursor-dot {
-            position: fixed; width: 6px; height: 6px; background-color: var(--accent-color);
-            border-radius: 50%; pointer-events: none; z-index: 9999; top: 0; left: 0;
-            transition: width 0.2s, height 0.2s, transform 0.1s, background-color 0.3s;
-            will-change: transform; transform: translate(-50%, -50%);
-        }
-        #cursor-dot.hover { width: 14px; height: 14px; background-color: transparent; border: 2px solid var(--accent-color); }
-        #cursor-dot.click-anim { transform: translate(-50%, -50%) scale(0.6); }
-
-        .container { position: relative; width: 100%; max-width: 500px; padding: 40px 24px 80px; display: flex; flex-direction: column; align-items: center; z-index: 10; }
-
+        /* --- TITRE SANO BLD RECENTRÉ --- */
         h1 {
-            font-family: var(--font-nothing) !important; font-size: clamp(2.2rem, 10vw, 3.8rem);
-            letter-spacing: clamp(4px, 2vw, 12px); margin: 20px 0 0 0;
-            text-transform: uppercase; text-align: center; color: transparent;
-            -webkit-text-stroke: 1px var(--text-main); position: relative;
+            font-family: var(--font-serif) !important; 
+            font-size: clamp(2rem, 9vw, 3.5rem);
+            margin: 20px 0 0 0;
+            text-transform: uppercase; 
+            text-align: center; 
+            color: transparent;
+            -webkit-text-stroke: 1px var(--text-main); 
+            position: relative;
+            letter-spacing: 8px;
+            text-indent: 8px; /* Compense l'espacement de la dernière lettre pour un centrage parfait */
         }
         h1::after {
             content: "SANO BLD"; position: absolute; left: 0; top: 0; width: 100%;
@@ -113,9 +99,9 @@
             -webkit-text-stroke: 0px; transition: color 0.4s ease;
         }
 
-        .status { font-family: var(--font-nothing) !important; font-size: 0.75rem; color: var(--text-dim); letter-spacing: 4px; margin: 15px 0 30px 0; }
-        .widgets-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 12px; }
+        .status { font-family: var(--font-serif); font-size: 0.75rem; color: var(--text-dim); letter-spacing: 2px; margin: 15px 0 30px 0; }
         
+        .widgets-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 12px; }
         .links-grid { width: 100%; display: flex; flex-direction: column; gap: 12px; }
         .link-item { display: flex; align-items: center; justify-content: space-between; }
         
@@ -126,14 +112,17 @@
         .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
         .about-section.open .about-content-wrapper { max-height: 200px; opacity: 1; margin-top: 15px; }
         
-        /* Texte descriptif en Serif */
-        .serif-text {
-            font-family: var(--font-serif);
-            font-size: 1.1rem !important;
-            letter-spacing: -0.3px;
-        }
+        .footer { font-family: var(--font-serif); margin-top: 60px; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 4px; }
 
-        .footer { font-family: var(--font-nothing); margin-top: 60px; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 6px; }
+        #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; pointer-events: none; }
+        #cursor-dot {
+            position: fixed; width: 6px; height: 6px; background-color: var(--accent-color);
+            border-radius: 50%; pointer-events: none; z-index: 9999; top: 0; left: 0;
+            transition: width 0.2s, height 0.2s, transform 0.1s, background-color 0.3s;
+            will-change: transform; transform: translate(-50%, -50%);
+        }
+        #cursor-dot.hover { width: 14px; height: 14px; background-color: transparent; border: 2px solid var(--accent-color); }
+        #cursor-dot.click-anim { transform: translate(-50%, -50%) scale(0.6); }
 
         @media (pointer: coarse) { #cursor-dot { display: none; } * { cursor: auto !important; } }
     </style>
@@ -155,12 +144,12 @@
             
             <div class="widgets-row">
                 <div class="widget active-fx" id="date-widget">
-                    <span id="date-val" class="dyn-txt" style="font-family:var(--font-nothing); font-size:0.9rem;">--.--.--</span>
-                    <span id="date-label" style="font-family:var(--font-nothing); font-size:0.55rem; color:inherit; margin-top:4px; text-transform:uppercase; letter-spacing:1px;">Calendrier</span>
+                    <span id="date-val" class="dyn-txt" style="font-size:1.1rem;">--.--.--</span>
+                    <span id="date-label" style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">Calendrier</span>
                 </div>
                 <div class="widget active-fx" id="view-widget">
-                    <span id="view-val" class="dyn-txt" style="font-family:var(--font-nothing); font-size:0.9rem;">...</span>
-                    <span id="view-label" style="font-family:var(--font-nothing); font-size:0.55rem; color:inherit; margin-top:4px; text-transform:uppercase; letter-spacing:1px;">Vues</span>
+                    <span id="view-val" class="dyn-txt" style="font-size:1.1rem;">...</span>
+                    <span id="view-label" style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">Vues</span>
                 </div>
             </div>
 
@@ -179,7 +168,7 @@
                         <span class="arrow-icon">→</span>
                     </div>
                     <div class="about-content-wrapper">
-                        <p class="serif-text" style="line-height:1.4; color:inherit; margin:0;">
+                        <p style="font-size:1rem; line-height:1.4; color:inherit; margin:0;">
                             Première interface personnelle conçue comme une exploration du développement web. Ce projet combine une esthétique brute inspirée de <span class="dyn-txt">Nothing</span>.
                         </p>
                     </div>
@@ -246,7 +235,6 @@
         renderDate();
         document.getElementById('date-widget').onclick = () => { showTime = !showTime; renderDate(); playTick(); };
 
-        // --- COMPTEUR DE VUES ---
         const viewVal = document.getElementById('view-val');
         const viewLabel = document.getElementById('view-label');
         let infoState = 0;
@@ -269,12 +257,7 @@
         fetchGlobalViews();
 
         async function updateInfoDisplay() {
-            viewVal.style.fontSize = "0.75rem";
-            if (infoState === 0) { 
-                viewVal.style.fontSize = "0.9rem"; 
-                viewVal.textContent = v; 
-                viewLabel.textContent = "Vues"; 
-            }
+            if (infoState === 0) { viewVal.textContent = v; viewLabel.textContent = "Vues"; }
             else if (infoState === 1) { 
                 let bat = "N/A"; 
                 if (navigator.getBattery) { 
