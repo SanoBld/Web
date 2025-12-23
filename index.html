@@ -135,7 +135,7 @@
                     <span id="date-label" style="font-family:var(--font-nothing); font-size:0.55rem; color:inherit; margin-top:4px; text-transform:uppercase; letter-spacing:1px;">Calendrier</span>
                 </div>
                 <div class="widget active-fx" id="view-widget">
-                    <span id="view-val" class="dyn-txt" style="font-family:var(--font-nothing); font-size:0.9rem;">0</span>
+                    <span id="view-val" class="dyn-txt" style="font-family:var(--font-nothing); font-size:0.9rem;">...</span>
                     <span id="view-label" style="font-family:var(--font-nothing); font-size:0.55rem; color:inherit; margin-top:4px; text-transform:uppercase; letter-spacing:1px;">Vues</span>
                 </div>
             </div>
@@ -222,23 +222,45 @@
         renderDate();
         document.getElementById('date-widget').onclick = () => { showTime = !showTime; renderDate(); playTick(); };
 
-        let v = parseInt(localStorage.getItem('sano_v') || 0) + 1;
-        localStorage.setItem('sano_v', v);
+        // --- GESTION DES VUES RÉELLES (COUNTAPI) ---
         const viewVal = document.getElementById('view-val');
         const viewLabel = document.getElementById('view-label');
-        let infoState = 0; 
+        let infoState = 0;
+        let v = "...";
+
+        async function fetchGlobalViews() {
+            try {
+                // Remplace 'sanobld_official' par un identifiant unique si tu veux reset le compteur
+                const response = await fetch('https://api.countapi.xyz/hit/sanobld_official/visits');
+                const data = await response.json();
+                v = data.value;
+                if (infoState === 0) viewVal.textContent = v;
+            } catch (err) {
+                console.error("Erreur compteur");
+                v = "ERR";
+            }
+        }
+        fetchGlobalViews();
 
         async function updateInfoDisplay() {
             viewVal.style.fontSize = "0.75rem";
-            if (infoState === 0) { viewVal.style.fontSize = "0.9rem"; viewVal.textContent = v; viewLabel.textContent = "Vues"; }
+            if (infoState === 0) { 
+                viewVal.style.fontSize = "0.9rem"; 
+                viewVal.textContent = v; 
+                viewLabel.textContent = "Vues"; 
+            }
             else if (infoState === 1) { 
-                let bat = "N/A"; if (navigator.getBattery) { const b = await navigator.getBattery(); bat = Math.round(b.level * 100) + "%"; }
+                let bat = "N/A"; 
+                if (navigator.getBattery) { 
+                    const b = await navigator.getBattery(); 
+                    bat = Math.round(b.level * 100) + "%"; 
+                }
                 viewVal.textContent = bat; viewLabel.textContent = "BATTERIE"; 
             }
             else if (infoState === 2) { viewVal.textContent = navigator.platform.substring(0,8).toUpperCase(); viewLabel.textContent = "SYSTEME"; }
             else if (infoState === 3) { viewVal.textContent = `${window.screen.width}X${window.screen.height}`; viewLabel.textContent = "RESOLUTION"; }
         }
-        updateInfoDisplay();
+        
         document.getElementById('view-widget').onclick = () => { playTick(); infoState = (infoState + 1) % 4; updateInfoDisplay(); };
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
