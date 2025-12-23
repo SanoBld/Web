@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="fr"><head>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sano Bld</title>
@@ -7,8 +9,6 @@
             font-family: 'Ndot';
             src: url('https://cdn.rawgit.com/clodalv/nothing-font/main/Ndot-55.otf') format('opentype');
         }
-        
-        <script defer src="https://cloud.umami.is/script.js" data-website-id="2aa5d90e-6371-4518-9772-5d9296362741"></script>
         
         ::selection { background-color: #333333; color: #ffffff; }
 
@@ -111,7 +111,10 @@
         .footer { font-family: var(--font-nothing); margin-top: 60px; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 6px; }
 
         @media (pointer: coarse) { #cursor-dot { display: none; } * { cursor: auto !important; } }
-    </style></head><body>
+    </style>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="2aa5d90e-6371-4518-9772-5d9296362741"></script>
+</head>
+<body>
 
     <canvas id="particle-canvas"></canvas>
     <div id="cursor-dot"></div>
@@ -172,7 +175,7 @@
             { name: 'TRANSP', main: '#ff0037', border: 'rgba(255, 255, 255, 0.1)', dyn: 'inherit', rev: 'auto' },
             { name: 'ROUGE',  main: '#ff0037', border: 'rgba(255, 0, 55, 0.4)',  dyn: '#ff0037', rev: '#ff0037' }, 
             { name: 'BLANC',  main: '#ffffff', border: 'rgba(255, 255, 255, 0.4)', dyn: '#ffffff', rev: '#ffffff' }, 
-            { name: 'NOIR',   main: '#000000', border: 'rgba(0, 0, 0, 0.4)',      dyn: '#444',    rev: '#000000' },     
+            { name: 'NOIR',   main: '#000000', border: 'rgba(0, 0, 0, 0.4)',      dyn: '#444',    rev: '#000000' },      
             { name: 'JAUNE',  main: '#f5d94a', border: 'rgba(245, 217, 74, 0.5)', dyn: '#f5d94a', rev: '#f5d94a' }
         ];
         let currentColorIdx = 0;
@@ -308,5 +311,6 @@
         }
         window.onresize = init; init(); animate();
         updateRevealColor();
-    </script></body></html>
-
+    </script>
+</body>
+</html>
