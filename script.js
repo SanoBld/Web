@@ -56,21 +56,23 @@ document.getElementById('date-widget').onclick = () => { showTime = !showTime; r
 const viewVal = document.getElementById('view-val');
 const viewLabel = document.getElementById('view-label');
 let infoState = 0;
-let v = "...";
+let v = "127";
 
-// --- NOUVEAU COMPTEUR GLOBAL (VIA MOLECULE API / COUNTAPI ALTERNATIVE) ---
+// --- COMPTEUR HYBRIDE STABLE ---
 async function fetchGlobalViews() {
     try {
-        // On utilise un service de comptage simple et sans clé
-        const res = await fetch('https://api.countapi.xyz/hit/sanobld-portfolio-unique/visits');
+        // counterapi.dev est actuellement plus stable pour GitHub Pages
+        const res = await fetch('https://api.counterapi.dev/v1/sanobld_portfolio/visit/up');
         const data = await res.json();
-        v = data.value;
-        if (infoState === 0) viewVal.textContent = v;
+        v = data.count;
     } catch (err) {
-        // Valeur de secours si l'API est bloquée
-        v = "127";
-        if (infoState === 0) viewVal.textContent = v;
+        // Secours si l'API échoue : utilisation du stockage local
+        let local = localStorage.getItem('sano_counter') || 127;
+        local = parseInt(local) + 1;
+        localStorage.setItem('sano_counter', local);
+        v = local;
     }
+    if (infoState === 0) viewVal.textContent = v;
 }
 fetchGlobalViews();
 
@@ -120,8 +122,6 @@ window.addEventListener('mousemove', e => {
     });
 });
 
-window.onmousedown = () => cursor.classList.add('hover');
-window.onmouseup = () => cursor.classList.remove('hover');
 document.querySelectorAll('.active-fx').forEach(el => {
     el.onmouseenter = () => { cursor.classList.add('hover'); playTick(); el.dataset.hovered = "true"; };
     el.onmouseleave = () => { cursor.classList.remove('hover'); el.dataset.hovered = "false"; };
