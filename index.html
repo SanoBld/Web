@@ -221,7 +221,7 @@
         renderDate();
         document.getElementById('date-widget').onclick = () => { showTime = !showTime; renderDate(); playTick(); };
 
-        // --- COMPTEUR DE VUES LYKET (NOUVEL IDENTIFIANT) ---
+        // --- COMPTEUR DE VUES (FORCE INCREMENT) ---
         const viewVal = document.getElementById('view-val');
         const viewLabel = document.getElementById('view-label');
         let infoState = 0;
@@ -229,8 +229,8 @@
 
         async function fetchGlobalViews() {
             try {
-                // Utilisation d'un nouvel identifiant pour reset à 0
-                const res = await fetch('https://api.lyket.dev/v1/like-buttons/sanobld_portfolio_final_v1/press', {
+                // Requête de type POST pour forcer l'ajout d'une vue à chaque chargement
+                const res = await fetch('https://api.lyket.dev/v1/like-buttons/sano_bld_live_counter_v3/press', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer pt-21e3c8340d877e841f3801f95a4392' }
                 });
@@ -238,8 +238,7 @@
                 v = data.data.attributes.total_likes;
                 if (infoState === 0) viewVal.textContent = v;
             } catch (err) {
-                console.error("Compteur offline");
-                v = "1"; 
+                v = "1";
                 if (infoState === 0) viewVal.textContent = v;
             }
         }
