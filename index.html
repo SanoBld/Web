@@ -9,6 +9,11 @@
             font-family: 'Ndot';
             src: url('https://cdn.rawgit.com/clodalv/nothing-font/main/Ndot-55.otf') format('opentype');
         }
+
+        @font-face {
+            font-family: 'NothingSerif';
+            src: url('https://cdn.rawgit.com/clodalv/nothing-font/main/NothingSerif-5px.otf') format('opentype');
+        }
         
         ::selection { background-color: #333333; color: #ffffff; }
 
@@ -20,6 +25,7 @@
             --dynamic-color: inherit; 
             --reveal-color: #ffffff; 
             --font-nothing: 'Ndot', sans-serif;
+            --font-serif: 'NothingSerif', serif;
             --card-bg: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.1);
         }
@@ -108,6 +114,14 @@
         .about-section.open .arrow-icon { transform: rotate(90deg); }
         .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
         .about-section.open .about-content-wrapper { max-height: 200px; opacity: 1; margin-top: 15px; }
+        
+        /* Application de la Nothing Serif au contenu About */
+        .serif-text {
+            font-family: var(--font-serif);
+            font-size: 1.1rem !important;
+            letter-spacing: -0.3px;
+        }
+
         .footer { font-family: var(--font-nothing); margin-top: 60px; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 6px; }
 
         @media (pointer: coarse) { #cursor-dot { display: none; } * { cursor: auto !important; } }
@@ -154,7 +168,7 @@
                         <span class="arrow-icon">→</span>
                     </div>
                     <div class="about-content-wrapper">
-                        <p style="font-size:0.85rem; line-height:1.6; color:inherit; margin:0;">
+                        <p class="serif-text" style="line-height:1.4; color:inherit; margin:0;">
                             Première interface personnelle conçue comme une exploration du développement web. Ce projet combine une esthétique brute inspirée de <span class="dyn-txt">Nothing</span>.
                         </p>
                     </div>
@@ -221,7 +235,7 @@
         renderDate();
         document.getElementById('date-widget').onclick = () => { showTime = !showTime; renderDate(); playTick(); };
 
-        // --- COMPTEUR DE VUES (FORCE INCREMENT) ---
+        // --- COMPTEUR DE VUES ---
         const viewVal = document.getElementById('view-val');
         const viewLabel = document.getElementById('view-label');
         let infoState = 0;
@@ -229,7 +243,6 @@
 
         async function fetchGlobalViews() {
             try {
-                // Requête de type POST pour forcer l'ajout d'une vue à chaque chargement
                 const res = await fetch('https://api.lyket.dev/v1/like-buttons/sano_bld_live_counter_v3/press', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer pt-21e3c8340d877e841f3801f95a4392' }
