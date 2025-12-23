@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sano Bld</title>
     
-    <link rel="icon" type="image/png" href="logo.png?v=1">
+    <link rel="icon" type="image/png" href="logo.png?v=2">
 
     <style>
+        /* --- CHARGEMENT DES POLICES LOCALES --- */
         @font-face {
             font-family: 'NothingSerif';
             src: url('NothingSerif-5px.otf') format('opentype');
@@ -61,7 +62,7 @@
             font-family: var(--font-serif); font-size: 10px; font-weight: bold;
         }
 
-        /* --- LOGO AVEC CERCLE --- */
+        /* --- CERCLE QUI DÉCOUPE L'IMAGE --- */
         .logo-wrapper {
             width: 100px;
             height: 100px;
@@ -72,13 +73,16 @@
             justify-content: center;
             margin-bottom: 20px;
             background: var(--card-bg);
+            overflow: hidden; /* Découpe tout ce qui dépasse */
             transition: border-color 0.4s ease;
         }
 
         .main-logo {
-            width: 60%; /* Le logo prend 60% de la place dans le cercle */
-            height: auto;
+            width: 100%; /* L'image remplit le cercle */
+            height: 100%;
+            object-fit: cover; /* Recadre l'image pour qu'elle soit ronde sans être déformée */
             display: block;
+            border-radius: 50%; /* Assure la découpe ronde de l'image elle-même */
         }
 
         h1 {
@@ -124,6 +128,7 @@
         .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
         .about-section.open .about-content-wrapper { max-height: 200px; opacity: 1; margin-top: 15px; }
         .footer { font-family: var(--font-serif); margin-top: 60px; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 4px; }
+
         #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; pointer-events: none; }
         #cursor-dot {
             position: fixed; width: 6px; height: 6px; background-color: var(--accent-color);
@@ -193,7 +198,6 @@
     </div>
 
     <script>
-        // Le script JavaScript reste exactement le même qu'avant
         const body = document.body;
         const themeBtn = document.getElementById('theme-toggle');
         const accentBtn = document.getElementById('accent-toggle');
