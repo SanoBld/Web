@@ -58,25 +58,19 @@ const viewLabel = document.getElementById('view-label');
 let infoState = 0;
 let v = "...";
 
-// Correction de la fonction des vues avec une API plus stable
+// --- NOUVEAU COMPTEUR GLOBAL (COUNTAPI) ---
 async function fetchGlobalViews() {
     try {
-        // Utilisation d'une API de comptage alternative (Lyket v2 ou autre)
-        // Note : Si tu es en local (file://), les navigateurs bloquent souvent cette requête.
-        const res = await fetch('https://api.lyket.dev/v1/like-buttons/sano_bld_live_counter_v3/press', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer pt-21e3c8340d877e841f3801f95a4392' }
-        });
-        
-        if (!res.ok) throw new Error('API Error');
-        
+        // Cette URL crée et incrémente un compteur unique pour ton projet
+        const res = await fetch('https://api.countapi.xyz/hit/sano-bld-portfolio/visits');
         const data = await res.json();
-        v = data.data.attributes.total_likes;
+        v = data.value;
         if (infoState === 0) viewVal.textContent = v;
     } catch (err) {
-        console.error("Erreur de compteur :", err);
-        v = "127"; // Valeur de simulation si l'API échoue
+        // Si l'API est bloquée ou en panne, on met un chiffre par défaut
+        v = "127";
         if (infoState === 0) viewVal.textContent = v;
+        console.warn("Compteur global indisponible, affichage valeur par défaut.");
     }
 }
 fetchGlobalViews();
