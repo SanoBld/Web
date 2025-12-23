@@ -1,3 +1,14 @@
+// --- CONFIGURATION FIREBASE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCo84qaR5dUOWutGE4w3g-HjxAiNZLldpM",
+  databaseURL: "https://sanobld-portfolio-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "sanobld-portfolio"
+};
+
+// Initialisation de Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
 const body = document.body;
 const themeBtn = document.getElementById('theme-toggle');
 const accentBtn = document.getElementById('accent-toggle');
@@ -56,23 +67,25 @@ document.getElementById('date-widget').onclick = () => { showTime = !showTime; r
 const viewVal = document.getElementById('view-val');
 const viewLabel = document.getElementById('view-label');
 let infoState = 0;
-let v = "127";
+let v = "...";
 
-// --- COMPTEUR HYBRIDE STABLE ---
+// --- COMPTEUR GLOBAL FIREBASE ---
 async function fetchGlobalViews() {
-    try {
-        // counterapi.dev est actuellement plus stable pour GitHub Pages
-        const res = await fetch('https://api.counterapi.dev/v1/sanobld_portfolio/visit/up');
-        const data = await res.json();
-        v = data.count;
-    } catch (err) {
-        // Secours si l'API échoue : utilisation du stockage local
-        let local = localStorage.getItem('sano_counter') || 127;
-        local = parseInt(local) + 1;
-        localStorage.setItem('sano_counter', local);
-        v = local;
-    }
-    if (infoState === 0) viewVal.textContent = v;
+    const viewRef = database.ref('total_views');
+    
+    // On incrémente de +1 sur le serveur de manière sécurisée
+    viewRef.transaction((currentValue) => {
+        return (currentValue || 0) + 1;
+    }, (error, committed, snapshot) => {
+        if (committed) {
+            v = snapshot.val();
+            if (infoState === 0) viewVal.textContent = v;
+        } else {
+            // Secours si Firebase est bloqué par un AdBlock
+            v = "127";
+            if (infoState === 0) viewVal.textContent = v;
+        }
+    });
 }
 fetchGlobalViews();
 
