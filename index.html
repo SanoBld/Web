@@ -222,7 +222,7 @@
         renderDate();
         document.getElementById('date-widget').onclick = () => { showTime = !showTime; renderDate(); playTick(); };
 
-        // --- GESTION DES VUES RÉELLES (COUNTAPI) ---
+        // --- GESTION DES VUES RÉELLES (HLY.SH ALTERNATIVE) ---
         const viewVal = document.getElementById('view-val');
         const viewLabel = document.getElementById('view-label');
         let infoState = 0;
@@ -230,14 +230,14 @@
 
         async function fetchGlobalViews() {
             try {
-                // Remplace 'sanobld_official' par un identifiant unique si tu veux reset le compteur
-                const response = await fetch('https://api.countapi.xyz/hit/sanobld_official/visits');
+                // Utilisation de Hly.sh (plus fiable que CountAPI)
+                const response = await fetch('https://api.hly.sh/v1/counter/sanobld_portfolio?increment=1');
                 const data = await response.json();
-                v = data.value;
+                v = data.count;
                 if (infoState === 0) viewVal.textContent = v;
             } catch (err) {
-                console.error("Erreur compteur");
-                v = "ERR";
+                console.error("Erreur compteur:", err);
+                v = "??"; // Affiche ?? au lieu de ERR pour rester discret
             }
         }
         fetchGlobalViews();
