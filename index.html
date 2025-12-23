@@ -48,7 +48,7 @@
 
         body {
             margin: 0; padding: 0; background-color: var(--bg-color);
-            color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main); font-family: var(--font-serif);
             display: flex; justify-content: center; min-height: 100vh; overflow-y: auto; overflow-x: hidden;
             transition: background-color 0.4s ease;
         }
@@ -60,9 +60,11 @@
             transition: transform 0.1s ease-out, background 0.3s, color 0.3s, border-color 0.4s ease;
         }
 
+        /* Police Serif pour les boutons ronds du haut */
         .ctrl-btn {
             background: transparent; color: var(--text-main); width: 65px; height: 65px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-family: var(--font-nothing); font-size: 8px;
+            display: flex; align-items: center; justify-content: center; 
+            font-family: var(--font-serif); font-size: 10px; font-weight: bold; letter-spacing: 0.5px;
         }
 
         .widget {
@@ -71,9 +73,11 @@
             cursor: pointer; text-align: center; min-height: 80px; width: 100%;
         }
 
+        /* Police Serif pour les liens de navigation */
         .link-item, .about-section {
             background: var(--card-bg); border-radius: 16px; padding: 22px 28px;
-            text-decoration: none; color: var(--text-main); backdrop-filter: blur(12px); display: block;
+            text-decoration: none; color: var(--text-main); backdrop-filter: blur(12px); 
+            display: block; font-family: var(--font-serif); font-size: 1.1rem;
         }
 
         .dyn-txt { font-weight: bold; color: var(--dynamic-color); transition: color 0.4s ease; }
@@ -111,8 +115,10 @@
 
         .status { font-family: var(--font-nothing) !important; font-size: 0.75rem; color: var(--text-dim); letter-spacing: 4px; margin: 15px 0 30px 0; }
         .widgets-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 12px; }
+        
         .links-grid { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-        .link-item { display: flex; align-items: center; justify-content: space-between; font-weight: 500; }
+        .link-item { display: flex; align-items: center; justify-content: space-between; }
+        
         .about-section { margin-top: 20px; cursor: pointer; overflow: hidden; }
         .about-header { display: flex; justify-content: space-between; align-items: center; }
         .arrow-icon { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
@@ -120,6 +126,7 @@
         .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
         .about-section.open .about-content-wrapper { max-height: 200px; opacity: 1; margin-top: 15px; }
         
+        /* Texte descriptif en Serif */
         .serif-text {
             font-family: var(--font-serif);
             font-size: 1.1rem !important;
@@ -168,7 +175,7 @@
 
                 <div class="about-section active-fx" id="about-trigger">
                     <div class="about-header">
-                        <span style="font-family:var(--font-nothing); font-size:0.9rem">// À PROPOS</span>
+                        <span>// À PROPOS</span>
                         <span class="arrow-icon">→</span>
                     </div>
                     <div class="about-content-wrapper">
