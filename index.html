@@ -136,9 +136,11 @@
             </div>
 
             <nav class="links-grid">
+                <a href="https://soboheme.github.io/Web/" target="_blank" class="link-item active-fx"><span>// SOBOHÈME</span><span>→</span></a>
                 <a href="https://www.instagram.com/bldnoham/" target="_blank" class="link-item active-fx"><span>// INSTAGRAM</span><span>→</span></a>
                 <a href="https://www.tiktok.com/@nohambld" target="_blank" class="link-item active-fx"><span>// TIKTOK</span><span>→</span></a>
                 <a href="https://x.com/SanoBld" target="_blank" class="link-item active-fx"><span>// TWITTER</span><span>→</span></a>
+                <a href="https://www.reddit.com/user/Sano_bld/" target="_blank" class="link-item active-fx"><span>// REDDIT</span><span>→</span></a>
                 <a href="https://discord.gg/nothingtech" target="_blank" class="link-item active-fx"><span>// DISCORD NOTHING</span><span>→</span></a>
                 <a href="https://github.com/SanoBld" target="_blank" class="link-item active-fx"><span>// GITHUB</span><span>→</span></a>
 
@@ -168,7 +170,7 @@
             { name: 'TRANSP', main: '#ff0037', border: 'rgba(255, 255, 255, 0.1)', dyn: 'inherit', rev: 'auto' },
             { name: 'ROUGE',  main: '#ff0037', border: 'rgba(255, 0, 55, 0.4)',  dyn: '#ff0037', rev: '#ff0037' }, 
             { name: 'BLANC',  main: '#ffffff', border: 'rgba(255, 255, 255, 0.4)', dyn: '#ffffff', rev: '#ffffff' }, 
-            { name: 'NOIR',   main: '#000000', border: 'rgba(0, 0, 0, 0.4)',     dyn: '#444',    rev: '#000000' },    
+            { name: 'NOIR',   main: '#000000', border: 'rgba(0, 0, 0, 0.4)',      dyn: '#444',    rev: '#000000' },     
             { name: 'JAUNE',  main: '#f5d94a', border: 'rgba(245, 217, 74, 0.5)', dyn: '#f5d94a', rev: '#f5d94a' }
         ];
         let currentColorIdx = 0;
@@ -179,7 +181,6 @@
                 const isLight = body.classList.contains('light-mode');
                 document.documentElement.style.setProperty('--reveal-color', isLight ? '#000000' : '#ffffff');
             } else {
-                // On garde la couleur de révélation du thème couleur sélectionné
                 document.documentElement.style.setProperty('--reveal-color', theme.rev);
             }
         }
@@ -201,7 +202,7 @@
         themeBtn.onclick = () => { 
             body.classList.toggle('light-mode'); 
             themeBtn.textContent = body.classList.contains('light-mode') ? "SOMBRE" : "CLAIR"; 
-            updateRevealColor(); // Garde la couleur ou adapte si TRANSP
+            updateRevealColor(); 
             playTick(); 
         };
 
