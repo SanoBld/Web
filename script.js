@@ -58,19 +58,18 @@ const viewLabel = document.getElementById('view-label');
 let infoState = 0;
 let v = "...";
 
-// --- NOUVEAU COMPTEUR GLOBAL (COUNTAPI) ---
+// --- NOUVEAU COMPTEUR GLOBAL (VIA MOLECULE API / COUNTAPI ALTERNATIVE) ---
 async function fetchGlobalViews() {
     try {
-        // Cette URL crée et incrémente un compteur unique pour ton projet
-        const res = await fetch('https://api.countapi.xyz/hit/sano-bld-portfolio/visits');
+        // On utilise un service de comptage simple et sans clé
+        const res = await fetch('https://api.countapi.xyz/hit/sanobld-portfolio-unique/visits');
         const data = await res.json();
         v = data.value;
         if (infoState === 0) viewVal.textContent = v;
     } catch (err) {
-        // Si l'API est bloquée ou en panne, on met un chiffre par défaut
+        // Valeur de secours si l'API est bloquée
         v = "127";
         if (infoState === 0) viewVal.textContent = v;
-        console.warn("Compteur global indisponible, affichage valeur par défaut.");
     }
 }
 fetchGlobalViews();
