@@ -5,7 +5,6 @@ const firebaseConfig = {
   projectId: "sanobld-portfolio"
 };
 
-// Initialisation de Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
@@ -53,6 +52,7 @@ themeBtn.onclick = () => {
     playTick(); 
 };
 
+// --- GESTION DES WIDGETS ---
 let showTime = false;
 function renderDate() {
     const now = new Date();
@@ -64,25 +64,17 @@ setInterval(() => { if(showTime) renderDate(); }, 1000);
 renderDate();
 document.getElementById('date-widget').onclick = () => { showTime = !showTime; renderDate(); playTick(); };
 
+// --- VUES & INFOS ---
 const viewVal = document.getElementById('view-val');
 const viewLabel = document.getElementById('view-label');
 let infoState = 0;
 let v = "...";
 
-// --- COMPTEUR GLOBAL FIREBASE ---
 async function fetchGlobalViews() {
     const viewRef = database.ref('total_views');
-    
-    // On incrémente de +1 sur le serveur de manière sécurisée
-    viewRef.transaction((currentValue) => {
-        return (currentValue || 0) + 1;
-    }, (error, committed, snapshot) => {
+    viewRef.transaction((currentValue) => (currentValue || 0) + 1, (error, committed, snapshot) => {
         if (committed) {
             v = snapshot.val();
-            if (infoState === 0) viewVal.textContent = v;
-        } else {
-            // Secours si Firebase est bloqué par un AdBlock
-            v = "127";
             if (infoState === 0) viewVal.textContent = v;
         }
     });
@@ -102,9 +94,9 @@ async function updateInfoDisplay() {
     else if (infoState === 2) { viewVal.textContent = navigator.platform.substring(0,8).toUpperCase(); viewLabel.textContent = "SYSTEME"; }
     else if (infoState === 3) { viewVal.textContent = `${window.screen.width}X${window.screen.height}`; viewLabel.textContent = "RESOLUTION"; }
 }
-
 document.getElementById('view-widget').onclick = () => { playTick(); infoState = (infoState + 1) % 4; updateInfoDisplay(); };
 
+// --- AUDIO & CURSEUR ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playTick() {
     if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -139,8 +131,16 @@ document.querySelectorAll('.active-fx').forEach(el => {
     el.onmouseenter = () => { cursor.classList.add('hover'); playTick(); el.dataset.hovered = "true"; };
     el.onmouseleave = () => { cursor.classList.remove('hover'); el.dataset.hovered = "false"; };
 });
-document.getElementById('about-trigger').onclick = function() { this.classList.toggle('open'); playTick(); };
 
+// --- CLIC SECTIONS DÉROULANTES ---
+document.getElementById('about-trigger').onclick = function() { this.classList.toggle('open'); playTick(); };
+document.getElementById('projects-trigger').onclick = function(e) {
+    if (e.target.classList.contains('project-link')) return;
+    this.classList.toggle('open');
+    playTick();
+};
+
+// --- PARTICULES ---
 const canvas = document.getElementById('particle-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
