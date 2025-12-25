@@ -4,7 +4,6 @@ const firebaseConfig = {
   databaseURL: "https://sanobld-portfolio-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "sanobld-portfolio"
 };
-
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
@@ -52,6 +51,7 @@ themeBtn.onclick = () => {
     playTick(); 
 };
 
+// --- GESTION DES WIDGETS ---
 let showTime = false;
 function renderDate() {
     const now = new Date();
@@ -92,9 +92,9 @@ async function updateInfoDisplay() {
     else if (infoState === 2) { viewVal.textContent = navigator.platform.substring(0,8).toUpperCase(); viewLabel.textContent = "SYSTEME"; }
     else if (infoState === 3) { viewVal.textContent = `${window.screen.width}X${window.screen.height}`; viewLabel.textContent = "RESOLUTION"; }
 }
-
 document.getElementById('view-widget').onclick = () => { playTick(); infoState = (infoState + 1) % 4; updateInfoDisplay(); };
 
+// --- AUDIO & CURSEUR ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playTick() {
     if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -130,14 +130,17 @@ document.querySelectorAll('.active-fx').forEach(el => {
     el.onmouseleave = () => { cursor.classList.remove('hover'); el.dataset.hovered = "false"; };
 });
 
-// GESTION DES CLICS POUR LES SECTIONS DÉROULANTES
-document.getElementById('about-trigger').onclick = function() { this.classList.toggle('open'); playTick(); };
-document.getElementById('projects-trigger').onclick = function(e) {
-    if (e.target.classList.contains('project-link-item')) return;
-    this.classList.toggle('open');
-    playTick();
-};
+// GESTION UNIFIÉE DES CLICS DÉROULANTS
+document.querySelectorAll('.toggle-box').forEach(box => {
+    box.onclick = function(e) {
+        // Ne ferme pas si on clique sur un lien réel à l'intérieur
+        if (e.target.tagName === 'A') return;
+        this.classList.toggle('open');
+        playTick();
+    };
+});
 
+// --- PARTICULES ---
 const canvas = document.getElementById('particle-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
