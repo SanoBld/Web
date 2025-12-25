@@ -52,7 +52,6 @@ themeBtn.onclick = () => {
     playTick(); 
 };
 
-// --- GESTION DES WIDGETS ---
 let showTime = false;
 function renderDate() {
     const now = new Date();
@@ -64,7 +63,6 @@ setInterval(() => { if(showTime) renderDate(); }, 1000);
 renderDate();
 document.getElementById('date-widget').onclick = () => { showTime = !showTime; renderDate(); playTick(); };
 
-// --- VUES & INFOS ---
 const viewVal = document.getElementById('view-val');
 const viewLabel = document.getElementById('view-label');
 let infoState = 0;
@@ -94,9 +92,9 @@ async function updateInfoDisplay() {
     else if (infoState === 2) { viewVal.textContent = navigator.platform.substring(0,8).toUpperCase(); viewLabel.textContent = "SYSTEME"; }
     else if (infoState === 3) { viewVal.textContent = `${window.screen.width}X${window.screen.height}`; viewLabel.textContent = "RESOLUTION"; }
 }
+
 document.getElementById('view-widget').onclick = () => { playTick(); infoState = (infoState + 1) % 4; updateInfoDisplay(); };
 
-// --- AUDIO & CURSEUR ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playTick() {
     if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -132,15 +130,14 @@ document.querySelectorAll('.active-fx').forEach(el => {
     el.onmouseleave = () => { cursor.classList.remove('hover'); el.dataset.hovered = "false"; };
 });
 
-// --- CLIC SECTIONS DÉROULANTES ---
+// GESTION DES CLICS POUR LES SECTIONS DÉROULANTES
 document.getElementById('about-trigger').onclick = function() { this.classList.toggle('open'); playTick(); };
 document.getElementById('projects-trigger').onclick = function(e) {
-    if (e.target.classList.contains('project-link')) return;
+    if (e.target.classList.contains('project-link-item')) return;
     this.classList.toggle('open');
     playTick();
 };
 
-// --- PARTICULES ---
 const canvas = document.getElementById('particle-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
