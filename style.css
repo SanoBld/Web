@@ -96,34 +96,23 @@ h1::after {
 .about-header { display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
 .arrow-icon { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
 .about-section.open .arrow-icon { transform: rotate(90deg); }
+.about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
+.about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
 
-/* CORRECTION DE L'AFFICHAGE DU CONTENU DÉROULANT */
-.about-content-wrapper { 
-    max-height: 0; 
-    opacity: 0; 
-    transition: 0.4s ease; 
-    overflow: visible; /* Changé de hidden à visible */
-    display: flex;
-    flex-direction: column;
-}
-.about-section.open .about-content-wrapper { max-height: 800px; opacity: 1; margin-top: 15px; }
-
-/* --- SECTION PROJETS : FORCE LA VISIBILITÉ DU TEXTE --- */
+/* --- SECTION PROJETS : TEXTE VISIBLE ET INVERSION --- */
 .project-link-item {
-    display: block !important; /* Force l'affichage */
-    visibility: visible !important;
-    color: var(--text-main) !important; /* Force la couleur blanche/noire */
+    display: block; 
+    color: var(--text-main) !important; /* Texte Blanc au repos (Sauf si Light Mode) */
     text-decoration: none;
     font-size: 1.1rem;
-    padding: 15px 20px 15px 40px !important; /* Plus de padding pour le texte */
+    padding: 15px 20px 15px 40px; 
     margin: 10px 0;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.05); /* Fond très sombre */
     border: 1px solid var(--card-border);
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     text-align: left;
-    z-index: 50; /* S'assure d'être au-dessus du décor */
 }
 
 .project-link-item::before {
@@ -137,10 +126,9 @@ h1::after {
     border-radius: 4px;
 }
 
-/* Inversion des couleurs au survol */
 .project-link-item:hover { 
-    background: var(--text-main) !important; 
-    color: var(--bg-color) !important;       
+    background: var(--text-main) !important; /* Devient Blanc */
+    color: var(--bg-color) !important;       /* Le texte devient Noir */
     transform: scale(1.02) translateX(5px);
     border-color: var(--text-main) !important;
 }
@@ -152,7 +140,7 @@ h1::after {
 .dyn-txt { font-weight: bold; color: var(--dynamic-color); transition: color 0.4s ease; }
 .footer { font-family: var(--font-serif); margin-top: 60px; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 4px; }
 
-#particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+#particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; pointer-events: none; }
 #cursor-dot {
     position: fixed; width: 6px; height: 6px; background-color: var(--accent-color);
     border-radius: 50%; pointer-events: none; z-index: 9999; top: 0; left: 0;
