@@ -99,15 +99,15 @@ h1::after {
 .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
 .about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
 
-/* --- SECTION PROJETS : TEXTE VISIBLE ET INVERSION --- */
+/* --- SECTION PROJETS CORRIGÉE --- */
 .project-link-item {
-    display: block; 
-    color: var(--text-main) !important; /* Texte Blanc au repos (Sauf si Light Mode) */
+    display: block !important;
+    color: #000000 !important; /* Force le texte en noir au repos */
     text-decoration: none;
     font-size: 1.1rem;
-    padding: 15px 20px 15px 40px; 
+    padding: 15px 20px 15px 35px; 
     margin: 10px 0;
-    background: rgba(255, 255, 255, 0.05); /* Fond très sombre */
+    background: rgba(0, 0, 0, 0.05); /* Fond léger pour voir la case */
     border: 1px solid var(--card-border);
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -118,21 +118,20 @@ h1::after {
 .project-link-item::before {
     content: '';
     position: absolute;
-    left: 15px; 
-    top: 25%; 
-    height: 50%; 
-    width: 3px;
+    left: 12px; top: 20%; height: 60%; width: 3px;
     background: var(--accent-color);
     border-radius: 4px;
 }
 
+/* Inversion au survol */
 .project-link-item:hover { 
-    background: var(--text-main) !important; /* Devient Blanc */
-    color: var(--bg-color) !important;       /* Le texte devient Noir */
+    background: #000000 !important; /* Le fond devient noir */
+    color: #ffffff !important;       /* Le texte devient blanc */
     transform: scale(1.02) translateX(5px);
-    border-color: var(--text-main) !important;
+    border-color: #000000 !important;
 }
 
+/* --- HOVER GÉNÉRAL --- */
 .ctrl-btn:hover, .widget:hover, .link-item:hover, .about-section:hover { 
     background: var(--text-main) !important; color: var(--bg-color); border-color: var(--text-main) !important;
 }
