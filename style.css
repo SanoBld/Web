@@ -103,11 +103,11 @@ h1::after {
 .project-link-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start; /* Aligne le texte à gauche après la barre */
     color: var(--text-main);
     text-decoration: none;
     font-size: 1.1rem;
-    padding: 15px 20px;
+    padding: 15px 20px 15px 35px; /* Espace pour la barre à gauche */
     margin: 10px 0;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--card-border);
@@ -119,11 +119,15 @@ h1::after {
 .project-link-item::before {
     content: '';
     position: absolute;
-    left: 0; top: 20%; height: 60%; width: 3px;
+    left: 12px; 
+    top: 20%; 
+    height: 60%; 
+    width: 3px;
     background: var(--accent-color);
-    border-radius: 0 4px 4px 0;
+    border-radius: 4px;
 }
 
+/* L'inversion de couleur se passe ici */
 .project-link-item:hover { 
     background: var(--text-main); /* Le fond devient la couleur du texte (Blanc en mode sombre) */
     color: var(--bg-color) !important; /* Le texte prend la couleur du fond (Noir en mode sombre) */
