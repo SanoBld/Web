@@ -97,40 +97,44 @@ h1::after {
 .arrow-icon { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
 .about-section.open .arrow-icon { transform: rotate(90deg); }
 .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
-.about-section.open .about-content-wrapper { max-height: 300px; opacity: 1; margin-top: 15px; }
+.about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
 
-/* --- MISE EN AVANT DU PROJET RANDOM --- */
+/* --- SECTION PROJETS CORRIGÉE --- */
 .project-link-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: block; 
     color: var(--text-main);
     text-decoration: none;
     font-size: 1.1rem;
-    padding: 15px 20px;
+    padding: 15px 20px 15px 35px; 
     margin: 10px 0;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--card-border);
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    text-align: left; 
+    overflow: visible; 
 }
 
 .project-link-item::before {
     content: '';
     position: absolute;
-    left: 0; top: 20%; height: 60%; width: 3px;
+    left: 12px; 
+    top: 20%; 
+    height: 60%; 
+    width: 3px;
     background: var(--accent-color);
-    border-radius: 0 4px 4px 0;
+    border-radius: 4px;
 }
 
 .project-link-item:hover { 
-    background: var(--text-main); /* Le fond devient la couleur du texte (Blanc en mode sombre) */
-    color: var(--bg-color) !important; /* Le texte prend la couleur du fond (Noir en mode sombre) */
+    background: var(--text-main) !important; 
+    color: var(--bg-color) !important;       
     transform: scale(1.02) translateX(5px);
-    border-color: var(--text-main);
+    border-color: var(--text-main) !important;
 }
 
+/* --- HOVER GÉNÉRAL --- */
 .ctrl-btn:hover, .widget:hover, .link-item:hover, .about-section:hover { 
     background: var(--text-main) !important; color: var(--bg-color); border-color: var(--text-main) !important;
 }
