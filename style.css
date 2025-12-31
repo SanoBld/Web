@@ -125,8 +125,8 @@ h1::after {
 }
 
 .project-link-item:hover { 
-    background: var(--text-main);
-    color: var(--bg-color);
+    background: var(--text-main); /* Le fond devient la couleur du texte (Blanc en mode sombre) */
+    color: var(--bg-color) !important; /* Le texte prend la couleur du fond (Noir en mode sombre) */
     transform: scale(1.02) translateX(5px);
     border-color: var(--text-main);
 }
