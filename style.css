@@ -99,43 +99,64 @@ h1::after {
 .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
 .about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
 
-/* --- SECTION PROJETS : AUTOMATISATION TOTALE --- */
+/* --- SECTION PROJETS : DESIGN PREMIUM --- */
 .project-link-item {
     display: block !important;
-    /* Utilise la variable qui change déjà entre blanc et noir dans votre script */
-    color: var(--text-main) !important; 
+    color: inherit !important; 
     text-decoration: none;
-    font-size: 1.1rem;
-    padding: 15px 20px 15px 40px; 
-    margin: 10px 0;
-    /* Fond adaptatif léger */
-    background: var(--card-bg); 
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 1.05rem;
+    padding: 20px 24px 20px 50px; 
+    margin: 14px 0;
+    
+    /* Effet de verre (Frosted Glass) */
+    background: rgba(127, 127, 127, 0.03);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    /* Bordure subtile */
+    border: 1px solid rgba(127, 127, 127, 0.15);
+    border-radius: 16px;
+    
+    /* Animation fluide */
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
     text-align: left;
+    overflow: hidden;
 }
 
+/* La barre rouge verticale (plus élégante) */
 .project-link-item::before {
     content: '';
     position: absolute;
-    left: 15px; 
-    top: 20%; 
-    height: 60%; 
-    width: 3px;
+    left: 20px; 
+    top: 50%; 
+    transform: translateY(-50%);
+    height: 12px; /* Petite barre au lieu d'une longue ligne */
+    width: 4px;
     background: var(--accent-color);
-    border-radius: 4px;
+    border-radius: 20px;
+    transition: all 0.4s ease;
 }
 
-/* Inversion automatique au survol */
+/* Effet au survol */
 .project-link-item:hover { 
-    /* Le fond prend la couleur du texte (donc noir en Light, blanc en Dark) */
     background: var(--text-main) !important; 
-    /* Le texte prend la couleur du fond du site (donc blanc en Light, noir en Dark) */
     color: var(--bg-color) !important;       
-    transform: scale(1.02) translateX(5px);
+    transform: scale(1.02);
     border-color: var(--text-main) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Animation de la barre rouge au survol */
+.project-link-item:hover::before {
+    height: 25px; /* Elle s'allonge quand on passe la souris */
+    background: var(--bg-color); /* Elle change de couleur pour rester visible sur le fond inversé */
+}
+
+/* Petit ajout pour le mode clair */
+body.light-mode .project-link-item {
+    background: rgba(0, 0, 0, 0.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 /* --- HOVER GÉNÉRAL --- */
