@@ -99,35 +99,41 @@ h1::after {
 .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
 .about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
 
-/* --- SECTION PROJETS : COULEURS DYNAMIQUES --- */
+/* --- SECTION PROJETS : AUTOMATISATION TOTALE --- */
 .project-link-item {
-    display: block; 
-    color: var(--text-main); /* Bascule automatique Blanc/Noir selon le mode */
+    display: block !important;
+    /* Utilise la variable qui change déjà entre blanc et noir dans votre script */
+    color: var(--text-main) !important; 
     text-decoration: none;
     font-size: 1.1rem;
-    padding: 15px 20px 15px 35px; 
+    padding: 15px 20px 15px 40px; 
     margin: 10px 0;
-    background: rgba(255, 255, 255, 0.05);
+    /* Fond adaptatif léger */
+    background: var(--card-bg); 
     border: 1px solid var(--card-border);
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     text-align: left;
-    overflow: visible;
 }
 
 .project-link-item::before {
     content: '';
     position: absolute;
-    left: 12px; top: 20%; height: 60%; width: 3px;
+    left: 15px; 
+    top: 20%; 
+    height: 60%; 
+    width: 3px;
     background: var(--accent-color);
     border-radius: 4px;
 }
 
-/* Inversion au survol en utilisant les variables */
+/* Inversion automatique au survol */
 .project-link-item:hover { 
-    background: var(--text-main) !important; /* Le fond devient la couleur du texte actuelle */
-    color: var(--bg-color) !important;       /* Le texte devient la couleur du fond actuelle */
+    /* Le fond prend la couleur du texte (donc noir en Light, blanc en Dark) */
+    background: var(--text-main) !important; 
+    /* Le texte prend la couleur du fond du site (donc blanc en Light, noir en Dark) */
+    color: var(--bg-color) !important;       
     transform: scale(1.02) translateX(5px);
     border-color: var(--text-main) !important;
 }
