@@ -99,34 +99,35 @@ h1::after {
 .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
 .about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
 
-/* --- SECTION PROJETS : CORRECTION FINALE --- */
+/* --- SECTION PROJETS : COULEURS DYNAMIQUES --- */
 .project-link-item {
-    display: block !important;
-    color: var(--text-main) !important; /* Utilise la variable blanche ou noire selon le thème */
+    display: block; 
+    color: var(--text-main); /* Bascule automatique Blanc/Noir selon le mode */
     text-decoration: none;
     font-size: 1.1rem;
-    padding: 15px 20px 15px 40px; 
+    padding: 15px 20px 15px 35px; 
     margin: 10px 0;
-    background: var(--card-bg); /* Utilise le fond de carte semi-transparent */
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--card-border);
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     text-align: left;
+    overflow: visible;
 }
 
 .project-link-item::before {
     content: '';
     position: absolute;
-    left: 15px; top: 20%; height: 60%; width: 3px;
+    left: 12px; top: 20%; height: 60%; width: 3px;
     background: var(--accent-color);
     border-radius: 4px;
 }
 
-/* Inversion au survol corrigée */
+/* Inversion au survol en utilisant les variables */
 .project-link-item:hover { 
-    background: var(--text-main) !important; /* Fond devient la couleur du texte (Blanc ou Noir) */
-    color: var(--bg-color) !important;       /* Texte devient la couleur du fond du site */
+    background: var(--text-main) !important; /* Le fond devient la couleur du texte actuelle */
+    color: var(--bg-color) !important;       /* Le texte devient la couleur du fond actuelle */
     transform: scale(1.02) translateX(5px);
     border-color: var(--text-main) !important;
 }
