@@ -40,7 +40,7 @@ body {
 
 .top-controls { display: flex; justify-content: space-between; width: 100%; max-width: 500px; margin-bottom: 20px; }
 
-.ctrl-btn, .widget, .link-item, .about-section {
+.ctrl-btn, .widget, .link-item, .about-section, .spotify-widget {
     border: 1px solid var(--card-border);
     transition: transform 0.1s ease-out, background 0.3s, color 0.3s, border-color 0.4s ease;
 }
@@ -81,6 +81,27 @@ h1::after {
     cursor: pointer; text-align: center; min-height: 80px; width: 100%; font-family: var(--font-serif);
 }
 
+/* --- WIDGET SPOTIFY (SANS EFFET 3D) --- */
+.spotify-widget {
+    width: 100%;
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 0;
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+    margin-bottom: 12px;
+    transition: border-color 0.3s ease;
+}
+
+.spotify-widget:hover {
+    border-color: var(--text-main);
+}
+
+.spotify-widget iframe {
+    display: block;
+    width: 100%;
+}
+
 .link-item, .about-section {
     background: var(--card-bg); border-radius: 16px; padding: 22px 28px;
     text-decoration: none; color: var(--text-main); backdrop-filter: blur(12px); 
@@ -88,11 +109,23 @@ h1::after {
 }
 
 .widgets-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 12px; }
-.links-grid { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+
+/* --- GRILLE ADAPTATIVE POUR DESKTOP --- */
+.links-grid { 
+    width: 100%; 
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px; 
+}
+
+.about-section {
+    grid-column: 1 / -1;
+}
+
 .link-item { display: flex; align-items: center; justify-content: space-between; }
 
 .about-section { margin-top: 0; cursor: pointer; overflow: hidden; }
-#about-trigger { margin-top: 12px; }
+#about-trigger { margin-top: 0; }
 .about-header { display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
 .arrow-icon { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
 .about-section.open .arrow-icon { transform: rotate(90deg); }
@@ -108,37 +141,32 @@ h1::after {
     padding: 20px 24px 20px 50px; 
     margin: 14px 0;
     
-    /* Effet de verre (Frosted Glass) */
     background: rgba(127, 127, 127, 0.03);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     
-    /* Bordure subtile */
     border: 1px solid rgba(127, 127, 127, 0.15);
     border-radius: 16px;
     
-    /* Animation fluide */
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
     text-align: left;
     overflow: hidden;
 }
 
-/* La barre rouge verticale (plus élégante) */
 .project-link-item::before {
     content: '';
     position: absolute;
     left: 20px; 
     top: 50%; 
     transform: translateY(-50%);
-    height: 12px; /* Petite barre au lieu d'une longue ligne */
+    height: 12px;
     width: 4px;
     background: var(--accent-color);
     border-radius: 20px;
     transition: all 0.4s ease;
 }
 
-/* Effet au survol */
 .project-link-item:hover { 
     background: var(--text-main) !important; 
     color: var(--bg-color) !important;       
@@ -147,13 +175,11 @@ h1::after {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
-/* Animation de la barre rouge au survol */
 .project-link-item:hover::before {
-    height: 25px; /* Elle s'allonge quand on passe la souris */
-    background: var(--bg-color); /* Elle change de couleur pour rester visible sur le fond inversé */
+    height: 25px;
+    background: var(--bg-color);
 }
 
-/* Petit ajout pour le mode clair */
 body.light-mode .project-link-item {
     background: rgba(0, 0, 0, 0.02);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
@@ -168,12 +194,186 @@ body.light-mode .project-link-item {
 .footer { font-family: var(--font-serif); margin-top: 60px; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 4px; }
 
 #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; pointer-events: none; }
+
+/* --- CURSEUR AVEC ANIMATION DE CLIC --- */
 #cursor-dot {
     position: fixed; width: 6px; height: 6px; background-color: var(--accent-color);
     border-radius: 50%; pointer-events: none; z-index: 9999; top: 0; left: 0;
     transition: width 0.2s, height 0.2s, transform 0.1s, background-color 0.3s;
     will-change: transform; transform: translate(-50%, -50%);
 }
-#cursor-dot.hover { width: 14px; height: 14px; background-color: transparent; border: 2px solid var(--accent-color); }
 
-@media (pointer: coarse) { #cursor-dot { display: none; } * { cursor: auto !important; } }
+#cursor-dot.hover { 
+    width: 14px; height: 14px; 
+    background-color: transparent; 
+    border: 2px solid var(--accent-color); 
+}
+
+/* Animation de clic */
+#cursor-dot.clicking {
+    animation: clickPulse 0.3s ease-out;
+}
+
+@keyframes clickPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(0.6);
+        background-color: var(--accent-color);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Effet d'onde au clic */
+#cursor-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--accent-color);
+    opacity: 0;
+}
+
+#cursor-dot.clicking::after {
+    animation: clickRipple 0.6s ease-out;
+}
+
+@keyframes clickRipple {
+    0% {
+        width: 100%;
+        height: 100%;
+        opacity: 1;
+    }
+    100% {
+        width: 300%;
+        height: 300%;
+        opacity: 0;
+    }
+}
+
+/* Mode performance : désactiver les effets 3D */
+body.perf-mode .active-fx {
+    transform: none !important;
+}
+
+body.perf-mode .active-fx:hover {
+    transform: none !important;
+}
+
+/* --- ADAPTATION EN TEMPS RÉEL SELON LA TAILLE D'ÉCRAN --- */
+@media (max-width: 900px) and (min-width: 769px) {
+    .links-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* --- OPTIMISATION MOBILE --- */
+@media (max-width: 768px) {
+    .container { 
+        padding: 30px 20px 60px; 
+    }
+    
+    .links-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    
+    .ctrl-btn {
+        width: 70px; 
+        height: 70px;
+        font-size: 9px;
+        position: relative;
+    }
+    
+    .ctrl-btn::after {
+        content: '';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        bottom: -10px;
+        left: -10px;
+    }
+    
+    .widget {
+        min-height: 90px;
+        padding: 16px 12px;
+    }
+    
+    .link-item, .about-section {
+        padding: 24px 30px;
+        font-size: 1.05rem;
+    }
+    
+    .project-link-item {
+        padding: 22px 26px 22px 52px;
+        margin: 16px 0;
+        font-size: 1rem;
+    }
+    
+    .widgets-row {
+        gap: 14px;
+    }
+    
+    h1 {
+        letter-spacing: 6px;
+        text-indent: 6px;
+    }
+}
+
+@media (max-width: 380px) {
+    .ctrl-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 8px;
+    }
+    
+    .link-item, .about-section {
+        padding: 20px 24px;
+        font-size: 1rem;
+    }
+    
+    .project-link-item {
+        padding: 20px 22px 20px 48px;
+        font-size: 0.95rem;
+    }
+    
+    h1 {
+        letter-spacing: 4px;
+        text-indent: 4px;
+    }
+}
+
+@media (pointer: coarse) { 
+    #cursor-dot { display: none; } 
+    * { cursor: auto !important; }
+    
+    .ctrl-btn:active, .widget:active, .link-item:active, .about-section:active,
+    .project-link-item:active, .spotify-widget:active {
+        transform: scale(0.98);
+    }
+    
+    .ctrl-btn:active, .widget:active, .link-item:active, .about-section:active {
+        background: var(--text-main) !important;
+        color: var(--bg-color) !important;
+        border-color: var(--text-main) !important;
+    }
+    
+    body.perf-mode .active-fx {
+        transform: none !important;
+    }
+    
+    .active-fx:active {
+        transform: scale(0.98) !important;
+    }
+    
+    body.perf-mode .active-fx:active {
+        transform: scale(0.98) !important;
+    }
+}

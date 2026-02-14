@@ -9,35 +9,17 @@ const database = firebase.database();
 
 const body = document.body;
 const themeBtn = document.getElementById('theme-toggle');
-const accentBtn = document.getElementById('accent-toggle');
+const perfBtn = document.getElementById('perf-toggle');
 
-const colors = [
-    { name: 'TRANSP', main: '#ff0037', border: 'rgba(255, 255, 255, 0.1)', dyn: 'inherit', rev: 'auto' },
-    { name: 'ROUGE',  main: '#ff0037', border: 'rgba(255, 0, 55, 0.4)',  dyn: '#ff0037', rev: '#ff0037' }, 
-    { name: 'BLANC',  main: '#ffffff', border: 'rgba(255, 255, 255, 0.4)', dyn: '#ffffff', rev: '#ffffff' }, 
-    { name: 'NOIR',   main: '#000000', border: 'rgba(0, 0, 0, 0.4)',      dyn: '#444',    rev: '#000000' },      
-    { name: 'JAUNE',  main: '#f5d94a', border: 'rgba(245, 217, 74, 0.5)', dyn: '#f5d94a', rev: '#f5d94a' }
-];
-let currentColorIdx = 0;
-
-function updateRevealColor() {
-    const theme = colors[currentColorIdx];
-    if (theme.rev === 'auto') {
-        const isLight = body.classList.contains('light-mode');
-        document.documentElement.style.setProperty('--reveal-color', isLight ? '#000000' : '#ffffff');
-    } else {
-        document.documentElement.style.setProperty('--reveal-color', theme.rev);
-    }
-}
-
-accentBtn.onclick = () => {
-    currentColorIdx = (currentColorIdx + 1) % colors.length;
-    const theme = colors[currentColorIdx];
-    accentBtn.textContent = theme.name;
-    document.documentElement.style.setProperty('--accent-color', theme.main);
-    document.documentElement.style.setProperty('--card-border', theme.border);
-    document.documentElement.style.setProperty('--dynamic-color', theme.dyn);
-    updateRevealColor();
+// --- MODE PERFORMANCE ---
+let performanceMode = false;
+perfBtn.onclick = () => {
+    performanceMode = !performanceMode;
+    perfBtn.textContent = performanceMode ? "NORMAL" : "PERF";
+    
+    // Activer/désactiver la classe perf-mode sur body
+    body.classList.toggle('perf-mode', performanceMode);
+    
     playTick();
 };
 
@@ -47,26 +29,110 @@ body.classList.toggle('light-mode', themeMediaQuery.matches);
 themeBtn.onclick = () => { 
     body.classList.toggle('light-mode'); 
     themeBtn.textContent = body.classList.contains('light-mode') ? "SOMBRE" : "CLAIR"; 
-    updateRevealColor(); 
     playTick(); 
 };
 
-// --- GESTION DES WIDGETS ---
+// --- ÉVÉNEMENTS DU CALENDRIER ---
+const fixedEvents = [
+    { month: 1, day: 1, name: "NOUVEL AN" },
+    { month: 2, day: 14, name: "ST-VALENTIN" },
+    { month: 10, day: 31, name: "HALLOWEEN" },
+    { month: 12, day: 25, name: "NOËL" },
+    { month: 12, day: 31, name: "RÉVEILLON" }
+];
+
+// Événements dynamiques (Ramadan, etc.) - API Calendarific ou similaire
+let dynamicEvents = [];
+
+async function fetchDynamicEvents() {
+    try {
+        const year = new Date().getFullYear();
+        // API gratuite pour les jours fériés et événements religieux
+        const response = await fetch(`https://date.nager.at/api/v3/publicholidays/${year}/FR`);
+        if (response.ok) {
+            const holidays = await response.json();
+            holidays.forEach(holiday => {
+                const date = new Date(holiday.date);
+                dynamicEvents.push({
+                    month: date.getMonth() + 1,
+                    day: date.getDate(),
+                    name: holiday.localName.toUpperCase()
+                });
+            });
+        }
+    } catch (error) {
+        console.log("Impossible de charger les événements dynamiques");
+    }
+}
+
+fetchDynamicEvents();
+
+function getTodayEvent() {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    
+    // Chercher dans les événements fixes
+    const fixedEvent = fixedEvents.find(e => e.month === month && e.day === day);
+    if (fixedEvent) return fixedEvent.name;
+    
+    // Chercher dans les événements dynamiques
+    const dynamicEvent = dynamicEvents.find(e => e.month === month && e.day === day);
+    if (dynamicEvent) return dynamicEvent.name;
+    
+    return null;
+}
+
+// --- GESTION DU WIDGET DATE/CALENDRIER ---
 let showTime = false;
+let showEvent = false;
+
 function renderDate() {
     const now = new Date();
     const dateVal = document.getElementById('date-val');
-    if (showTime) dateVal.textContent = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    else dateVal.textContent = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear().toString().slice(-2)}`;
+    const dateLabel = document.getElementById('date-label');
+    
+    if (showEvent) {
+        const event = getTodayEvent();
+        if (event) {
+            dateVal.textContent = event;
+            dateLabel.textContent = "ÉVÉNEMENT";
+        } else {
+            dateVal.textContent = "AUCUN";
+            dateLabel.textContent = "ÉVÉNEMENT";
+        }
+    } else if (showTime) {
+        dateVal.textContent = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+        dateLabel.textContent = "HEURE";
+    } else {
+        dateVal.textContent = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear().toString().slice(-2)}`;
+        dateLabel.textContent = "CALENDRIER";
+    }
 }
+
 setInterval(() => { if(showTime) renderDate(); }, 1000); 
 renderDate();
-document.getElementById('date-widget').onclick = () => { showTime = !showTime; renderDate(); playTick(); };
 
+document.getElementById('date-widget').onclick = () => { 
+    if (!showTime && !showEvent) {
+        showTime = true;
+    } else if (showTime && !showEvent) {
+        showTime = false;
+        showEvent = true;
+    } else {
+        showTime = false;
+        showEvent = false;
+    }
+    renderDate(); 
+    playTick(); 
+};
+
+// --- GESTION DU WIDGET INFOS SYSTÈME (PLUS DE GADGETS) ---
 const viewVal = document.getElementById('view-val');
 const viewLabel = document.getElementById('view-label');
 let infoState = 0;
 let v = "...";
+const startTime = Date.now();
 
 async function fetchGlobalViews() {
     const viewRef = database.ref('total_views');
@@ -80,19 +146,64 @@ async function fetchGlobalViews() {
 fetchGlobalViews();
 
 async function updateInfoDisplay() {
-    if (infoState === 0) { viewVal.textContent = v; viewLabel.textContent = "Vues"; }
+    if (infoState === 0) { 
+        viewVal.textContent = v; 
+        viewLabel.textContent = "VUES"; 
+    }
     else if (infoState === 1) { 
         let bat = "N/A"; 
         if (navigator.getBattery) { 
             const b = await navigator.getBattery(); 
             bat = Math.round(b.level * 100) + "%"; 
         }
-        viewVal.textContent = bat; viewLabel.textContent = "BATTERIE"; 
+        viewVal.textContent = bat; 
+        viewLabel.textContent = "BATTERIE"; 
     }
-    else if (infoState === 2) { viewVal.textContent = navigator.platform.substring(0,8).toUpperCase(); viewLabel.textContent = "SYSTEME"; }
-    else if (infoState === 3) { viewVal.textContent = `${window.screen.width}X${window.screen.height}`; viewLabel.textContent = "RESOLUTION"; }
+    else if (infoState === 2) { 
+        viewVal.textContent = navigator.platform.substring(0,8).toUpperCase(); 
+        viewLabel.textContent = "SYSTÈME"; 
+    }
+    else if (infoState === 3) { 
+        viewVal.textContent = `${window.screen.width}X${window.screen.height}`; 
+        viewLabel.textContent = "RÉSOLUTION"; 
+    }
+    else if (infoState === 4) {
+        const uptime = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(uptime / 60);
+        const seconds = uptime % 60;
+        viewVal.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+        viewLabel.textContent = "UPTIME";
+    }
+    else if (infoState === 5) {
+        viewVal.textContent = navigator.language.toUpperCase().substring(0, 5);
+        viewLabel.textContent = "LANGUE";
+    }
+    else if (infoState === 6) {
+        viewVal.textContent = navigator.onLine ? "EN LIGNE" : "HORS LIGNE";
+        viewLabel.textContent = "CONNEXION";
+    }
+    else if (infoState === 7) {
+        const cores = navigator.hardwareConcurrency || "N/A";
+        viewVal.textContent = cores + " CORES";
+        viewLabel.textContent = "CPU";
+    }
+    else if (infoState === 8) {
+        const memory = navigator.deviceMemory || "N/A";
+        viewVal.textContent = memory + " GB";
+        viewLabel.textContent = "RAM";
+    }
 }
-document.getElementById('view-widget').onclick = () => { playTick(); infoState = (infoState + 1) % 4; updateInfoDisplay(); };
+
+document.getElementById('view-widget').onclick = () => { 
+    playTick(); 
+    infoState = (infoState + 1) % 9; // 9 états maintenant
+    updateInfoDisplay(); 
+};
+
+// Mettre à jour l'uptime chaque seconde si affiché
+setInterval(() => {
+    if (infoState === 4) updateInfoDisplay();
+}, 1000);
 
 // --- AUDIO & CURSEUR ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -115,14 +226,28 @@ window.addEventListener('mousemove', e => {
     const r = title.getBoundingClientRect();
     title.style.setProperty('--m-x', `${e.clientX - r.left}px`);
     title.style.setProperty('--m-y', `${e.clientY - r.top}px`);
-    document.querySelectorAll('.active-fx').forEach(el => {
-        const b = el.getBoundingClientRect();
-        if (e.clientX > b.left && e.clientX < b.right && e.clientY > b.top && e.clientY < b.bottom) {
-            const tx = (e.clientX - (b.left + b.width/2)) / 12;
-            const ty = (e.clientY - (b.top + b.height/2)) / 6;
-            el.style.transform = `scale(1.01) translate(${tx}px, ${ty}px) skewX(${tx/2}deg)`;
-        } else { el.style.transform = `scale(1) translate(0, 0) skewX(0)`; }
-    });
+    
+    // Désactiver les effets 3D en mode performance
+    if (!performanceMode) {
+        document.querySelectorAll('.active-fx').forEach(el => {
+            const b = el.getBoundingClientRect();
+            if (e.clientX > b.left && e.clientX < b.right && e.clientY > b.top && e.clientY < b.bottom) {
+                const tx = (e.clientX - (b.left + b.width/2)) / 12;
+                const ty = (e.clientY - (b.top + b.height/2)) / 6;
+                el.style.transform = `scale(1.01) translate(${tx}px, ${ty}px) skewX(${tx/2}deg)`;
+            } else { 
+                el.style.transform = `scale(1) translate(0, 0) skewX(0)`; 
+            }
+        });
+    }
+});
+
+// Animation de clic sur le curseur
+document.addEventListener('mousedown', () => {
+    cursor.classList.add('clicking');
+    setTimeout(() => {
+        cursor.classList.remove('clicking');
+    }, 300);
 });
 
 document.querySelectorAll('.active-fx').forEach(el => {
@@ -152,6 +277,13 @@ function init() {
     }
 }
 function animate() {
+    // En mode performance, ne pas afficher les particules
+    if (performanceMode) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        requestAnimationFrame(animate);
+        return;
+    }
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const isLight = body.classList.contains('light-mode');
     const colorMain = isLight ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)";
@@ -172,4 +304,3 @@ function animate() {
     requestAnimationFrame(animate);
 }
 window.onresize = init; init(); animate();
-updateRevealColor();
