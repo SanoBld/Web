@@ -8,9 +8,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="preloader-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
     <canvas id="particle-canvas"></canvas>
-    
-	<div id="cursor-dot"></div>
+    <div id="cursor-dot"></div>
 
     <div class="container">
         <div class="top-controls">
@@ -22,10 +31,10 @@
             <div class="logo-wrapper">
                 <img src="logo.png" alt="Logo" class="main-logo">
             </div>
-            
+
             <h1 id="main-title">SANO BLD</h1>
             <div class="status">// SYSTÈME CONNECTÉ</div>
-            
+
             <div class="widgets-row">
                 <div class="widget active-fx" id="date-widget">
                     <span id="date-val" class="dyn-txt" style="font-size:1.1rem;">--.--.--</span>
@@ -37,17 +46,16 @@
                 </div>
             </div>
 
-            <!-- Widget Spotify -->
-            <div class="spotify-widget">
-                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/53gvaKKzkhduv8q4lniQxl?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            <!-- Widget Spotify avec skeleton -->
+            <div class="spotify-widget skeleton-load">
+                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/53gvaKKzkhduv8q4lniQxl?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" onload="this.closest('.spotify-widget').classList.remove('skeleton-load')"></iframe>
             </div>
 
             <nav class="links-grid">
                 <a href="https://x.com/SanoBld" target="_blank" class="link-item active-fx"><span>// TWITTER</span><span>→</span></a>
                 <a href="https://www.reddit.com/user/Sano_bld/" target="_blank" class="link-item active-fx"><span>// REDDIT</span><span>→</span></a>
-				<a href="https://github.com/SanoBld" target="_blank" class="link-item active-fx"><span>// GITHUB</span><span>→</span></a>
+                <a href="https://github.com/SanoBld" target="_blank" class="link-item active-fx"><span>// GITHUB</span><span>→</span></a>
                 <a href="https://discord.gg/nothingtech" target="_blank" class="link-item active-fx"><span>// DISCORD NOTHING</span><span>→</span></a>
-                
 
                 <div class="about-section active-fx toggle-box" id="projects-trigger">
                     <div class="about-header">
@@ -56,10 +64,10 @@
                     </div>
                     <div class="about-content-wrapper">
                         <a href="https://soboheme.github.io/Web/" target="_blank" class="project-link-item">// SO BOHEME</a>
-						<a href="https://mostafaalagamy.github.io/" target="_blank" class="project-link-item">// METROLIST</a>
-						<a href="https://sanobld.github.io/Unitix/" target="_blank" class="project-link-item">// UNITIX</a>					
+                        <a href="https://mostafaalagamy.github.io/" target="_blank" class="project-link-item">// METROLIST</a>
+                        <a href="https://sanobld.github.io/Unitix/" target="_blank" class="project-link-item">// UNITIX</a>
                         <a href="https://sanobld.github.io/Tic-Tac-Boom/" target="_blank" class="project-link-item">// TIC TAC BOOM</a>
-                        <a href="https://sanobld.github.io/Eco-Drive/" target="_blank" class="project-link-item">// ECO DRIVE</a>				
+                        <a href="https://sanobld.github.io/Eco-Drive/" target="_blank" class="project-link-item">// ECO DRIVE</a>
                     </div>
                 </div>
 
@@ -84,5 +92,4 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="script.js"></script>
 </body>
-
 </html>

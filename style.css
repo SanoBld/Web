@@ -10,12 +10,14 @@
     --bg-color: #050505;
     --text-main: #ffffff;
     --text-dim: #888;
-    --accent-color: #ff0037; 
-    --dynamic-color: inherit; 
-    --reveal-color: #ffffff; 
+    --accent-color: #ff0037;
+    --dynamic-color: inherit;
+    --reveal-color: #ffffff;
     --font-serif: 'NothingSerif', serif;
     --card-bg: rgba(255, 255, 255, 0.03);
     --card-border: rgba(255, 255, 255, 0.1);
+    --card-bg-hover: rgba(255, 255, 255, 0.07);
+    --card-border-hover: rgba(255, 255, 255, 0.28);
 }
 
 body.light-mode {
@@ -24,47 +26,215 @@ body.light-mode {
     --text-dim: #444;
     --card-bg: rgba(0, 0, 0, 0.04);
     --card-border: rgba(0, 0, 0, 0.1);
+    --card-bg-hover: rgba(0, 0, 0, 0.09);
+    --card-border-hover: rgba(0, 0, 0, 0.28);
     --reveal-color: #000000;
 }
 
+/* ================================================================
+   PRELOADER
+   ================================================================ */
+#preloader {
+    position: fixed;
+    inset: 0;
+    background-color: var(--bg-color);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#preloader.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.preloader-dots {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.preloader-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--text-main);
+    animation: dotPulse 1.2s ease-in-out infinite;
+    opacity: 0.15;
+}
+
+.preloader-dots span:nth-child(1) { animation-delay: 0s; }
+.preloader-dots span:nth-child(2) { animation-delay: 0.22s; }
+.preloader-dots span:nth-child(3) { animation-delay: 0.44s; }
+
+@keyframes dotPulse {
+    0%, 80%, 100% { opacity: 0.15; transform: scale(0.85); }
+    40%            { opacity: 1;    transform: scale(1.2);  }
+}
+
+/* ================================================================
+   PAGE FADE-IN
+   ================================================================ */
+#main-content,
+.top-controls {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+body.page-ready #main-content,
+body.page-ready .top-controls {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ================================================================
+   SKELETON LOADING
+   ================================================================ */
+@keyframes skeletonShimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position:  400px 0; }
+}
+
+.skeleton-load {
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg) !important;
+    min-height: 152px;
+}
+
+.skeleton-load::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(127,127,127,0.12) 40%,
+        rgba(127,127,127,0.18) 50%,
+        rgba(127,127,127,0.12) 60%,
+        transparent 100%
+    );
+    background-size: 800px 100%;
+    animation: skeletonShimmer 1.6s infinite linear;
+    z-index: 2;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.skeleton-load iframe {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+/* When skeleton is removed, show iframe */
+.spotify-widget:not(.skeleton-load) iframe {
+    opacity: 1;
+}
+
+/* ================================================================
+   RESET & BASE
+   ================================================================ */
 * { cursor: none !important; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
     margin: 0; padding: 0; background-color: var(--bg-color);
     color: var(--text-main); font-family: var(--font-serif);
-    display: flex; justify-content: center; min-height: 100vh; overflow-y: auto; overflow-x: hidden;
+    display: flex; justify-content: center; min-height: 100vh;
+    overflow-y: auto; overflow-x: hidden;
     transition: background-color 0.4s ease;
 }
 
-.container { position: relative; width: 100%; max-width: 500px; padding: 40px 24px 80px; display: flex; flex-direction: column; align-items: center; z-index: 10; }
-
-.top-controls { display: flex; justify-content: space-between; width: 100%; max-width: 500px; margin-bottom: 20px; }
-
-.ctrl-btn, .widget, .link-item, .about-section, .spotify-widget {
-    border: 1px solid var(--card-border);
-    transition: transform 0.1s ease-out, background 0.3s, color 0.3s, border-color 0.4s ease;
+.container {
+    position: relative; width: 100%; max-width: 500px;
+    padding: 40px 24px 80px; display: flex;
+    flex-direction: column; align-items: center; z-index: 10;
 }
 
+.top-controls {
+    display: flex; justify-content: space-between;
+    width: 100%; max-width: 500px; margin-bottom: 20px;
+}
+
+/* ================================================================
+   SHARED CARD STYLES
+   ================================================================ */
+.ctrl-btn, .widget, .link-item, .about-section, .spotify-widget {
+    border: 1px solid var(--card-border);
+    transition: transform 0.12s ease-out, background 0.25s ease,
+                color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ================================================================
+   HOVER : border + bg intensity (no hue change)
+   ================================================================ */
+.ctrl-btn:hover,
+.widget:hover,
+.link-item:hover,
+.about-section:hover {
+    background: var(--text-main) !important;
+    color: var(--bg-color);
+    border-color: var(--text-main) !important;
+}
+
+/* Subtle hover upgrade: more visible border and bg before the full invert kicks in */
+.widget,
+.link-item,
+.about-section,
 .ctrl-btn {
-    background: transparent; color: var(--text-main); width: 65px; height: 65px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; 
+    /* will be overridden on :hover */
+    background: var(--card-bg);
+}
+
+/* ================================================================
+   ACTIVE / CLICK SCALE
+   ================================================================ */
+/* Large cards */
+.about-section:active,
+.link-item:active {
+    transform: scale(0.99) !important;
+    transition: transform 0.08s ease;
+}
+
+/* Small cards & buttons */
+.widget:active,
+.ctrl-btn:active {
+    transform: scale(0.97) !important;
+    transition: transform 0.08s ease;
+}
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+.ctrl-btn {
+    background: transparent; color: var(--text-main); width: 65px; height: 65px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
     font-family: var(--font-serif); font-size: 10px; font-weight: bold;
 }
 
+/* ================================================================
+   LOGO
+   ================================================================ */
 .logo-wrapper {
-    width: 100px; height: 100px; border: 1px solid var(--card-border); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
-    background: var(--card-bg); overflow: hidden; transition: border-color 0.4s ease;
+    width: 100px; height: 100px; border: 1px solid var(--card-border);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px; background: var(--card-bg); overflow: hidden;
+    transition: border-color 0.4s ease;
 }
 
 .main-logo { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
 
+/* ================================================================
+   TITLE — UNTOUCHED
+   ================================================================ */
 h1 {
-    font-family: var(--font-serif) !important; 
+    font-family: var(--font-serif) !important;
     font-size: clamp(2rem, 9vw, 3.5rem);
     margin: 0; text-transform: uppercase; text-align: center; color: transparent;
     -webkit-text-stroke: 1px var(--text-main); position: relative;
-    letter-spacing: 8px; text-indent: 8px; 
+    letter-spacing: 8px; text-indent: 8px;
 }
 
 h1::after {
@@ -73,55 +243,60 @@ h1::after {
     -webkit-text-stroke: 0px; transition: color 0.4s ease;
 }
 
-.status { font-family: var(--font-serif); font-size: 0.75rem; color: var(--text-dim); letter-spacing: 2px; margin: 15px 0 30px 0; }
+/* ================================================================
+   STATUS
+   ================================================================ */
+.status {
+    font-family: var(--font-serif); font-size: 0.75rem;
+    color: var(--text-dim); letter-spacing: 2px; margin: 15px 0 30px 0;
+}
 
+/* ================================================================
+   WIDGETS
+   ================================================================ */
 .widget {
-    background: var(--card-bg); border-radius: 16px; padding: 12px; backdrop-filter: blur(12px);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; text-align: center; min-height: 80px; width: 100%; font-family: var(--font-serif);
+    background: var(--card-bg); border-radius: 16px; padding: 12px;
+    backdrop-filter: blur(12px); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; cursor: pointer;
+    text-align: center; min-height: 80px; width: 100%;
+    font-family: var(--font-serif);
 }
 
-/* --- WIDGET SPOTIFY (SANS EFFET 3D) --- */
+/* ================================================================
+   SPOTIFY WIDGET
+   ================================================================ */
 .spotify-widget {
-    width: 100%;
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 0;
-    backdrop-filter: blur(12px);
-    overflow: hidden;
-    margin-bottom: 12px;
-    transition: border-color 0.3s ease;
+    width: 100%; background: var(--card-bg); border-radius: 16px;
+    padding: 0; backdrop-filter: blur(12px); overflow: hidden;
+    margin-bottom: 12px; transition: border-color 0.3s ease;
 }
 
-.spotify-widget:hover {
-    border-color: var(--text-main);
-}
+.spotify-widget:hover { border-color: var(--text-main); }
+.spotify-widget iframe { display: block; width: 100%; }
 
-.spotify-widget iframe {
-    display: block;
-    width: 100%;
-}
-
+/* ================================================================
+   LINK ITEMS
+   ================================================================ */
 .link-item, .about-section {
     background: var(--card-bg); border-radius: 16px; padding: 22px 28px;
-    text-decoration: none; color: var(--text-main); backdrop-filter: blur(12px); 
+    text-decoration: none; color: var(--text-main); backdrop-filter: blur(12px);
     display: block; font-family: var(--font-serif); font-size: 1.1rem;
 }
 
-.widgets-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 12px; }
-
-/* --- GRILLE ADAPTATIVE POUR DESKTOP --- */
-.links-grid { 
-    width: 100%; 
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px; 
+.widgets-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; width: 100%; margin-bottom: 12px;
 }
 
-.about-section {
-    grid-column: 1 / -1;
+/* ================================================================
+   LINKS GRID
+   ================================================================ */
+.links-grid {
+    width: 100%; display: grid;
+    grid-template-columns: 1fr 1fr; gap: 12px;
 }
 
+.about-section { grid-column: 1 / -1; }
 .link-item { display: flex; align-items: center; justify-content: space-between; }
 
 .about-section { margin-top: 0; cursor: pointer; overflow: hidden; }
@@ -132,248 +307,153 @@ h1::after {
 .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
 .about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
 
-/* --- SECTION PROJETS : DESIGN PREMIUM --- */
+/* ================================================================
+   PROJECT LINKS
+   ================================================================ */
 .project-link-item {
-    display: block !important;
-    color: inherit !important; 
-    text-decoration: none;
-    font-size: 1.05rem;
-    padding: 20px 24px 20px 50px; 
-    margin: 14px 0;
-    
+    display: block !important; color: inherit !important;
+    text-decoration: none; font-size: 1.05rem;
+    padding: 20px 24px 20px 50px; margin: 14px 0;
     background: rgba(127, 127, 127, 0.03);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(127, 127, 127, 0.15);
     border-radius: 16px;
-    
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    position: relative;
-    text-align: left;
-    overflow: hidden;
+    position: relative; text-align: left; overflow: hidden;
 }
 
 .project-link-item::before {
-    content: '';
-    position: absolute;
-    left: 20px; 
-    top: 50%; 
-    transform: translateY(-50%);
-    height: 12px;
-    width: 4px;
-    background: var(--accent-color);
-    border-radius: 20px;
+    content: ''; position: absolute; left: 20px; top: 50%;
+    transform: translateY(-50%); height: 12px; width: 4px;
+    background: var(--accent-color); border-radius: 20px;
     transition: all 0.4s ease;
 }
 
-.project-link-item:hover { 
-    background: var(--text-main) !important; 
-    color: var(--bg-color) !important;       
+.project-link-item:hover {
+    background: var(--text-main) !important;
+    color: var(--bg-color) !important;
     transform: scale(1.02);
     border-color: var(--text-main) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
-.project-link-item:hover::before {
-    height: 25px;
-    background: var(--bg-color);
-}
+.project-link-item:hover::before { height: 25px; background: var(--bg-color); }
+.project-link-item:active { transform: scale(0.99) !important; }
 
 body.light-mode .project-link-item {
     background: rgba(0, 0, 0, 0.02);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
-/* --- HOVER GÉNÉRAL --- */
-.ctrl-btn:hover, .widget:hover, .link-item:hover, .about-section:hover { 
-    background: var(--text-main) !important; color: var(--bg-color); border-color: var(--text-main) !important;
+/* ================================================================
+   DYNAMIC TEXT & FOOTER
+   ================================================================ */
+.dyn-txt { font-weight: bold; color: var(--dynamic-color); transition: color 0.4s ease; }
+
+.footer {
+    font-family: var(--font-serif); margin-top: 60px;
+    font-size: 0.7rem; color: var(--text-dim); letter-spacing: 4px;
 }
 
-.dyn-txt { font-weight: bold; color: var(--dynamic-color); transition: color 0.4s ease; }
-.footer { font-family: var(--font-serif); margin-top: 60px; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 4px; }
+/* ================================================================
+   PARTICLE CANVAS
+   ================================================================ */
+#particle-canvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1100; pointer-events: none;
+}
 
-#particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; pointer-events: none; }
-
-/* --- CURSEUR AVEC ANIMATION DE CLIC --- */
+/* ================================================================
+   CUSTOM CURSOR — HOLD SQUEEZE (no ripple)
+   ================================================================ */
 #cursor-dot {
-    position: fixed; width: 6px; height: 6px; background-color: var(--accent-color);
-    border-radius: 50%; pointer-events: none; z-index: 9999; top: 0; left: 0;
-    transition: width 0.2s, height 0.2s, transform 0.1s, background-color 0.3s;
+    position: fixed; width: 6px; height: 6px;
+    background-color: var(--accent-color); border-radius: 50%;
+    pointer-events: none; z-index: 9999; top: 0; left: 0;
+    transition: width 0.2s, height 0.2s, transform 0.15s ease,
+                background-color 0.3s, opacity 0.2s;
     will-change: transform; transform: translate(-50%, -50%);
 }
 
-#cursor-dot.hover { 
-    width: 14px; height: 14px; 
-    background-color: transparent; 
-    border: 2px solid var(--accent-color); 
-}
-
-/* Animation de clic */
-#cursor-dot.clicking {
-    animation: clickPulse 0.3s ease-out;
-}
-
-@keyframes clickPulse {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
-    }
-    50% {
-        transform: translate(-50%, -50%) scale(0.6);
-        background-color: var(--accent-color);
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-/* Effet d'onde au clic */
-#cursor-dot::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
+#cursor-dot.hover {
+    width: 14px; height: 14px;
+    background-color: transparent;
     border: 2px solid var(--accent-color);
-    opacity: 0;
 }
 
-#cursor-dot.clicking::after {
-    animation: clickRipple 0.6s ease-out;
+/* Squeeze & hold on click — no ripple, no ::after ring */
+#cursor-dot.clicking {
+    transform: translate(-50%, -50%) scale(0.45);
+    transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1);
 }
 
-@keyframes clickRipple {
-    0% {
-        width: 100%;
-        height: 100%;
-        opacity: 1;
-    }
-    100% {
-        width: 300%;
-        height: 300%;
-        opacity: 0;
-    }
-}
-
-/* Mode performance : désactiver les effets 3D */
-body.perf-mode .active-fx {
-    transform: none !important;
-}
-
+/* ================================================================
+   PERFORMANCE MODE
+   ================================================================ */
+body.perf-mode .active-fx,
 body.perf-mode .active-fx:hover {
     transform: none !important;
 }
 
-/* --- ADAPTATION EN TEMPS RÉEL SELON LA TAILLE D'ÉCRAN --- */
+/* ================================================================
+   RESPONSIVE — DESKTOP MID
+   ================================================================ */
 @media (max-width: 900px) and (min-width: 769px) {
-    .links-grid {
-        grid-template-columns: 1fr 1fr;
-    }
+    .links-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* --- OPTIMISATION MOBILE --- */
+/* ================================================================
+   RESPONSIVE — MOBILE
+   ================================================================ */
 @media (max-width: 768px) {
-    .container { 
-        padding: 30px 20px 60px; 
-    }
-    
-    .links-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-    
+    .container { padding: 30px 20px 60px; }
+    .links-grid { grid-template-columns: 1fr; gap: 14px; }
+
     .ctrl-btn {
-        width: 70px; 
-        height: 70px;
-        font-size: 9px;
-        position: relative;
+        width: 70px; height: 70px; font-size: 9px; position: relative;
     }
-    
     .ctrl-btn::after {
-        content: '';
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        bottom: -10px;
-        left: -10px;
+        content: ''; position: absolute;
+        top: -10px; right: -10px; bottom: -10px; left: -10px;
     }
-    
-    .widget {
-        min-height: 90px;
-        padding: 16px 12px;
-    }
-    
-    .link-item, .about-section {
-        padding: 24px 30px;
-        font-size: 1.05rem;
-    }
-    
-    .project-link-item {
-        padding: 22px 26px 22px 52px;
-        margin: 16px 0;
-        font-size: 1rem;
-    }
-    
-    .widgets-row {
-        gap: 14px;
-    }
-    
-    h1 {
-        letter-spacing: 6px;
-        text-indent: 6px;
-    }
+
+    .widget { min-height: 90px; padding: 16px 12px; }
+    .link-item, .about-section { padding: 24px 30px; font-size: 1.05rem; }
+    .project-link-item { padding: 22px 26px 22px 52px; margin: 16px 0; font-size: 1rem; }
+    .widgets-row { gap: 14px; }
+    h1 { letter-spacing: 6px; text-indent: 6px; }
 }
 
 @media (max-width: 380px) {
-    .ctrl-btn {
-        width: 60px;
-        height: 60px;
-        font-size: 8px;
-    }
-    
-    .link-item, .about-section {
-        padding: 20px 24px;
-        font-size: 1rem;
-    }
-    
-    .project-link-item {
-        padding: 20px 22px 20px 48px;
-        font-size: 0.95rem;
-    }
-    
-    h1 {
-        letter-spacing: 4px;
-        text-indent: 4px;
-    }
+    .ctrl-btn { width: 60px; height: 60px; font-size: 8px; }
+    .link-item, .about-section { padding: 20px 24px; font-size: 1rem; }
+    .project-link-item { padding: 20px 22px 20px 48px; font-size: 0.95rem; }
+    h1 { letter-spacing: 4px; text-indent: 4px; }
 }
 
-@media (pointer: coarse) { 
-    #cursor-dot { display: none; } 
+/* ================================================================
+   TOUCH / COARSE POINTER
+   ================================================================ */
+@media (pointer: coarse) {
+    #cursor-dot { display: none; }
     * { cursor: auto !important; }
-    
-    .ctrl-btn:active, .widget:active, .link-item:active, .about-section:active,
-    .project-link-item:active, .spotify-widget:active {
-        transform: scale(0.98);
-    }
-    
-    .ctrl-btn:active, .widget:active, .link-item:active, .about-section:active {
+
+    .ctrl-btn:active,
+    .widget:active,
+    .link-item:active,
+    .about-section:active,
+    .spotify-widget:active { transform: scale(0.98); }
+
+    .ctrl-btn:active,
+    .widget:active,
+    .link-item:active,
+    .about-section:active {
         background: var(--text-main) !important;
         color: var(--bg-color) !important;
         border-color: var(--text-main) !important;
     }
-    
-    body.perf-mode .active-fx {
-        transform: none !important;
-    }
-    
-    .active-fx:active {
-        transform: scale(0.98) !important;
-    }
-    
-    body.perf-mode .active-fx:active {
-        transform: scale(0.98) !important;
-    }
+
+    body.perf-mode .active-fx { transform: none !important; }
+    .active-fx:active { transform: scale(0.98) !important; }
+    body.perf-mode .active-fx:active { transform: scale(0.98) !important; }
 }
