@@ -35,37 +35,21 @@ body.light-mode {
    PRELOADER
    ================================================================ */
 #preloader {
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background-color: var(--bg-color);
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    z-index: 99999; display: flex;
+    align-items: center; justify-content: center;
     transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
+#preloader.fade-out { opacity: 0; pointer-events: none; }
 
-#preloader.fade-out {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.preloader-dots {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
+.preloader-dots { display: flex; gap: 10px; align-items: center; }
 .preloader-dots span {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
     background-color: var(--text-main);
-    animation: dotPulse 1.2s ease-in-out infinite;
-    opacity: 0.15;
+    animation: dotPulse 1.2s ease-in-out infinite; opacity: 0.15;
 }
-
-.preloader-dots span:nth-child(1) { animation-delay: 0s; }
+.preloader-dots span:nth-child(1) { animation-delay: 0s;    }
 .preloader-dots span:nth-child(2) { animation-delay: 0.22s; }
 .preloader-dots span:nth-child(3) { animation-delay: 0.44s; }
 
@@ -77,18 +61,12 @@ body.light-mode {
 /* ================================================================
    PAGE FADE-IN
    ================================================================ */
-#main-content,
-.top-controls {
-    opacity: 0;
-    transform: translateY(10px);
+#main-content, .top-controls {
+    opacity: 0; transform: translateY(10px);
     transition: opacity 0.6s ease, transform 0.6s ease;
 }
-
 body.page-ready #main-content,
-body.page-ready .top-controls {
-    opacity: 1;
-    transform: translateY(0);
-}
+body.page-ready .top-controls { opacity: 1; transform: translateY(0); }
 
 /* ================================================================
    SKELETON LOADING
@@ -97,18 +75,12 @@ body.page-ready .top-controls {
     0%   { background-position: -400px 0; }
     100% { background-position:  400px 0; }
 }
-
 .skeleton-load {
-    position: relative;
-    overflow: hidden;
-    background: var(--card-bg) !important;
-    min-height: 152px;
+    position: relative; overflow: hidden;
+    background: var(--card-bg) !important; min-height: 152px;
 }
-
 .skeleton-load::before {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: linear-gradient(
         90deg,
         transparent 0%,
@@ -119,20 +91,10 @@ body.page-ready .top-controls {
     );
     background-size: 800px 100%;
     animation: skeletonShimmer 1.6s infinite linear;
-    z-index: 2;
-    pointer-events: none;
-    border-radius: inherit;
+    z-index: 2; pointer-events: none; border-radius: inherit;
 }
-
-.skeleton-load iframe {
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-/* When skeleton is removed, show iframe */
-.spotify-widget:not(.skeleton-load) iframe {
-    opacity: 1;
-}
+.skeleton-load iframe { opacity: 0; transition: opacity 0.4s ease; }
+.spotify-widget:not(.skeleton-load) iframe { opacity: 1; }
 
 /* ================================================================
    RESET & BASE
@@ -159,16 +121,25 @@ body {
 }
 
 /* ================================================================
-   SHARED CARD STYLES
+   SHARED CARD BASE
    ================================================================ */
 .ctrl-btn, .widget, .link-item, .about-section, .spotify-widget {
     border: 1px solid var(--card-border);
-    transition: transform 0.12s ease-out, background 0.25s ease,
-                color 0.25s ease, border-color 0.25s ease;
+    transition:
+        transform   0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        background  0.22s ease,
+        color       0.22s ease,
+        border-color 0.22s ease,
+        box-shadow  0.22s ease;
+}
+
+.widget, .link-item, .about-section, .ctrl-btn {
+    background: var(--card-bg);
 }
 
 /* ================================================================
-   HOVER : border + bg intensity (no hue change)
+   HOVER — Nothing style : lift subtle + bordure visible
+   (remplace totalement l'ancien effet 3D/skew JS)
    ================================================================ */
 .ctrl-btn:hover,
 .widget:hover,
@@ -177,40 +148,62 @@ body {
     background: var(--text-main) !important;
     color: var(--bg-color);
     border-color: var(--text-main) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
 }
 
-/* Subtle hover upgrade: more visible border and bg before the full invert kicks in */
-.widget,
-.link-item,
-.about-section,
-.ctrl-btn {
-    /* will be overridden on :hover */
-    background: var(--card-bg);
+body.light-mode .ctrl-btn:hover,
+body.light-mode .widget:hover,
+body.light-mode .link-item:hover,
+body.light-mode .about-section:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 /* ================================================================
    ACTIVE / CLICK SCALE
    ================================================================ */
-/* Large cards */
-.about-section:active,
-.link-item:active {
-    transform: scale(0.99) !important;
+.about-section:active, .link-item:active {
+    transform: translateY(0) scale(0.99) !important;
+    transition: transform 0.08s ease;
+}
+.widget:active, .ctrl-btn:active {
+    transform: translateY(0) scale(0.97) !important;
     transition: transform 0.08s ease;
 }
 
-/* Small cards & buttons */
-.widget:active,
-.ctrl-btn:active {
-    transform: scale(0.97) !important;
-    transition: transform 0.08s ease;
+/* ================================================================
+   WIDGET — TRANSITION DE CONTENU (style Nothing)
+   Fade + slide vertical au changement de valeur
+   ================================================================ */
+.widget-val,
+.widget-lbl {
+    display: block;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+/* Sortie : efface vers le bas */
+.widget-exit .widget-val,
+.widget-exit .widget-lbl {
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity 0.13s ease, transform 0.13s ease;
+}
+
+/* Entrée : arrive depuis le haut */
+.widget-enter .widget-val,
+.widget-enter .widget-lbl {
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: none;
 }
 
 /* ================================================================
    BUTTONS
    ================================================================ */
 .ctrl-btn {
-    background: transparent; color: var(--text-main); width: 65px; height: 65px;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: transparent; color: var(--text-main);
+    width: 65px; height: 65px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
     font-family: var(--font-serif); font-size: 10px; font-weight: bold;
 }
 
@@ -223,7 +216,6 @@ body {
     margin-bottom: 20px; background: var(--card-bg); overflow: hidden;
     transition: border-color 0.4s ease;
 }
-
 .main-logo { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
 
 /* ================================================================
@@ -236,7 +228,6 @@ h1 {
     -webkit-text-stroke: 1px var(--text-main); position: relative;
     letter-spacing: 8px; text-indent: 8px;
 }
-
 h1::after {
     content: "SANO BLD"; position: absolute; left: 0; top: 0; width: 100%;
     color: var(--reveal-color); clip-path: circle(80px at var(--m-x, -500px) var(--m-y, -500px));
@@ -270,7 +261,6 @@ h1::after {
     padding: 0; backdrop-filter: blur(12px); overflow: hidden;
     margin-bottom: 12px; transition: border-color 0.3s ease;
 }
-
 .spotify-widget:hover { border-color: var(--text-main); }
 .spotify-widget iframe { display: block; width: 100%; }
 
@@ -300,9 +290,9 @@ h1::after {
 .link-item { display: flex; align-items: center; justify-content: space-between; }
 
 .about-section { margin-top: 0; cursor: pointer; overflow: hidden; }
-#about-trigger { margin-top: 0; }
-.about-header { display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
-.arrow-icon { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
+#about-trigger  { margin-top: 0; }
+.about-header   { display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+.arrow-icon     { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
 .about-section.open .arrow-icon { transform: rotate(90deg); }
 .about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
 .about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
@@ -318,7 +308,7 @@ h1::after {
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(127, 127, 127, 0.15);
     border-radius: 16px;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: all 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative; text-align: left; overflow: hidden;
 }
 
@@ -326,19 +316,18 @@ h1::after {
     content: ''; position: absolute; left: 20px; top: 50%;
     transform: translateY(-50%); height: 12px; width: 4px;
     background: var(--accent-color); border-radius: 20px;
-    transition: all 0.4s ease;
+    transition: all 0.28s ease;
 }
 
 .project-link-item:hover {
     background: var(--text-main) !important;
     color: var(--bg-color) !important;
-    transform: scale(1.02);
+    transform: translateY(-2px);
     border-color: var(--text-main) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
 }
-
 .project-link-item:hover::before { height: 25px; background: var(--bg-color); }
-.project-link-item:active { transform: scale(0.99) !important; }
+.project-link-item:active { transform: translateY(0) scale(0.99) !important; }
 
 body.light-mode .project-link-item {
     background: rgba(0, 0, 0, 0.02);
@@ -364,7 +353,7 @@ body.light-mode .project-link-item {
 }
 
 /* ================================================================
-   CUSTOM CURSOR — HOLD SQUEEZE (no ripple)
+   CUSTOM CURSOR — HOLD SQUEEZE
    ================================================================ */
 #cursor-dot {
     position: fixed; width: 6px; height: 6px;
@@ -374,14 +363,11 @@ body.light-mode .project-link-item {
                 background-color 0.3s, opacity 0.2s;
     will-change: transform; transform: translate(-50%, -50%);
 }
-
 #cursor-dot.hover {
     width: 14px; height: 14px;
     background-color: transparent;
     border: 2px solid var(--accent-color);
 }
-
-/* Squeeze & hold on click — no ripple, no ::after ring */
 #cursor-dot.clicking {
     transform: translate(-50%, -50%) scale(0.45);
     transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1);
@@ -391,9 +377,7 @@ body.light-mode .project-link-item {
    PERFORMANCE MODE
    ================================================================ */
 body.perf-mode .active-fx,
-body.perf-mode .active-fx:hover {
-    transform: none !important;
-}
+body.perf-mode .active-fx:hover { transform: none !important; }
 
 /* ================================================================
    RESPONSIVE — DESKTOP MID
@@ -409,15 +393,13 @@ body.perf-mode .active-fx:hover {
     .container { padding: 30px 20px 60px; }
     .links-grid { grid-template-columns: 1fr; gap: 14px; }
 
-    .ctrl-btn {
-        width: 70px; height: 70px; font-size: 9px; position: relative;
-    }
+    .ctrl-btn { width: 70px; height: 70px; font-size: 9px; position: relative; }
     .ctrl-btn::after {
         content: ''; position: absolute;
         top: -10px; right: -10px; bottom: -10px; left: -10px;
     }
 
-    .widget { min-height: 90px; padding: 16px 12px; }
+    .widget    { min-height: 90px; padding: 16px 12px; }
     .link-item, .about-section { padding: 24px 30px; font-size: 1.05rem; }
     .project-link-item { padding: 22px 26px 22px 52px; margin: 16px 0; font-size: 1rem; }
     .widgets-row { gap: 14px; }

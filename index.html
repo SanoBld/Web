@@ -36,19 +36,27 @@
             <div class="status">// SYSTÈME CONNECTÉ</div>
 
             <div class="widgets-row">
+                <!-- Widget date/heure/événement/météo -->
                 <div class="widget active-fx" id="date-widget">
-                    <span id="date-val" class="dyn-txt" style="font-size:1.1rem;">--.--.--</span>
-                    <span id="date-label" style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">Calendrier</span>
+                    <span id="date-val" class="dyn-txt widget-val" style="font-size:1.1rem;">--.--.--</span>
+                    <span id="date-label" class="widget-lbl" style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">Calendrier</span>
                 </div>
+                <!-- Widget infos système -->
                 <div class="widget active-fx" id="view-widget">
-                    <span id="view-val" class="dyn-txt" style="font-size:1.1rem;">...</span>
-                    <span id="view-label" style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">Vues</span>
+                    <span id="view-val" class="dyn-txt widget-val" style="font-size:1.1rem;">...</span>
+                    <span id="view-label" class="widget-lbl" style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">Vues</span>
                 </div>
             </div>
 
             <!-- Widget Spotify avec skeleton -->
             <div class="spotify-widget skeleton-load">
-                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/53gvaKKzkhduv8q4lniQxl?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" onload="this.closest('.spotify-widget').classList.remove('skeleton-load')"></iframe>
+                <iframe data-testid="embed-iframe" style="border-radius:12px"
+                    src="https://open.spotify.com/embed/track/53gvaKKzkhduv8q4lniQxl?utm_source=generator&theme=0"
+                    width="100%" height="152" frameBorder="0" allowfullscreen=""
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    onload="this.closest('.spotify-widget').classList.remove('skeleton-load')">
+                </iframe>
             </div>
 
             <nav class="links-grid">
@@ -57,20 +65,34 @@
                 <a href="https://github.com/SanoBld" target="_blank" class="link-item active-fx"><span>// GITHUB</span><span>→</span></a>
                 <a href="https://discord.gg/nothingtech" target="_blank" class="link-item active-fx"><span>// DISCORD NOTHING</span><span>→</span></a>
 
-                <div class="about-section active-fx toggle-box" id="projects-trigger">
+                <!-- APPLICATIONS -->
+                <div class="about-section active-fx toggle-box" id="apps-trigger">
                     <div class="about-header">
-                        <span>// PROJETS</span>
+                        <span>// APPLICATIONS</span>
                         <span class="arrow-icon">→</span>
                     </div>
                     <div class="about-content-wrapper">
+                        <a href="https://sanobld.github.io/Unitix/" target="_blank" class="project-link-item">// UNITIX</a>
+                        <a href="https://sanobld.github.io/Eco-Drive/" target="_blank" class="project-link-item">// ECO DRIVE</a>
                         <a href="https://soboheme.github.io/Web/" target="_blank" class="project-link-item">// SO BOHEME</a>
                         <a href="https://mostafaalagamy.github.io/" target="_blank" class="project-link-item">// METROLIST</a>
-                        <a href="https://sanobld.github.io/Unitix/" target="_blank" class="project-link-item">// UNITIX</a>
-                        <a href="https://sanobld.github.io/Tic-Tac-Boom/" target="_blank" class="project-link-item">// TIC TAC BOOM</a>
-                        <a href="https://sanobld.github.io/Eco-Drive/" target="_blank" class="project-link-item">// ECO DRIVE</a>
                     </div>
                 </div>
 
+                <!-- JEUX -->
+                <div class="about-section active-fx toggle-box" id="games-trigger">
+                    <div class="about-header">
+                        <span>// JEUX</span>
+                        <span class="arrow-icon">→</span>
+                    </div>
+                    <div class="about-content-wrapper">
+                        <a href="https://sanobld.github.io/Glide/" target="_blank" class="project-link-item">// GLIDE</a>
+                        <a href="https://sanobld.github.io/Survivor.io/" target="_blank" class="project-link-item">// SURVIVOR.IO</a>
+                        <a href="https://sanobld.github.io/Tic-Tac-Boom/" target="_blank" class="project-link-item">// TIC TAC BOOM</a>
+                    </div>
+                </div>
+
+                <!-- À PROPOS -->
                 <div class="about-section active-fx toggle-box" id="about-trigger">
                     <div class="about-header">
                         <span>// À PROPOS</span>

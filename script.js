@@ -25,19 +25,16 @@ function hidePreloader() {
     }, 580);
 }
 
-// Le preloader disparaît une fois que tout est chargé
-// (au plus tard après 3s pour les connexions lentes)
 const preloaderMax = setTimeout(hidePreloader, 3000);
 window.addEventListener('load', () => {
     clearTimeout(preloaderMax);
-    // Légère pause pour que l'animation soit propre
     setTimeout(hidePreloader, 280);
 });
 
 // ================================================================
 // THÈME & PERFORMANCE
 // ================================================================
-const body   = document.body;
+const body     = document.body;
 const themeBtn = document.getElementById('theme-toggle');
 const perfBtn  = document.getElementById('perf-toggle');
 
@@ -60,10 +57,26 @@ themeBtn.onclick = () => {
 };
 
 // ================================================================
+// TRANSITION NOTHING — Fade + slide pour les widgets
+// ================================================================
+// Anime la sortie, met à jour le contenu, puis anime l'entrée.
+function transitionWidget(widgetEl, updateFn) {
+    widgetEl.classList.add('widget-exit');
+    setTimeout(() => {
+        widgetEl.classList.remove('widget-exit');
+        widgetEl.classList.add('widget-enter');
+        updateFn();
+        // Forcer un reflow pour que la transition CSS se déclenche
+        widgetEl.offsetHeight; // eslint-disable-line no-unused-expressions
+        widgetEl.classList.remove('widget-enter');
+    }, 140); // durée de la sortie (doit correspondre au CSS)
+}
+
+// ================================================================
 // ÉVÉNEMENTS DU CALENDRIER
 // ================================================================
 const fixedEvents = [
-    { month: 1,  day: 1,  name: "NOUVEL AN"  },
+    { month: 1,  day: 1,  name: "NOUVEL AN"   },
     { month: 2,  day: 14, name: "ST-VALENTIN" },
     { month: 10, day: 31, name: "HALLOWEEN"   },
     { month: 12, day: 25, name: "NOËL"        },
@@ -91,7 +104,6 @@ async function fetchDynamicEvents() {
         console.log("Impossible de charger les événements dynamiques");
     }
 }
-
 fetchDynamicEvents();
 
 function getTodayEvent() {
@@ -108,20 +120,20 @@ function getTodayEvent() {
 // ================================================================
 // MÉTÉO — Open-Meteo via géolocalisation
 // ================================================================
-let weatherCache = null; // { text, label }
+let weatherCache = null;
 
 const WMO_MAP = [
-    { codes: [0],                        icon: "☀️",  label: "ENSOLEILLÉ"         },
-    { codes: [1],                        icon: "🌤️", label: "MOSTLY CLEAR"       },
-    { codes: [2],                        icon: "⛅",  label: "PARTIELLEMENT NUAGEUX" },
-    { codes: [3],                        icon: "☁️",  label: "NUAGEUX"            },
-    { codes: [45, 48],                   icon: "🌫️", label: "BROUILLARD"         },
-    { codes: [51, 53, 55, 56, 57],       icon: "🌦️", label: "BRUINE"             },
-    { codes: [61, 63, 65, 66, 67],       icon: "🌧️", label: "PLUIE"              },
-    { codes: [71, 73, 75, 77],           icon: "❄️",  label: "NEIGE"              },
-    { codes: [80, 81, 82],               icon: "🌦️", label: "AVERSES"            },
-    { codes: [85, 86],                   icon: "❄️",  label: "AVERSES NEIGEUSES"  },
-    { codes: [95, 96, 99],               icon: "⛈️",  label: "ORAGE"             },
+    { codes: [0],                  icon: "☀️",  label: "ENSOLEILLÉ"            },
+    { codes: [1],                  icon: "🌤️", label: "MOSTLY CLEAR"          },
+    { codes: [2],                  icon: "⛅",  label: "PARTIELLEMENT NUAGEUX" },
+    { codes: [3],                  icon: "☁️",  label: "NUAGEUX"               },
+    { codes: [45, 48],             icon: "🌫️", label: "BROUILLARD"            },
+    { codes: [51, 53, 55, 56, 57], icon: "🌦️", label: "BRUINE"                },
+    { codes: [61, 63, 65, 66, 67], icon: "🌧️", label: "PLUIE"                 },
+    { codes: [71, 73, 75, 77],     icon: "❄️",  label: "NEIGE"                 },
+    { codes: [80, 81, 82],         icon: "🌦️", label: "AVERSES"               },
+    { codes: [85, 86],             icon: "❄️",  label: "AVERSES NEIGEUSES"     },
+    { codes: [95, 96, 99],         icon: "⛈️",  label: "ORAGE"                },
 ];
 
 function getWeatherMeta(code) {
@@ -130,10 +142,7 @@ function getWeatherMeta(code) {
 
 async function fetchWeather() {
     return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-            resolve(null);
-            return;
-        }
+        if (!navigator.geolocation) { resolve(null); return; }
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
                 try {
@@ -142,88 +151,111 @@ async function fetchWeather() {
                     const res  = await fetch(url);
                     const data = await res.json();
                     const { temperature, weathercode } = data.current_weather;
-                    const meta  = getWeatherMeta(weathercode);
-                    const round = Math.round(temperature);
+                    const meta = getWeatherMeta(weathercode);
                     weatherCache = {
-                        text:  `${meta.icon} ${round}°C`,
+                        text:  `${meta.icon} ${Math.round(temperature)}°C`,
                         label: meta.label
                     };
                     resolve(weatherCache);
-                } catch {
-                    resolve(null);
-                }
+                } catch { resolve(null); }
             },
             () => resolve(null),
             { timeout: 6000 }
         );
     });
 }
-
-// Pré-chargement en arrière-plan
-fetchWeather();
+fetchWeather(); // pré-chargement silencieux
 
 // ================================================================
 // WIDGET DATE / HEURE / ÉVÉNEMENT / MÉTÉO
+// States : 0 = Date | 1 = Heure | 2 = Événement | 3 = Météo
 // ================================================================
-// États : 0 = Date  |  1 = Heure  |  2 = Événement  |  3 = Météo
-let dateState = 0;
+let dateState        = 0;
+let dateUserActive   = false; // true = l'utilisateur vient d'interagir
+let dateAutoTimer    = null;
 
-function renderDate() {
-    const now      = new Date();
-    const dateVal  = document.getElementById('date-val');
-    const dateLabel = document.getElementById('date-label');
+const dateEl  = document.getElementById('date-widget');
+const dateVal = document.getElementById('date-val');
+const dateLbl = document.getElementById('date-label');
 
+function applyDateState() {
+    const now = new Date();
     switch (dateState) {
-        case 1: // Heure
-            dateVal.textContent  = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            dateLabel.textContent = "HEURE";
+        case 1:
+            dateVal.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            dateLbl.textContent = "HEURE";
             break;
-        case 2: // Événement
-            const event = getTodayEvent();
-            dateVal.textContent  = event || "AUCUN";
-            dateLabel.textContent = "ÉVÉNEMENT";
+        case 2:
+            dateVal.textContent = getTodayEvent() || "AUCUN";
+            dateLbl.textContent = "ÉVÉNEMENT";
             break;
-        case 3: // Météo
+        case 3:
             if (weatherCache) {
-                dateVal.textContent   = weatherCache.text;
-                dateLabel.textContent = weatherCache.label;
+                dateVal.textContent = weatherCache.text;
+                dateLbl.textContent = weatherCache.label;
             } else {
-                dateVal.textContent   = "...";
-                dateLabel.textContent = "MÉTÉO";
-                // Tentative différée si non encore chargé
+                dateVal.textContent = "...";
+                dateLbl.textContent = "MÉTÉO";
                 fetchWeather().then(w => {
                     if (w && dateState === 3) {
-                        dateVal.textContent   = w.text;
-                        dateLabel.textContent = w.label;
+                        dateVal.textContent = w.text;
+                        dateLbl.textContent = w.label;
                     }
                 });
             }
             break;
-        default: // Date (0)
+        default:
             const d = String(now.getDate()).padStart(2, '0');
             const m = String(now.getMonth() + 1).padStart(2, '0');
             const y = now.getFullYear().toString().slice(-2);
-            dateVal.textContent  = `${d}.${m}.${y}`;
-            dateLabel.textContent = "CALENDRIER";
+            dateVal.textContent = `${d}.${m}.${y}`;
+            dateLbl.textContent = "CALENDRIER";
     }
 }
 
-// Rafraîchissement de l'heure en temps réel
-setInterval(() => { if (dateState === 1) renderDate(); }, 1000);
+function renderDate(withTransition = false) {
+    if (withTransition) {
+        transitionWidget(dateEl, applyDateState);
+    } else {
+        applyDateState();
+    }
+}
+
+// Rafraîchissement temps réel de l'heure
+setInterval(() => { if (dateState === 1) applyDateState(); }, 1000);
 renderDate();
 
-document.getElementById('date-widget').onclick = () => {
+// Auto-switch toutes les 5s
+function scheduleDateAuto() {
+    clearInterval(dateAutoTimer);
+    dateAutoTimer = setInterval(() => {
+        if (!dateUserActive) {
+            dateState = (dateState + 1) % 4;
+            renderDate(true);
+        }
+    }, 5000);
+}
+scheduleDateAuto();
+
+dateEl.onclick = () => {
     dateState = (dateState + 1) % 4;
-    renderDate();
+    renderDate(true);
     playTick();
+    // Pause l'auto-switch 15s après une interaction manuelle
+    dateUserActive = true;
+    clearTimeout(dateEl._pauseTimeout);
+    dateEl._pauseTimeout = setTimeout(() => { dateUserActive = false; }, 15000);
 };
 
 // ================================================================
 // WIDGET INFOS SYSTÈME
 // ================================================================
+const viewEl    = document.getElementById('view-widget');
 const viewVal   = document.getElementById('view-val');
 const viewLabel = document.getElementById('view-label');
-let infoState = 0;
+let infoState     = 0;
+let infoUserActive = false;
+let infoAutoTimer  = null;
 let v = "...";
 const startTime = Date.now();
 
@@ -241,7 +273,7 @@ async function fetchGlobalViews() {
 }
 fetchGlobalViews();
 
-async function updateInfoDisplay() {
+async function applyInfoState() {
     switch (infoState) {
         case 0:
             viewVal.textContent  = v;
@@ -290,13 +322,38 @@ async function updateInfoDisplay() {
     }
 }
 
-document.getElementById('view-widget').onclick = () => {
+function updateInfoDisplay(withTransition = false) {
+    if (withTransition) {
+        transitionWidget(viewEl, applyInfoState);
+    } else {
+        applyInfoState();
+    }
+}
+
+// Uptime live
+setInterval(() => { if (infoState === 4) applyInfoState(); }, 1000);
+
+// Auto-switch toutes les 5s
+function scheduleInfoAuto() {
+    clearInterval(infoAutoTimer);
+    infoAutoTimer = setInterval(() => {
+        if (!infoUserActive) {
+            infoState = (infoState + 1) % 9;
+            updateInfoDisplay(true);
+        }
+    }, 5000);
+}
+scheduleInfoAuto();
+
+viewEl.onclick = () => {
     playTick();
     infoState = (infoState + 1) % 9;
-    updateInfoDisplay();
+    updateInfoDisplay(true);
+    // Pause 15s après interaction manuelle
+    infoUserActive = true;
+    clearTimeout(viewEl._pauseTimeout);
+    viewEl._pauseTimeout = setTimeout(() => { infoUserActive = false; }, 15000);
 };
-
-setInterval(() => { if (infoState === 4) updateInfoDisplay(); }, 1000);
 
 // ================================================================
 // AUDIO
@@ -315,41 +372,30 @@ function playTick() {
 }
 
 // ================================================================
-// CURSEUR
+// CURSEUR — suivi + squeeze au clic
+// (l'effet 3D/skew JS est supprimé, le hover est géré en CSS pur)
 // ================================================================
 const cursor = document.getElementById('cursor-dot');
 const title  = document.getElementById('main-title');
 let mouse = { x: -1000, y: -1000 };
 
 window.addEventListener('mousemove', e => {
-    mouse.x = e.clientX; mouse.y = e.clientY;
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
     cursor.style.left = `${e.clientX}px`;
     cursor.style.top  = `${e.clientY}px`;
 
+    // Effet reveal sur le titre uniquement
     const r = title.getBoundingClientRect();
     title.style.setProperty('--m-x', `${e.clientX - r.left}px`);
     title.style.setProperty('--m-y', `${e.clientY - r.top}px`);
-
-    if (!performanceMode) {
-        document.querySelectorAll('.active-fx').forEach(el => {
-            const b = el.getBoundingClientRect();
-            if (e.clientX > b.left && e.clientX < b.right &&
-                e.clientY > b.top  && e.clientY < b.bottom) {
-                const tx = (e.clientX - (b.left + b.width  / 2)) / 12;
-                const ty = (e.clientY - (b.top  + b.height / 2)) / 6;
-                el.style.transform = `scale(1.01) translate(${tx}px, ${ty}px) skewX(${tx / 2}deg)`;
-            } else {
-                el.style.transform = `scale(1) translate(0, 0) skewX(0)`;
-            }
-        });
-    }
 });
 
-// Squeeze & hold — libération à mouseup
+// Squeeze & hold
 document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
 document.addEventListener('mouseup',   () => cursor.classList.remove('clicking'));
 
-// Hover sur les éléments actifs
+// Hover cursor ring
 document.querySelectorAll('.active-fx').forEach(el => {
     el.onmouseenter = () => { cursor.classList.add('hover'); playTick(); el.dataset.hovered = "true";  };
     el.onmouseleave = () => { cursor.classList.remove('hover'); el.dataset.hovered = "false"; };
@@ -376,7 +422,7 @@ let particles = [];
 function initCanvas() {
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-    particles = []; // reset pour éviter les fuites mémoire
+    particles = [];
     for (let x = 12; x < canvas.width;  x += 24) {
         for (let y = 12; y < canvas.height; y += 24) {
             particles.push({ x, y, bx: x, by: y });
@@ -392,8 +438,8 @@ function animate() {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const isLight  = body.classList.contains('light-mode');
-    const colorMain = isLight ? "rgba(0,0,0,0.8)"   : "rgba(255,255,255,0.8)";
+    const isLight   = body.classList.contains('light-mode');
+    const colorMain = isLight ? "rgba(0,0,0,0.8)"       : "rgba(255,255,255,0.8)";
     const colorInv  = isLight ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.8)";
 
     particles.forEach(p => {
