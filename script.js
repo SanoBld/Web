@@ -95,12 +95,12 @@ const translations = {
         'event-rosh-hashana'    : 'ROSH HASHANA',
         'event-yom-kippur'      : 'YOM KIPPOUR',
 
-        // À propos
-        'about-body': `Interface personnelle minimaliste développée par passion pour le code et le design. Ce hub regroupe mes projets web créés pour le plaisir d'explorer de nouvelles technologies et affiner mes compétences en développement front-end. Inspiré par l'esthétique brute et épurée de <span class="dyn-txt">Nothing</span>, ce site combine typographie dot-matrix, animations canvas et effets interactifs.`,
+    // À propos
+    'about-body': `Mes premiers pas dans le code web, inspirés par l'esthétique <span class="dyn-txt">Nothing</span>.`,
 
-        // Footer
-        'footer': 'SANO BLD // 2025',
-    },
+    // Footer
+    'footer': 'SANO BLD // 2026',
+},
 
     EN: {
         // Boutons de contrôle
