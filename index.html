@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <!-- PRELOADER -->
+    <!-- PRELOADER — dots animés, z-index max -->
     <div id="preloader">
         <div class="preloader-dots">
             <span></span>
@@ -18,76 +18,102 @@
         </div>
     </div>
 
+    <!-- OVERLAY DE SCAN — fond plein couleur bg, se découpe de haut en bas -->
+    <div id="scan-overlay"></div>
+
+    <!-- LIGNE DE SCAN — ligne rouge qui balaie l'écran -->
+    <div id="scan-line"></div>
+
     <canvas id="particle-canvas"></canvas>
     <div id="cursor-dot"></div>
 
     <div class="container">
+
+        <!-- BARRE DE CONTRÔLES -->
         <div class="top-controls">
-            <button id="perf-toggle" class="ctrl-btn active-fx">PERF</button>
-            <button id="theme-toggle" class="ctrl-btn active-fx">MODE</button>
+            <button id="perf-toggle"  class="ctrl-btn active-fx" data-i18n="btn-perf">PERF</button>
+            <button id="lang-toggle"  class="ctrl-btn active-fx">EN</button>
+            <button id="theme-toggle" class="ctrl-btn active-fx" data-i18n="btn-mode">MODE</button>
         </div>
 
         <div id="main-content" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+
+            <!-- LOGO -->
             <div class="logo-wrapper">
                 <img src="logo.png" alt="Logo" class="main-logo">
             </div>
 
+            <!-- TITRE -->
             <h1 id="main-title">SANO BLD</h1>
-            <div class="status">// SYSTÈME CONNECTÉ</div>
 
+            <!-- ═══════════════════════════════════════════════════
+                 WIDGET MÉTÉO
+                 Format : ☀️  Paris  ●  18°C  ●  Ensoleillé
+                 ═══════════════════════════════════════════════════ -->
+            <div id="weather-widget" class="weather-widget">
+                <span id="ww-icon" class="ww-icon">⟳</span>
+                <span id="ww-city" class="ww-city">—</span>
+                <span class="ww-dot">●</span>
+                <span id="ww-temp" class="ww-temp">--°C</span>
+                <span class="ww-dot">●</span>
+                <span id="ww-cond" class="ww-cond" data-i18n="weather-loading">chargement</span>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════
+                 WIDGETS SYSTÈME
+                 ═══════════════════════════════════════════════════ -->
             <div class="widgets-row">
-                <!-- Widget date/heure/événement/météo -->
+                <!-- Calendrier : cycle Date → Heure → Événement -->
                 <div class="widget active-fx" id="date-widget">
-                    <span id="date-val" class="dyn-txt widget-val" style="font-size:1.1rem;">--.--.--</span>
-                    <span id="date-label" class="widget-lbl" style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">Calendrier</span>
+                    <span id="date-val"   class="dyn-txt widget-val" style="font-size:1.1rem;">--.--.--</span>
+                    <span id="date-label" class="widget-lbl" data-i18n="widget-calendar"
+                          style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">
+                        Calendrier
+                    </span>
                 </div>
-                <!-- Widget infos système -->
+
+                <!-- Vues / Infos système : cycle 9 indicateurs -->
                 <div class="widget active-fx" id="view-widget">
-                    <span id="view-val" class="dyn-txt widget-val" style="font-size:1.1rem;">...</span>
-                    <span id="view-label" class="widget-lbl" style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">Vues</span>
+                    <span id="view-val"   class="dyn-txt widget-val" style="font-size:1.1rem;">...</span>
+                    <span id="view-label" class="widget-lbl" data-i18n="widget-views"
+                          style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">
+                        Vues
+                    </span>
                 </div>
             </div>
 
-            <!-- Widget Spotify avec skeleton -->
-            <div class="spotify-widget skeleton-load">
-                <iframe data-testid="embed-iframe" style="border-radius:12px"
-                    src="https://open.spotify.com/embed/track/53gvaKKzkhduv8q4lniQxl?utm_source=generator&theme=0"
-                    width="100%" height="152" frameBorder="0" allowfullscreen=""
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    onload="this.closest('.spotify-widget').classList.remove('skeleton-load')">
-                </iframe>
-            </div>
-
+            <!-- ═══════════════════════════════════════════════════
+                 NAVIGATION — Liens & Sections déroulantes
+                 ═══════════════════════════════════════════════════ -->
             <nav class="links-grid">
-                <a href="https://x.com/SanoBld" target="_blank" class="link-item active-fx"><span>// TWITTER</span><span>→</span></a>
+                <a href="https://x.com/SanoBld"                 target="_blank" class="link-item active-fx"><span>// TWITTER</span><span>→</span></a>
                 <a href="https://www.reddit.com/user/Sano_bld/" target="_blank" class="link-item active-fx"><span>// REDDIT</span><span>→</span></a>
-                <a href="https://github.com/SanoBld" target="_blank" class="link-item active-fx"><span>// GITHUB</span><span>→</span></a>
-                <a href="https://discord.gg/nothingtech" target="_blank" class="link-item active-fx"><span>// DISCORD NOTHING</span><span>→</span></a>
+                <a href="https://github.com/SanoBld"            target="_blank" class="link-item active-fx"><span>// GITHUB</span><span>→</span></a>
+                <a href="https://discord.gg/nothingtech"        target="_blank" class="link-item active-fx"><span>// DISCORD NOTHING</span><span>→</span></a>
 
                 <!-- APPLICATIONS -->
                 <div class="about-section active-fx toggle-box" id="apps-trigger">
                     <div class="about-header">
-                        <span>// APPLICATIONS</span>
+                        <span data-i18n="section-apps">// APPLICATIONS</span>
                         <span class="arrow-icon">→</span>
                     </div>
                     <div class="about-content-wrapper">
-                        <a href="https://sanobld.github.io/Unitix/" target="_blank" class="project-link-item">// UNITIX</a>
-                        <a href="https://sanobld.github.io/Eco-Drive/" target="_blank" class="project-link-item">// ECO DRIVE</a>
-                        <a href="https://soboheme.github.io/Web/" target="_blank" class="project-link-item">// SO BOHEME</a>
-                        <a href="https://mostafaalagamy.github.io/" target="_blank" class="project-link-item">// METROLIST</a>
+                        <a href="https://sanobld.github.io/Unitix/"      target="_blank" class="project-link-item">// UNITIX</a>
+                        <a href="https://sanobld.github.io/Eco-Drive/"   target="_blank" class="project-link-item">// ECO DRIVE</a>
+                        <a href="https://soboheme.github.io/Web/"        target="_blank" class="project-link-item">// SO BOHEME</a>
+                        <a href="https://mostafaalagamy.github.io/"      target="_blank" class="project-link-item">// METROLIST</a>
                     </div>
                 </div>
 
                 <!-- JEUX -->
                 <div class="about-section active-fx toggle-box" id="games-trigger">
                     <div class="about-header">
-                        <span>// JEUX</span>
+                        <span data-i18n="section-games">// JEUX</span>
                         <span class="arrow-icon">→</span>
                     </div>
                     <div class="about-content-wrapper">
-                        <a href="https://sanobld.github.io/Glide/" target="_blank" class="project-link-item">// GLIDE</a>
-                        <a href="https://sanobld.github.io/Survivor.io/" target="_blank" class="project-link-item">// SURVIVOR.IO</a>
+                        <a href="https://sanobld.github.io/Glide/"         target="_blank" class="project-link-item">// GLIDE</a>
+                        <a href="https://sanobld.github.io/Survivor.io/"   target="_blank" class="project-link-item">// SURVIVOR.IO</a>
                         <a href="https://sanobld.github.io/Tic-Tac-Boom/" target="_blank" class="project-link-item">// TIC TAC BOOM</a>
                     </div>
                 </div>
@@ -95,18 +121,24 @@
                 <!-- À PROPOS -->
                 <div class="about-section active-fx toggle-box" id="about-trigger">
                     <div class="about-header">
-                        <span>// À PROPOS</span>
+                        <span data-i18n="section-about">// À PROPOS</span>
                         <span class="arrow-icon">→</span>
                     </div>
                     <div class="about-content-wrapper">
-                        <p style="font-size:1rem; line-height:1.4; color:inherit; margin:0;">
-                            Interface personnelle minimaliste développée par passion pour le code et le design. Ce hub regroupe mes projets web créés pour le plaisir d'explorer de nouvelles technologies et affiner mes compétences en développement front-end. Inspiré par l'esthétique brute et épurée de <span class="dyn-txt">Nothing</span>, ce site combine typographie dot-matrix, animations canvas et effets interactifs.
+                        <p id="about-text"
+                           style="font-size:1rem; line-height:1.4; color:inherit; margin:0;"
+                           data-i18n="about-body">
+                            Interface personnelle minimaliste développée par passion pour le code et le design.
+                            Ce hub regroupe mes projets web créés pour le plaisir d'explorer de nouvelles
+                            technologies et affiner mes compétences en développement front-end. Inspiré par
+                            l'esthétique brute et épurée de <span class="dyn-txt">Nothing</span>, ce site
+                            combine typographie dot-matrix, animations canvas et effets interactifs.
                         </p>
                     </div>
                 </div>
             </nav>
 
-            <footer class="footer">SANO BLD // 2025</footer>
+            <footer class="footer" data-i18n="footer">SANO BLD // 2025</footer>
         </div>
     </div>
 

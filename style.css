@@ -1,53 +1,86 @@
+/* ================================================================
+   POLICE DOT-MATRIX (Nothing OS)
+   ================================================================ */
 @font-face {
     font-family: 'NothingSerif';
     src: url('NothingSerif-5px.otf') format('opentype');
-    font-weight: normal; font-style: normal;
+    font-weight: normal;
+    font-style:  normal;
 }
 
-::selection { background-color: #333333; color: #ffffff; }
+::selection { background-color: #333; color: #fff; }
 
+/* ================================================================
+   VARIABLES GLOBALES — Thème sombre (défaut)
+   ================================================================ */
 :root {
-    --bg-color: #050505;
-    --text-main: #ffffff;
-    --text-dim: #888;
+    --bg-color:     #050505;
+    --text-main:    #ffffff;
+    --text-dim:     #888888;
     --accent-color: #ff0037;
-    --dynamic-color: inherit;
-    --reveal-color: #ffffff;
-    --font-serif: 'NothingSerif', serif;
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --card-border: rgba(255, 255, 255, 0.1);
-    --card-bg-hover: rgba(255, 255, 255, 0.07);
-    --card-border-hover: rgba(255, 255, 255, 0.28);
-}
-
-body.light-mode {
-    --bg-color: #f2f2f2;
-    --text-main: #000000;
-    --text-dim: #444;
-    --card-bg: rgba(0, 0, 0, 0.04);
-    --card-border: rgba(0, 0, 0, 0.1);
-    --card-bg-hover: rgba(0, 0, 0, 0.09);
-    --card-border-hover: rgba(0, 0, 0, 0.28);
-    --reveal-color: #000000;
+    --reveal-color: #ffffff;     /* utilisé dans h1::after */
+    --dynamic-color: inherit;   /* utilisé dans .dyn-txt  */
+    --font-serif:   'NothingSerif', serif;
+    --card-bg:      rgba(255, 255, 255, 0.03);
+    --card-border:  rgba(255, 255, 255, 0.10);
 }
 
 /* ================================================================
-   PRELOADER
+   THÈME CLAIR
+   ================================================================ */
+body.light-mode {
+    --bg-color:     #f2f2f2;
+    --text-main:    #000000;
+    --text-dim:     #444444;
+    --reveal-color: #000000;
+    --card-bg:      rgba(0, 0, 0, 0.04);
+    --card-border:  rgba(0, 0, 0, 0.10);
+}
+
+/* ================================================================
+   RESET & BASE
+   ================================================================ */
+* {
+    cursor: none !important;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0; padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-serif);
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease;
+}
+
+/* ================================================================
+   PRELOADER — dots animés, z-index absolu maximal
    ================================================================ */
 #preloader {
     position: fixed; inset: 0;
     background-color: var(--bg-color);
-    z-index: 99999; display: flex;
-    align-items: center; justify-content: center;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 #preloader.fade-out { opacity: 0; pointer-events: none; }
 
 .preloader-dots { display: flex; gap: 10px; align-items: center; }
+
 .preloader-dots span {
-    width: 7px; height: 7px; border-radius: 50%;
+    width: 7px; height: 7px;
+    border-radius: 50%;
     background-color: var(--text-main);
-    animation: dotPulse 1.2s ease-in-out infinite; opacity: 0.15;
+    animation: dotPulse 1.2s ease-in-out infinite;
+    opacity: 0.15;
 }
 .preloader-dots span:nth-child(1) { animation-delay: 0s;    }
 .preloader-dots span:nth-child(2) { animation-delay: 0.22s; }
@@ -59,97 +92,91 @@ body.light-mode {
 }
 
 /* ================================================================
-   PAGE FADE-IN
+   OVERLAY DE SCAN
+   Fond plein = même couleur que --bg-color.
+   Il est progressivement "rogné" du haut vers le bas par clip-path
+   au passage de la ligne rouge, révélant le site dessous.
    ================================================================ */
-#main-content, .top-controls {
-    opacity: 0; transform: translateY(10px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+#scan-overlay {
+    position: fixed; inset: 0;
+    background-color: var(--bg-color);
+    z-index: 9000;          /* au-dessus du contenu, sous le scan-line */
+    pointer-events: none;
+    will-change: clip-path;
+    /* État initial : couvre tout → clip-path animé via JS */
+    clip-path: inset(0 0 0 0);
 }
-body.page-ready #main-content,
-body.page-ready .top-controls { opacity: 1; transform: translateY(0); }
 
 /* ================================================================
-   SKELETON LOADING
+   LIGNE DE SCAN — barre rouge avec halo lumineux
    ================================================================ */
-@keyframes skeletonShimmer {
-    0%   { background-position: -400px 0; }
-    100% { background-position:  400px 0; }
+#scan-line {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: var(--accent-color);
+    box-shadow:
+        0 0  6px  2px var(--accent-color),
+        0 0 18px  4px rgba(255, 0, 55, 0.40),
+        0 0 40px  8px rgba(255, 0, 55, 0.18);
+    z-index: 9001;          /* juste au-dessus de l'overlay */
+    display: none;
+    pointer-events: none;
+    will-change: transform;
 }
-.skeleton-load {
-    position: relative; overflow: hidden;
-    background: var(--card-bg) !important; min-height: 152px;
-}
-.skeleton-load::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(127,127,127,0.12) 40%,
-        rgba(127,127,127,0.18) 50%,
-        rgba(127,127,127,0.12) 60%,
-        transparent 100%
-    );
-    background-size: 800px 100%;
-    animation: skeletonShimmer 1.6s infinite linear;
-    z-index: 2; pointer-events: none; border-radius: inherit;
-}
-.skeleton-load iframe { opacity: 0; transition: opacity 0.4s ease; }
-.spotify-widget:not(.skeleton-load) iframe { opacity: 1; }
 
 /* ================================================================
-   RESET & BASE
+   CONTENEUR PRINCIPAL
+   Pas de clip-path ici — c'est l'overlay qui masque, pas le container.
    ================================================================ */
-* { cursor: none !important; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-body {
-    margin: 0; padding: 0; background-color: var(--bg-color);
-    color: var(--text-main); font-family: var(--font-serif);
-    display: flex; justify-content: center; min-height: 100vh;
-    overflow-y: auto; overflow-x: hidden;
-    transition: background-color 0.4s ease;
-}
-
 .container {
-    position: relative; width: 100%; max-width: 500px;
-    padding: 40px 24px 80px; display: flex;
-    flex-direction: column; align-items: center; z-index: 10;
+    position: relative;
+    width: 100%; max-width: 500px;
+    padding: 40px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
 }
 
+/* Barre de contrôles toujours visible dès que l'overlay se retire */
 .top-controls {
-    display: flex; justify-content: space-between;
-    width: 100%; max-width: 500px; margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%; max-width: 500px;
+    margin-bottom: 20px;
 }
 
 /* ================================================================
-   SHARED CARD BASE
+   CARTE DE BASE — style commun à tous les éléments interactifs
    ================================================================ */
-.ctrl-btn, .widget, .link-item, .about-section, .spotify-widget {
+.ctrl-btn, .widget, .link-item, .about-section {
     border: 1px solid var(--card-border);
     transition:
-        transform   0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        background  0.22s ease,
-        color       0.22s ease,
-        border-color 0.22s ease,
-        box-shadow  0.22s ease;
+        transform     0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        background    0.22s ease,
+        color         0.22s ease,
+        border-color  0.22s ease,
+        box-shadow    0.22s ease;
 }
 
-.widget, .link-item, .about-section, .ctrl-btn {
+.ctrl-btn, .widget, .link-item, .about-section {
     background: var(--card-bg);
 }
 
 /* ================================================================
-   HOVER — Nothing style : lift subtle + bordure visible
-   (remplace totalement l'ancien effet 3D/skew JS)
+   HOVER — inversion Nothing OS (fond blanc/noir, texte inversé)
    ================================================================ */
 .ctrl-btn:hover,
 .widget:hover,
 .link-item:hover,
 .about-section:hover {
-    background: var(--text-main) !important;
-    color: var(--bg-color);
+    background:   var(--text-main) !important;
+    color:        var(--bg-color);
     border-color: var(--text-main) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    transform:    translateY(-2px);
+    box-shadow:   0 6px 20px rgba(0, 0, 0, 0.18);
 }
 
 body.light-mode .ctrl-btn:hover,
@@ -160,7 +187,7 @@ body.light-mode .about-section:hover {
 }
 
 /* ================================================================
-   ACTIVE / CLICK SCALE
+   FEEDBACK CLIC — micro-scale
    ================================================================ */
 .about-section:active, .link-item:active {
     transform: translateY(0) scale(0.99) !important;
@@ -172,8 +199,7 @@ body.light-mode .about-section:hover {
 }
 
 /* ================================================================
-   WIDGET — TRANSITION DE CONTENU (style Nothing)
-   Fade + slide vertical au changement de valeur
+   WIDGETS — transition fade + slide (style Nothing)
    ================================================================ */
 .widget-val,
 .widget-lbl {
@@ -181,7 +207,7 @@ body.light-mode .about-section:hover {
     transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-/* Sortie : efface vers le bas */
+/* Sortie : disparaît vers le bas */
 .widget-exit .widget-val,
 .widget-exit .widget-lbl {
     opacity: 0;
@@ -189,7 +215,7 @@ body.light-mode .about-section:hover {
     transition: opacity 0.13s ease, transform 0.13s ease;
 }
 
-/* Entrée : arrive depuis le haut */
+/* Entrée : arrive depuis le haut (transition désactivée pour le flash) */
 .widget-enter .widget-val,
 .widget-enter .widget-lbl {
     opacity: 0;
@@ -198,124 +224,206 @@ body.light-mode .about-section:hover {
 }
 
 /* ================================================================
-   BUTTONS
+   BOUTONS CIRCULAIRES
    ================================================================ */
 .ctrl-btn {
-    background: transparent; color: var(--text-main);
-    width: 65px; height: 65px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-serif); font-size: 10px; font-weight: bold;
+    background: transparent;
+    color: var(--text-main);
+    width: 65px; height: 65px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 10px;
+    font-weight: bold;
+    flex-shrink: 0;
 }
 
 /* ================================================================
    LOGO
    ================================================================ */
 .logo-wrapper {
-    width: 100px; height: 100px; border: 1px solid var(--card-border);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    margin-bottom: 20px; background: var(--card-bg); overflow: hidden;
+    width: 100px; height: 100px;
+    border: 1px solid var(--card-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    background: var(--card-bg);
+    overflow: hidden;
     transition: border-color 0.4s ease;
 }
-.main-logo { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
+.main-logo { width: 80px; height: 80px; object-fit: contain; }
 
 /* ================================================================
-   TITLE — UNTOUCHED
+   TITRE H1 — outline + révélation au survol souris
    ================================================================ */
 h1 {
     font-family: var(--font-serif) !important;
     font-size: clamp(2rem, 9vw, 3.5rem);
-    margin: 0; text-transform: uppercase; text-align: center; color: transparent;
-    -webkit-text-stroke: 1px var(--text-main); position: relative;
-    letter-spacing: 8px; text-indent: 8px;
+    margin: 0;
+    text-transform: uppercase;
+    text-align: center;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--text-main);
+    position: relative;
+    letter-spacing: 8px;
+    text-indent: 8px;
 }
 h1::after {
-    content: "SANO BLD"; position: absolute; left: 0; top: 0; width: 100%;
-    color: var(--reveal-color); clip-path: circle(80px at var(--m-x, -500px) var(--m-y, -500px));
-    -webkit-text-stroke: 0px; transition: color 0.4s ease;
+    content: "SANO BLD";
+    position: absolute; left: 0; top: 0; width: 100%;
+    color: var(--reveal-color);
+    clip-path: circle(80px at var(--m-x, -500px) var(--m-y, -500px));
+    -webkit-text-stroke: 0;
+    transition: color 0.4s ease;
 }
 
 /* ================================================================
-   STATUS
+   WIDGET MÉTÉO — sous le titre
+   Format : ☀️  Paris  ●  18°C  ●  Ensoleillé
    ================================================================ */
-.status {
-    font-family: var(--font-serif); font-size: 0.75rem;
-    color: var(--text-dim); letter-spacing: 2px; margin: 15px 0 30px 0;
+.weather-widget {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0 30px 0;
+    font-family: var(--font-serif);
+    letter-spacing: 2px;
+
+    /* Fade-in à l'apparition des données */
+    opacity: 0;
+    transition: opacity 0.7s ease;
+}
+.weather-widget.loaded { opacity: 1; }
+
+/* Icône météo */
+.ww-icon {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+/* Nom de ville — discret mais lisible */
+.ww-city {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+}
+
+/* Séparateur ● */
+.ww-dot {
+    font-size: 0.4rem;
+    color: var(--accent-color);
+    opacity: 0.7;
+    line-height: 1;
+}
+
+/* Température — accentuée */
+.ww-temp {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--text-main);
+    letter-spacing: 1.5px;
+}
+
+/* Condition — dim */
+.ww-cond {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: lowercase;
+    letter-spacing: 1.5px;
 }
 
 /* ================================================================
-   WIDGETS
+   WIDGETS SYSTÈME — grille 2 colonnes
    ================================================================ */
 .widget {
-    background: var(--card-bg); border-radius: 16px; padding: 12px;
-    backdrop-filter: blur(12px); display: flex; flex-direction: column;
-    align-items: center; justify-content: center; cursor: pointer;
-    text-align: center; min-height: 80px; width: 100%;
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 12px;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-align: center;
+    min-height: 80px;
+    width: 100%;
     font-family: var(--font-serif);
 }
 
-/* ================================================================
-   SPOTIFY WIDGET
-   ================================================================ */
-.spotify-widget {
-    width: 100%; background: var(--card-bg); border-radius: 16px;
-    padding: 0; backdrop-filter: blur(12px); overflow: hidden;
-    margin-bottom: 12px; transition: border-color 0.3s ease;
-}
-.spotify-widget:hover { border-color: var(--text-main); }
-.spotify-widget iframe { display: block; width: 100%; }
-
-/* ================================================================
-   LINK ITEMS
-   ================================================================ */
-.link-item, .about-section {
-    background: var(--card-bg); border-radius: 16px; padding: 22px 28px;
-    text-decoration: none; color: var(--text-main); backdrop-filter: blur(12px);
-    display: block; font-family: var(--font-serif); font-size: 1.1rem;
-}
-
 .widgets-row {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 12px; width: 100%; margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 12px;
 }
 
 /* ================================================================
-   LINKS GRID
+   GRILLE DE LIENS
    ================================================================ */
 .links-grid {
-    width: 100%; display: grid;
-    grid-template-columns: 1fr 1fr; gap: 12px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
 }
 
-.about-section { grid-column: 1 / -1; }
-.link-item { display: flex; align-items: center; justify-content: space-between; }
+.link-item, .about-section {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 22px 28px;
+    text-decoration: none;
+    color: var(--text-main);
+    backdrop-filter: blur(12px);
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+}
 
-.about-section { margin-top: 0; cursor: pointer; overflow: hidden; }
+.about-section  { grid-column: 1 / -1; cursor: pointer; overflow: hidden; }
 #about-trigger  { margin-top: 0; }
-.about-header   { display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
-.arrow-icon     { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
-.about-section.open .arrow-icon { transform: rotate(90deg); }
-.about-content-wrapper { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
+.link-item      { display: flex; align-items: center; justify-content: space-between; }
+
+.about-header { display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+.arrow-icon   { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
+.about-section.open .arrow-icon            { transform: rotate(90deg); }
+.about-content-wrapper                     { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
 .about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
 
 /* ================================================================
-   PROJECT LINKS
+   LIENS DE PROJETS — style puce rouge
    ================================================================ */
 .project-link-item {
-    display: block !important; color: inherit !important;
-    text-decoration: none; font-size: 1.05rem;
-    padding: 20px 24px 20px 50px; margin: 14px 0;
+    display: block !important;
+    color: inherit !important;
+    text-decoration: none;
+    font-size: 1.05rem;
+    padding: 20px 24px 20px 50px;
+    margin: 14px 0;
     background: rgba(127, 127, 127, 0.03);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(127, 127, 127, 0.15);
     border-radius: 16px;
     transition: all 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative; text-align: left; overflow: hidden;
+    position: relative;
+    text-align: left;
+    overflow: hidden;
 }
 
 .project-link-item::before {
-    content: ''; position: absolute; left: 20px; top: 50%;
-    transform: translateY(-50%); height: 12px; width: 4px;
-    background: var(--accent-color); border-radius: 20px;
+    content: '';
+    position: absolute; left: 20px; top: 50%;
+    transform: translateY(-50%);
+    height: 12px; width: 4px;
+    background: var(--accent-color);
+    border-radius: 20px;
     transition: all 0.28s ease;
 }
 
@@ -327,41 +435,58 @@ h1::after {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
 }
 .project-link-item:hover::before { height: 25px; background: var(--bg-color); }
-.project-link-item:active { transform: translateY(0) scale(0.99) !important; }
+.project-link-item:active        { transform: translateY(0) scale(0.99) !important; }
 
 body.light-mode .project-link-item {
     background: rgba(0, 0, 0, 0.02);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 /* ================================================================
-   DYNAMIC TEXT & FOOTER
+   TEXTE DYNAMIQUE (accent) & FOOTER
    ================================================================ */
-.dyn-txt { font-weight: bold; color: var(--dynamic-color); transition: color 0.4s ease; }
+.dyn-txt {
+    font-weight: bold;
+    color: var(--dynamic-color);
+    transition: color 0.4s ease;
+}
 
 .footer {
-    font-family: var(--font-serif); margin-top: 60px;
-    font-size: 0.7rem; color: var(--text-dim); letter-spacing: 4px;
+    font-family: var(--font-serif);
+    margin-top: 60px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 4px;
 }
 
 /* ================================================================
-   PARTICLE CANVAS
+   CANVAS PARTICULES
    ================================================================ */
 #particle-canvas {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 1100; pointer-events: none;
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1100;
+    pointer-events: none;
 }
 
 /* ================================================================
-   CUSTOM CURSOR — HOLD SQUEEZE
+   CURSEUR PERSONNALISÉ
    ================================================================ */
 #cursor-dot {
-    position: fixed; width: 6px; height: 6px;
-    background-color: var(--accent-color); border-radius: 50%;
-    pointer-events: none; z-index: 9999; top: 0; left: 0;
-    transition: width 0.2s, height 0.2s, transform 0.15s ease,
-                background-color 0.3s, opacity 0.2s;
-    will-change: transform; transform: translate(-50%, -50%);
+    position: fixed;
+    width: 6px; height: 6px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    top: 0; left: 0;
+    transition:
+        width            0.2s,
+        height           0.2s,
+        transform        0.15s ease,
+        background-color 0.3s,
+        opacity          0.2s;
+    will-change: transform;
+    transform: translate(-50%, -50%);
 }
 #cursor-dot.hover {
     width: 14px; height: 14px;
@@ -374,13 +499,13 @@ body.light-mode .project-link-item {
 }
 
 /* ================================================================
-   PERFORMANCE MODE
+   MODE PERFORMANCE — désactive toutes les animations coûteuses
    ================================================================ */
 body.perf-mode .active-fx,
 body.perf-mode .active-fx:hover { transform: none !important; }
 
 /* ================================================================
-   RESPONSIVE — DESKTOP MID
+   RESPONSIVE — DESKTOP INTERMÉDIAIRE
    ================================================================ */
 @media (max-width: 900px) and (min-width: 769px) {
     .links-grid { grid-template-columns: 1fr 1fr; }
@@ -390,8 +515,8 @@ body.perf-mode .active-fx:hover { transform: none !important; }
    RESPONSIVE — MOBILE
    ================================================================ */
 @media (max-width: 768px) {
-    .container { padding: 30px 20px 60px; }
-    .links-grid { grid-template-columns: 1fr; gap: 14px; }
+    .container   { padding: 30px 20px 60px; }
+    .links-grid  { grid-template-columns: 1fr; gap: 14px; }
 
     .ctrl-btn { width: 70px; height: 70px; font-size: 9px; position: relative; }
     .ctrl-btn::after {
@@ -399,22 +524,26 @@ body.perf-mode .active-fx:hover { transform: none !important; }
         top: -10px; right: -10px; bottom: -10px; left: -10px;
     }
 
-    .widget    { min-height: 90px; padding: 16px 12px; }
-    .link-item, .about-section { padding: 24px 30px; font-size: 1.05rem; }
-    .project-link-item { padding: 22px 26px 22px 52px; margin: 16px 0; font-size: 1rem; }
-    .widgets-row { gap: 14px; }
-    h1 { letter-spacing: 6px; text-indent: 6px; }
+    .widget              { min-height: 90px; padding: 16px 12px; }
+    .link-item,
+    .about-section       { padding: 24px 30px; font-size: 1.05rem; }
+    .project-link-item   { padding: 22px 26px 22px 52px; margin: 16px 0; font-size: 1rem; }
+    .widgets-row         { gap: 14px; }
+    h1                   { letter-spacing: 6px; text-indent: 6px; }
+
+    .weather-widget      { gap: 8px; flex-wrap: wrap; justify-content: center; }
 }
 
 @media (max-width: 380px) {
-    .ctrl-btn { width: 60px; height: 60px; font-size: 8px; }
-    .link-item, .about-section { padding: 20px 24px; font-size: 1rem; }
-    .project-link-item { padding: 20px 22px 20px 48px; font-size: 0.95rem; }
-    h1 { letter-spacing: 4px; text-indent: 4px; }
+    .ctrl-btn            { width: 60px; height: 60px; font-size: 8px; }
+    .link-item,
+    .about-section       { padding: 20px 24px; font-size: 1rem; }
+    .project-link-item   { padding: 20px 22px 20px 48px; font-size: 0.95rem; }
+    h1                   { letter-spacing: 4px; text-indent: 4px; }
 }
 
 /* ================================================================
-   TOUCH / COARSE POINTER
+   ÉCRAN TACTILE (coarse pointer)
    ================================================================ */
 @media (pointer: coarse) {
     #cursor-dot { display: none; }
@@ -423,19 +552,18 @@ body.perf-mode .active-fx:hover { transform: none !important; }
     .ctrl-btn:active,
     .widget:active,
     .link-item:active,
-    .about-section:active,
-    .spotify-widget:active { transform: scale(0.98); }
+    .about-section:active { transform: scale(0.98); }
 
     .ctrl-btn:active,
     .widget:active,
     .link-item:active,
     .about-section:active {
-        background: var(--text-main) !important;
-        color: var(--bg-color) !important;
+        background:   var(--text-main) !important;
+        color:        var(--bg-color)  !important;
         border-color: var(--text-main) !important;
     }
 
-    body.perf-mode .active-fx { transform: none !important; }
-    .active-fx:active { transform: scale(0.98) !important; }
-    body.perf-mode .active-fx:active { transform: scale(0.98) !important; }
+    body.perf-mode .active-fx            { transform: none !important; }
+    .active-fx:active                    { transform: scale(0.98) !important; }
+    body.perf-mode .active-fx:active     { transform: scale(0.98) !important; }
 }
