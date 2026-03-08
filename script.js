@@ -1,6 +1,6 @@
 // ============================================================
 //  SANO BLD — Dualité Luxe
-//  script.js — version Lame de Rasoir Vraie
+//  script.js — version finale
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -23,9 +23,7 @@ viewRef.on('value', snap => {
 
 // ============================================================
 //  HERO — Anti-saccade mobile
-//  Verrouillage px unique au premier chargement.
-//  Recalcul uniquement si la LARGEUR change (pas la hauteur),
-//  pour immuniser contre la barre URL mobile flottante.
+//  Calcul unique en px. Recalcul UNIQUEMENT si largeur change.
 // ============================================================
 function lockHero() {
     const vw  = window.innerWidth;
@@ -43,7 +41,7 @@ window.addEventListener('resize', () => {
 }, { passive: true });
 
 // ============================================================
-//  THÈME — auto system + toggle
+//  THÈME
 // ============================================================
 const body     = document.body;
 const themeBtn = document.getElementById('theme-toggle');
@@ -69,7 +67,7 @@ applyTheme(currentTheme, false);
 themeBtn?.addEventListener('click', () => applyTheme(currentTheme === 'dark' ? 'light' : 'dark'));
 
 // ============================================================
-//  LANGUE — FR / EN
+//  LANGUE
 // ============================================================
 const strings = {
     fr: {
@@ -118,28 +116,25 @@ applyLang(currentLang);
 langBtn?.addEventListener('click', () => applyLang(currentLang === 'fr' ? 'en' : 'fr'));
 
 // ============================================================
-//  PRELOADER — Vrai Split-Text via clip-path
+//  PRELOADER — Vrai Split-Text (bug d'alignement corrigé)
 //
-//  Principe :
-//  Le texte SANO BLD est injecté dans DEUX spans superposés
-//  au centre de l'écran, positionnés identiquement.
-//  Chaque span n'affiche qu'une moitié du texte via clip-path.
+//  CAUSE DU BUG : si la police Google Fonts n'est pas encore
+//  chargée, les deux spans peuvent avoir des dimensions
+//  différentes lors de l'injection des chars, provoquant un
+//  décalage entre les moitiés.
 //
-//  .pre-text-top → clip-path: inset(0 padding 50% padding)
-//                  = moitié SUPÉRIEURE des lettres
-//                  → couleur Nuit (lisible sur fond Beige)
+//  SOLUTION :
+//  1. On attend document.fonts.ready avant d'injecter
+//  2. Les deux spans partagent grid-area: 1/1 (CSS)
+//     → ils occupent exactement la même cellule
+//  3. clip-path en % → coupe toujours à la même hauteur
+//     relative, quelle que soit la taille résolue
 //
-//  .pre-text-bot → clip-path: inset(50% padding 0 padding)
-//                  = moitié INFÉRIEURE des lettres
-//                  → couleur Beige (lisible sur fond Nuit)
-//
-//  Résultat visuel : UN seul mot bicolore, la jointure passant
-//  exactement à mi-hauteur des capitales.
-//
-//  À l'ouverture :
-//  · .pre-text-top + .pre-curtain-top → translateY(-120vh)
-//  · .pre-text-bot + .pre-curtain-bot → translateY(+120vh)
-//  → Déchirure physique nette.
+//  OUVERTURE synchronisée :
+//  .pre-text-top + .pre-curtain-top → translateY(-110vh)
+//  .pre-text-bot + .pre-curtain-bot → translateY(+110vh)
+//  Même durée/easing → la jointure reste parfaite jusqu'à
+//  la séparation complète.
 // ============================================================
 const preTextTop = document.getElementById('pre-text-top');
 const preTextBot = document.getElementById('pre-text-bot');
@@ -148,9 +143,9 @@ const preloader  = document.getElementById('preloader');
 const WORD       = 'SANO BLD';
 const CHAR_DELAY = 0.052;
 
-// Injection des chars animés dans les deux spans
-[preTextTop, preTextBot].forEach(el => {
+function injectChars(el) {
     if (!el) return;
+    el.innerHTML = '';
     WORD.split('').forEach((ch, i) => {
         const span = document.createElement('span');
         span.className = 'char';
@@ -158,9 +153,15 @@ const CHAR_DELAY = 0.052;
         span.style.animationDelay = `${i * CHAR_DELAY}s`;
         el.appendChild(span);
     });
+}
+
+// Attendre la résolution des polices pour garantir l'alignement
+document.fonts.ready.then(() => {
+    injectChars(preTextTop);
+    injectChars(preTextBot);
 });
 
-const charsDuration = WORD.length * CHAR_DELAY * 1000 + 650;
+const charsDuration = WORD.length * CHAR_DELAY * 1000 + 700;
 
 window.addEventListener('load', () => {
     setTimeout(() => {
@@ -170,11 +171,9 @@ window.addEventListener('load', () => {
 });
 
 // ============================================================
-//  CURSEUR CAMÉLÉON — mix-blend-mode: difference
-//  Le conteneur #cursor-arrow a mix-blend-mode: difference.
-//  Le SVG est forcé tout-blanc (filter: brightness(1000)).
-//  Blanc + difference = inversion parfaite du fond sous-jacent.
-//  Aucun calcul JS de couleur requis. Performances max.
+//  CURSEUR CAMÉLÉON
+//  mix-blend-mode: difference (CSS) + SVG blanc pur.
+//  Inversion automatique sur tous les fonds. Lerp 0.20.
 // ============================================================
 const cursorArrow = document.getElementById('cursor-arrow');
 const hasPointer  = window.matchMedia('(hover: hover)').matches;
@@ -201,18 +200,79 @@ if (!hasPointer) {
 }
 
 // ============================================================
-//  GHOST SPANS — Italic sans pop de layout
-//  Injecte .pn-real (visible) + .pn-ghost (italic invisible)
-//  dans un conteneur inline-grid. Les deux partagent la même
-//  grid-area → le ghost fixe la largeur max (version italic).
-//  Au hover, .pn-real bascule en italic dans l'espace réservé.
+//  HOVER GLISSEMENT — inject .pn-real span dans .project-name
+//  Suppression de l'italic.
+//  Effet : translateX(4px) + opacity (CSS).
 // ============================================================
 document.querySelectorAll('.project-name').forEach(el => {
     const text = el.textContent.trim();
-    el.innerHTML =
-        `<span class="pn-real">${text}</span>` +
-        `<span class="pn-ghost" aria-hidden="true">${text}</span>`;
+    el.innerHTML = `<span class="pn-real">${text}</span>`;
 });
+
+// ============================================================
+//  EFFET TILT — Profondeur cinétique sur le titre Hero
+//
+//  Le titre SANO BLD réagit subtilement au mouvement de la
+//  souris via rotateX + rotateY.
+//
+//  Paramètres :
+//  · MAX_ROT : rotation max (degrés) — 4° = très subtil
+//  · LERP    : interpolation — 0.06 = inertie longue, luxueux
+//
+//  Technique :
+//  On calcule la position normalisée de la souris par rapport
+//  au centre du viewport (−1 à +1 sur chaque axe).
+//  rotateX = vertical (négatif = souris en haut → titre penche vers nous)
+//  rotateY = horizontal
+//
+//  On utilise un lerp JS sur tiltX/tiltY pour la fluidité.
+//  La perspective est définie sur .hero (CSS).
+// ============================================================
+const heroTitle   = document.getElementById('hero-title');
+const hasHover    = window.matchMedia('(hover: hover)').matches;
+
+if (heroTitle && hasHover) {
+    const MAX_ROT   = 4;   // degrés
+    const LERP_TILT = 0.06; // très doux — inertie de luxe
+
+    let targetRX = 0, targetRY = 0;
+    let currentRX = 0, currentRY = 0;
+    let tiltRaf = null;
+
+    function animateTilt() {
+        currentRX += (targetRX - currentRX) * LERP_TILT;
+        currentRY += (targetRY - currentRY) * LERP_TILT;
+
+        heroTitle.style.transform =
+            `rotateX(${currentRX.toFixed(3)}deg) rotateY(${currentRY.toFixed(3)}deg)`;
+
+        // Continuer tant qu'on n'a pas convergé
+        const dist = Math.abs(targetRX - currentRX) + Math.abs(targetRY - currentRY);
+        if (dist > 0.001) {
+            tiltRaf = requestAnimationFrame(animateTilt);
+        } else {
+            tiltRaf = null;
+        }
+    }
+
+    document.addEventListener('mousemove', e => {
+        const nx = (e.clientX / window.innerWidth  - 0.5) * 2; // −1 à +1
+        const ny = (e.clientY / window.innerHeight - 0.5) * 2; // −1 à +1
+
+        // rotateX inversé : souris en haut (ny négatif) → penche vers viewer
+        targetRX = -ny * MAX_ROT;
+        targetRY =  nx * MAX_ROT;
+
+        if (!tiltRaf) tiltRaf = requestAnimationFrame(animateTilt);
+    }, { passive: true });
+
+    // Retour à plat quand la souris sort de la fenêtre
+    document.addEventListener('mouseleave', () => {
+        targetRX = 0;
+        targetRY = 0;
+        if (!tiltRaf) tiltRaf = requestAnimationFrame(animateTilt);
+    });
+}
 
 // ============================================================
 //  SCROLL REVEAL — stagger par liste
@@ -236,8 +296,6 @@ document.querySelectorAll('.project-row').forEach(r => revealObs.observe(r));
 
 // ============================================================
 //  NAV CENTRALE — Scrollspy
-//  IntersectionObserver sur chaque .work-section[id].
-//  Active .active sur le .nav-toc-item correspondant.
 // ============================================================
 const navItems  = document.querySelectorAll('.nav-toc-item[data-section]');
 const wSections = document.querySelectorAll('.work-section[id]');
@@ -257,11 +315,10 @@ if (navItems.length && wSections.length) {
 }
 
 // ============================================================
-//  PARALLAXE — Asides défilent à 88% de la vitesse de scroll
-//  Effet couches éditoriales (livre d'art / catalogue)
+//  PARALLAXE — Asides (couches éditoriales)
 // ============================================================
 const parallaxAsides  = document.querySelectorAll('[data-parallax]');
-const PARALLAX_FACTOR = 0.12;
+const PARALLAX_FACTOR = 0.11;
 
 function tickParallax() {
     parallaxAsides.forEach(aside => {
@@ -274,15 +331,13 @@ function tickParallax() {
 }
 
 // ============================================================
-//  PROFONDEUR DE CHAMP — Blur progressif au scroll
-//  Distance au centre du viewport → data-blur 0 / 1 / 2
-//  Les transitions CSS (filter + opacity) assurent la fluidité.
+//  PROFONDEUR DE CHAMP — Blur progressif
 // ============================================================
 function tickBlur() {
     const vh      = window.innerHeight;
     const vCenter = vh / 2;
     const ZONE1   = vh * 0.30;
-    const ZONE2   = vh * 0.50;
+    const ZONE2   = vh * 0.52;
 
     document.querySelectorAll('.project-row.visible').forEach(row => {
         const rect      = row.getBoundingClientRect();
@@ -294,7 +349,7 @@ function tickBlur() {
     });
 }
 
-// Scroll handler batché sur rAF
+// Scroll batché sur rAF
 let rafPending = false;
 function onScroll() {
     if (!rafPending) {
@@ -312,7 +367,7 @@ tickParallax();
 tickBlur();
 
 // ============================================================
-//  HORLOGE — footer
+//  HORLOGE
 // ============================================================
 function updateClock() {
     const el = document.getElementById('footer-time');
@@ -324,7 +379,4 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// ============================================================
-//  FIN
-// ============================================================
 });

@@ -14,49 +14,36 @@
 <body>
 
     <!-- ═══════════════════════════════════════════════════════
-         PRELOADER — Vrai Split-Text (une seule instance)
-         Technique clip-path :
-           .pre-text-top → inset(0 0 50% 0) — moitié supérieure des glyphes
-           .pre-text-bot → inset(50% 0 0 0) — moitié inférieure des glyphes
-         Les deux sont superposés pixel-perfect.
-         À l'ouverture, chaque moitié part dans sa direction.
+         PRELOADER — Split-Text Corrigé
+         Architecture : grille 1×1 — les deux spans partagent
+         exactement la même cellule → alignement pixel-perfect.
+         clip-path coupe à 50% de la hauteur de l'élément.
+         Rideaux : Beige (haut) · Nuit (bas)
     ═══════════════════════════════════════════════════════ -->
     <div id="preloader" aria-hidden="true">
-        <!-- Fond -->
         <div class="pre-curtain pre-curtain-top"></div>
         <div class="pre-curtain pre-curtain-bot"></div>
-        <!-- Texte unique, rendu en deux clips superposés -->
-        <div class="pre-text-wrap" id="pre-text-wrap">
+        <div id="pre-text-wrap">
             <span class="pre-text pre-text-top" id="pre-text-top" aria-hidden="true"></span>
             <span class="pre-text pre-text-bot" id="pre-text-bot" aria-hidden="true"></span>
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════
-         CURSEUR CAMÉLÉON
-         SVG blanc + mix-blend-mode: difference
-         → s'inverse automatiquement sur toute couleur de fond
-    ═══════════════════════════════════════════════════════ -->
+    <!-- CURSEUR CAMÉLÉON — SVG blanc + mix-blend-mode: difference -->
     <div id="cursor-arrow" aria-hidden="true">
-        <svg width="16" height="24" viewBox="0 0 16 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1.5 1.5 L1.5 20 L6 15.5 L8.7 22 L11.3 21 L8.7 14.5 L14.5 14.5 Z"
-                  fill="white" stroke="black" stroke-width="1.2"
-                  stroke-linejoin="round" stroke-linecap="round"
-                  paint-order="stroke fill"/>
+        <svg width="14" height="22" viewBox="0 0 14 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.5 1.5 L1.5 18.5 L5.2 14.4 L7.6 20.5 L9.8 19.6 L7.4 13.5 L12.8 13.5 Z"
+                  fill="white" paint-order="stroke fill"/>
         </svg>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
-         BARRE DE NAVIGATION CENTRALE
-         Fixe · haut · centrée · fond translucide + blur
-         Gauche : Sommaire scrollspy
-         Droite : Thème + Langue
+         BARRE DE NAVIGATION CENTRALE — agrandie
+         Logo · Sommaire scrollspy · Thème + Langue
     ═══════════════════════════════════════════════════════ -->
     <header class="site-nav" id="site-nav">
-        <!-- Logo / identité à gauche extrême -->
         <a class="nav-logo" href="#">Sano Bld</a>
 
-        <!-- Sommaire central cliquable + scrollspy -->
         <nav class="nav-toc" aria-label="Sections">
             <a href="#section-apps"    class="nav-toc-item" data-section="section-apps"    data-i18n="toc-apps">Applications</a>
             <span class="nav-sep" aria-hidden="true">·</span>
@@ -65,17 +52,16 @@
             <a href="#section-network" class="nav-toc-item" data-section="section-network" data-i18n="toc-network">Réseau</a>
         </nav>
 
-        <!-- Contrôles à droite -->
         <div class="nav-controls">
-            <button id="lang-toggle"  class="ctrl-btn">EN</button>
-            <button id="theme-toggle" class="ctrl-btn">◐</button>
+            <button id="lang-toggle"  class="ctrl-btn" aria-label="Langue">EN</button>
+            <button id="theme-toggle" class="ctrl-btn" aria-label="Thème">◐</button>
         </div>
     </header>
 
-    <!-- HERO -->
+    <!-- HERO — Tilt souris sur .hero-title -->
     <section class="hero">
         <div class="hero-eyebrow" data-i18n="hero-eyebrow">Portfolio · 2026</div>
-        <h1 class="hero-title">
+        <h1 class="hero-title" id="hero-title">
             <span class="title-mask"><span class="title-inner">SANO</span></span>
             <span class="title-mask"><span class="title-inner">BLD</span></span>
         </h1>
