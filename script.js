@@ -22,6 +22,38 @@ viewRef.on('value', snap => {
 });
 
 // ============================================================
+//  HERO — Anti-saccade mobile
+//  Verrouille hauteur + font-size en px basés sur window.innerWidth.
+//  Ne se recalcule QUE si la largeur change (pas la hauteur),
+//  ce qui évite les sauts quand la barre du navigateur mobile
+//  apparaît ou disparaît.
+// ============================================================
+function lockHero() {
+    const vw  = window.innerWidth;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
+    // Reproduit clamp(5rem, 17vw, 21rem) en px fixe
+    const min  = 5  * rem;
+    const max  = 21 * rem;
+    const size = Math.min(Math.max(vw * 0.17, min), max);
+
+    const root = document.documentElement;
+    root.style.setProperty('--hero-title-size', `${size}px`);
+    root.style.setProperty('--hero-h', `${window.innerHeight}px`);
+}
+
+lockHero();
+
+// Surveillance UNIQUEMENT sur changement de largeur
+let prevViewportW = window.innerWidth;
+window.addEventListener('resize', () => {
+    if (window.innerWidth !== prevViewportW) {
+        prevViewportW = window.innerWidth;
+        lockHero();
+    }
+}, { passive: true });
+
+// ============================================================
 //  THÈME — auto system + toggle (transition 1.5s)
 // ============================================================
 const body     = document.body;
@@ -44,7 +76,6 @@ function applyTheme(t, animate = true) {
     localStorage.setItem('sb-theme', t);
 }
 
-// Premier chargement sans animation pour éviter le flash
 applyTheme(currentTheme, false);
 themeBtn?.addEventListener('click', () => applyTheme(currentTheme === 'dark' ? 'light' : 'dark'));
 
@@ -59,6 +90,9 @@ const strings = {
         'section-apps':    'Applications',
         'section-games':   'Jeux',
         'section-network': 'Réseau',
+        'toc-apps':        'Apps',
+        'toc-games':       'Jeux',
+        'toc-network':     'Réseau',
         'footer':          'Sano Bld © 2026',
     },
     en: {
@@ -68,6 +102,9 @@ const strings = {
         'section-apps':    'Applications',
         'section-games':   'Games',
         'section-network': 'Network',
+        'toc-apps':        'Apps',
+        'toc-games':       'Games',
+        'toc-network':     'Network',
         'footer':          'Sano Bld © 2026',
     }
 };
@@ -92,90 +129,78 @@ applyLang(currentLang);
 langBtn?.addEventListener('click', () => applyLang(currentLang === 'fr' ? 'en' : 'fr'));
 
 // ============================================================
-//  PRELOADER — fade-in lettre par lettre + enveloppe
+//  PRELOADER ENVELOPPE — Split Text
+//  Le texte SANO BLD est injecté dans les DEUX moitiés
+//  (pre-name-top ancré bottom:0 · pre-name-bot ancré top:0).
+//  overflow:hidden sur chaque .pre-half fait le découpage.
+//  À l'ouverture : moitié haute remonte / moitié basse descend.
+//  Effet : le nom a été scellé sur la jonction de l'enveloppe.
 // ============================================================
+const preNameTop = document.getElementById('pre-name-top');
+const preNameBot = document.getElementById('pre-name-bot');
 const preloader  = document.getElementById('preloader');
-const preNameEl  = document.getElementById('pre-name');
-const WORD        = 'SANO BLD';
-const CHAR_DELAY  = 0.055; // secondes entre chaque lettre
 
-// Injection des <span class="char"> animés
-if (preNameEl) {
+const WORD       = 'SANO BLD';
+const CHAR_DELAY = 0.055; // secondes entre chaque lettre
+
+// Injection identique dans les deux moitiés
+[preNameTop, preNameBot].forEach(el => {
+    if (!el) return;
     WORD.split('').forEach((ch, i) => {
         const span = document.createElement('span');
         span.className = 'char';
-        span.textContent = ch === ' ' ? '\u00A0' : ch; // espace insécable
+        span.textContent = ch === ' ' ? '\u00A0' : ch;
         span.style.animationDelay = `${i * CHAR_DELAY}s`;
-        preNameEl.appendChild(span);
+        el.appendChild(span);
     });
-}
+});
 
 // Durée totale d'animation des chars
 const charsDuration = WORD.length * CHAR_DELAY * 1000 + 600; // +600ms de lecture
 
 window.addEventListener('load', () => {
     setTimeout(() => {
-        // Ouverture enveloppe
         preloader?.classList.add('open');
-        // Suppression après la fin de la transition
         setTimeout(() => preloader?.classList.add('gone'), 1000);
     }, charsDuration);
 });
 
 // ============================================================
-//  CURSEUR PRECISION SILK v2
-//  • Anneau 30px : lerp 0.18
-//  • Dot 6px     : quasi-instantané (lerp 0.65)
-//  • mix-blend-mode: difference (CSS)
-//  • Expand sur éléments interactifs
+//  CURSEUR — Flèche SVG fine type macOS
+//  • Flèche 16×24px, hotspot = coin supérieur gauche
+//  • Lerp 0.20 — fluidité soyeuse
+//  • fill: var(--text) + stroke: var(--bg) → adaptatif au thème
+//  • Pas d'anneau, pas de cercle
 // ============================================================
-const cursorOuter = document.getElementById('cursor-outer');
-const cursorInner = document.getElementById('cursor-inner');
+const cursorArrow = document.getElementById('cursor-arrow');
 const hasPointer  = window.matchMedia('(hover: hover)').matches;
 
 if (!hasPointer) {
-    cursorOuter?.remove();
-    cursorInner?.remove();
+    cursorArrow?.remove();
 } else {
     let mx = window.innerWidth  / 2;
     let my = window.innerHeight / 2;
+    let cx = mx, cy = my;
 
-    // Positions lerp
-    let ox = mx, oy = my; // outer (ring)
-    let ix = mx, iy = my; // inner (dot)
-
-    const LERP_OUTER = 0.18;
-    const LERP_INNER = 0.65;
+    const LERP = 0.20;
 
     document.addEventListener('mousemove', e => {
         mx = e.clientX;
         my = e.clientY;
-    });
+    }, { passive: true });
 
     function animateCursor() {
-        ox += (mx - ox) * LERP_OUTER;
-        oy += (my - oy) * LERP_OUTER;
-        ix += (mx - ix) * LERP_INNER;
-        iy += (my - iy) * LERP_INNER;
+        cx += (mx - cx) * LERP;
+        cy += (my - cy) * LERP;
 
-        if (cursorOuter) {
-            cursorOuter.style.transform =
-                `translate(calc(${ox}px - 50%), calc(${oy}px - 50%))`;
-        }
-        if (cursorInner) {
-            cursorInner.style.transform =
-                `translate(calc(${ix}px - 50%), calc(${iy}px - 50%))`;
+        if (cursorArrow) {
+            // Pas de soustraction de 50% : le hotspot est le coin haut-gauche du SVG
+            cursorArrow.style.transform = `translate(${cx}px, ${cy}px)`;
         }
 
         requestAnimationFrame(animateCursor);
     }
     animateCursor();
-
-    // Expand anneau sur éléments interactifs
-    document.querySelectorAll('a, button, .project-link, .ctrl-btn').forEach(el => {
-        el.addEventListener('mouseenter', () => body.classList.add('cursor-hover'));
-        el.addEventListener('mouseleave', () => body.classList.remove('cursor-hover'));
-    });
 }
 
 // ============================================================
@@ -199,6 +224,31 @@ const revealObs = new IntersectionObserver(entries => {
 }, { threshold: 0.04, rootMargin: '0px 0px -20px 0px' });
 
 document.querySelectorAll('.project-row').forEach(r => revealObs.observe(r));
+
+// ============================================================
+//  SOMMAIRE FLOTTANT — Scrollspy
+//  IntersectionObserver sur chaque .work-section[id].
+//  Active la classe .active sur le .toc-item correspondant.
+// ============================================================
+const tocItems   = document.querySelectorAll('.toc-item[data-section]');
+const wSections  = document.querySelectorAll('.work-section[id]');
+
+if (tocItems.length && wSections.length) {
+    const tocMap = {};
+    tocItems.forEach(item => { tocMap[item.dataset.section] = item; });
+
+    const tocObs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            const item = tocMap[entry.target.id];
+            if (item) item.classList.toggle('active', entry.isIntersecting);
+        });
+    }, {
+        threshold: 0.25,
+        rootMargin: '-10% 0px -10% 0px'
+    });
+
+    wSections.forEach(s => tocObs.observe(s));
+}
 
 // ============================================================
 //  HORLOGE — footer

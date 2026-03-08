@@ -24,6 +24,10 @@
     --ease:  cubic-bezier(0.23, 1, 0.32, 1);
     --font-display: 'Cormorant Garamond', Georgia, serif;
     --font-body:    'Jost', sans-serif;
+
+    /* Hero verrouillé anti-saccade — surchargé par JS */
+    --hero-h:          100svh;
+    --hero-title-size: clamp(5rem, 17vw, 21rem);
 }
 
 /* DARK */
@@ -64,54 +68,43 @@ a { color: inherit; text-decoration: none; }
 
 @media (hover: none) {
     body { cursor: auto; }
-    #cursor-outer, #cursor-inner { display: none; }
+    #cursor-arrow { display: none; }
 }
 
 /* ============================================================
-   CURSEUR PRECISION SILK v2
-   Point 6px + anneau 30px · mix-blend-mode: difference
-   LERP 0.18 sur l'anneau, instantané sur le dot
+   CURSEUR — Flèche fine type macOS (SVG pur)
+   Couleur adaptative : Bleu Nuit sur Beige / Beige sur Nuit
+   Inertie lerp 0.2 — géré en JS
    ============================================================ */
-#cursor-outer {
+#cursor-arrow {
     position: fixed;
-    width:  30px;
-    height: 30px;
-    border: 0.5px solid #fff;
-    border-radius: 50%;
+    top: 0;
+    left: 0;
     pointer-events: none;
     z-index: 9999;
-    mix-blend-mode: difference;
-    /* transform: translate(-50%, -50%) géré par JS */
-    top: 0; left: 0;
     will-change: transform;
+    /* Pas de translate(-50%) : hotspot = coin supérieur gauche du SVG */
+}
+
+#cursor-arrow path {
+    fill: var(--text);
+    stroke: var(--bg);
+    stroke-width: 1.4;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    paint-order: stroke fill;
     transition:
-        width  0.4s var(--ease),
-        height 0.4s var(--ease),
-        border-color 0.1s;
-}
-
-#cursor-inner {
-    position: fixed;
-    width:  6px;
-    height: 6px;
-    background: #fff;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    mix-blend-mode: difference;
-    top: 0; left: 0;
-    will-change: transform;
-}
-
-/* Expand sur hover */
-body.cursor-hover #cursor-outer {
-    width:  52px;
-    height: 52px;
+        fill   1.5s var(--ease),
+        stroke 1.5s var(--ease);
 }
 
 /* ============================================================
-   PRELOADER ENVELOPPE
-   Deux moitiés (haut/bas) qui s'écartent
+   PRELOADER ENVELOPPE — Split Text
+   Deux moitiés (haut/bas) qui s'écartent.
+   Le nom SANO BLD est ancré à la ligne de jonction :
+     · .pre-top   → texte collé au bas  (bottom: 0) → moitié haute visible
+     · .pre-bot   → texte collé au haut (top: 0)    → moitié basse visible
+   Effet : le nom a été scellé sur l'ouverture de la page.
    ============================================================ */
 #preloader {
     position: fixed;
@@ -125,18 +118,16 @@ body.cursor-hover #cursor-outer {
 .pre-half {
     flex: 1;
     background: var(--pre-bg);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    transition: transform 0.95s var(--ease);
+    position: relative;
     overflow: hidden;
+    transition: transform 0.95s var(--ease), background 1.5s var(--ease);
 }
-.pre-bot { align-items: flex-start; }
 
-/* Le nom s'affiche à cheval sur la ligne centrale */
-.pre-top { padding-bottom: 0.12em; }
-
+/* Texte ancré côté jonction — commun aux deux moitiés */
 .pre-name {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     font-family: var(--font-display);
     font-size: clamp(2.4rem, 7vw, 7.5rem);
     font-weight: 300;
@@ -144,9 +135,16 @@ body.cursor-hover #cursor-outer {
     color: var(--pre-text);
     white-space: nowrap;
     line-height: 1;
-    /* Chars injectés par JS, chacun avec animation */
+    transition: color 1.5s var(--ease);
 }
 
+/* Moitié haute : texte ancré en bas = seule la partie supérieure est visible */
+.pre-top .pre-name { bottom: 0; }
+
+/* Moitié basse : texte ancré en haut = seule la partie inférieure est visible */
+.pre-bot .pre-name { top: 0; }
+
+/* Chars injectés par JS */
 .pre-name .char {
     display: inline-block;
     opacity: 0;
@@ -211,11 +209,96 @@ body.cursor-hover #cursor-outer {
 .ctrl-btn:hover { color: var(--text); }
 
 /* ============================================================
-   HERO
+   SOMMAIRE FLOTTANT — Table of Contents
+   Vertical, discret, ancré à droite
+   Scrollspy via IntersectionObserver (JS)
+   ============================================================ */
+.toc {
+    position: fixed;
+    right: max(2.6vw, 18px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    z-index: 200;
+    opacity: 0;
+    /* Apparaît après la fin du preloader */
+    animation: fadeUp 1s var(--ease) 2.6s forwards;
+}
+
+.toc-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    cursor: none;
+    text-decoration: none;
+}
+
+.toc-line {
+    display: block;
+    width: 12px;
+    height: 0.5px;
+    background: var(--text-faint);
+    flex-shrink: 0;
+    transition:
+        width      0.45s var(--ease),
+        background 0.35s ease;
+}
+
+.toc-label {
+    font-family: var(--font-body);
+    font-size: 0.39rem;
+    font-weight: 300;
+    letter-spacing: 0.30em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    opacity: 0;
+    transform: translateX(6px);
+    transition:
+        opacity   0.35s ease,
+        transform 0.35s var(--ease),
+        color     0.3s  ease;
+    /* Ordre : label à gauche, ligne à droite */
+    order: -1;
+}
+
+/* État actif (scrollspy) */
+.toc-item.active .toc-line {
+    width: 24px;
+    background: var(--text);
+}
+.toc-item.active .toc-label {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--text);
+}
+
+/* Hover */
+.toc-item:hover .toc-line {
+    width: 18px;
+    background: var(--text-dim);
+}
+.toc-item:hover .toc-label {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--text-dim);
+}
+
+/* Masqué sur mobile */
+@media (max-width: 840px) {
+    .toc { display: none; }
+}
+
+/* ============================================================
+   HERO — Anti-saccade mobile
+   La hauteur et la font-size sont verrouillées en px par JS
+   au premier chargement. --hero-h et --hero-title-size ne
+   se recalculent QUE si la LARGEUR change (pas la hauteur).
    ============================================================ */
 .hero {
     position: relative;
-    height: 100svh;
+    height: var(--hero-h, 100svh);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -244,20 +327,21 @@ body.cursor-hover #cursor-outer {
     align-items: center;
     gap: 0;
     font-family: var(--font-display);
-    font-size: clamp(5rem, 17vw, 21rem);
+    /* Surchargé par JS avec une valeur px fixe */
+    font-size: var(--hero-title-size, clamp(5rem, 17vw, 21rem));
     font-weight: 300;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     line-height: 0.9;
     color: var(--text);
     user-select: none;
+    /* Aucune transition sur font-size pour éviter les interpolations */
 }
 
-/* Conteneur-masque : overflow hidden = le inner ne dépasse pas */
+/* Conteneur-masque */
 .title-mask {
     display: block;
     overflow: hidden;
-    /* petit padding vertical pour ne pas couper les ascendantes */
     padding: 0.04em 0;
 }
 
@@ -307,6 +391,7 @@ body.cursor-hover #cursor-outer {
     right: max(7vw, 36px);
     height: 1px;
     background: var(--rule);
+    transition: background 1.5s var(--ease);
 }
 
 @keyframes fadeUp {
@@ -464,7 +549,7 @@ body.cursor-hover #cursor-outer {
 }
 
 @media (max-width: 520px) {
-    .hero-title { font-size: clamp(4rem, 22vw, 7rem); letter-spacing: 0.08em; }
+    .hero-title { letter-spacing: 0.08em; }
     .project-name { font-size: 1.5rem; }
     .work { padding: 12vh 6vw; }
     .site-header { padding: 20px 6vw; }

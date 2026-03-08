@@ -13,17 +13,23 @@
 </head>
 <body>
 
-    <!-- PRELOADER ENVELOPPE -->
+    <!-- PRELOADER ENVELOPPE — Split Text -->
     <div id="preloader" aria-hidden="true">
         <div class="pre-half pre-top">
-            <span class="pre-name" id="pre-name" aria-hidden="true"></span>
+            <span class="pre-name" id="pre-name-top" aria-hidden="true"></span>
         </div>
-        <div class="pre-half pre-bot"></div>
+        <div class="pre-half pre-bot">
+            <span class="pre-name" id="pre-name-bot" aria-hidden="true"></span>
+        </div>
     </div>
 
-    <!-- CURSEUR PRECISION SILK v2 -->
-    <div id="cursor-outer" aria-hidden="true"></div>
-    <div id="cursor-inner" aria-hidden="true"></div>
+    <!-- CURSEUR — Flèche SVG thème-adaptative -->
+    <div id="cursor-arrow" aria-hidden="true">
+        <svg width="16" height="24" viewBox="0 0 16 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.5 1.5 L1.5 20 L6 15.5 L8.7 22 L11.3 21 L8.7 14.5 L14.5 14.5 Z"
+                  stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+    </div>
 
     <!-- HEADER -->
     <header class="site-header">
@@ -33,6 +39,22 @@
             <button id="theme-toggle" class="ctrl-btn">◐</button>
         </nav>
     </header>
+
+    <!-- SOMMAIRE FLOTTANT -->
+    <nav class="toc" aria-label="Sommaire">
+        <a href="#section-apps" class="toc-item" data-section="section-apps">
+            <span class="toc-label" data-i18n="toc-apps">Apps</span>
+            <span class="toc-line"></span>
+        </a>
+        <a href="#section-games" class="toc-item" data-section="section-games">
+            <span class="toc-label" data-i18n="toc-games">Jeux</span>
+            <span class="toc-line"></span>
+        </a>
+        <a href="#section-network" class="toc-item" data-section="section-network">
+            <span class="toc-label" data-i18n="toc-network">Réseau</span>
+            <span class="toc-line"></span>
+        </a>
+    </nav>
 
     <!-- HERO -->
     <section class="hero">
@@ -50,7 +72,7 @@
     <main class="work">
 
         <!-- 01 APPLICATIONS -->
-        <section class="work-section">
+        <section class="work-section" id="section-apps">
             <aside class="section-aside">
                 <span class="section-index">01</span>
                 <h2 class="section-title" data-i18n="section-apps">Applications</h2>
@@ -66,7 +88,7 @@
         </section>
 
         <!-- 02 JEUX -->
-        <section class="work-section">
+        <section class="work-section" id="section-games">
             <aside class="section-aside">
                 <span class="section-index">02</span>
                 <h2 class="section-title" data-i18n="section-games">Jeux</h2>
@@ -80,7 +102,7 @@
         </section>
 
         <!-- 03 RÉSEAU -->
-        <section class="work-section">
+        <section class="work-section" id="section-network">
             <aside class="section-aside">
                 <span class="section-index">03</span>
                 <h2 class="section-title" data-i18n="section-network">Réseau</h2>
