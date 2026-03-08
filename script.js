@@ -1,6 +1,6 @@
 // ============================================================
 //  SANO BLD — Dualité Luxe
-//  script.js
+//  script.js — version Lame de Rasoir Vraie
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -23,38 +23,27 @@ viewRef.on('value', snap => {
 
 // ============================================================
 //  HERO — Anti-saccade mobile
-//  Verrouille hauteur + font-size en px basés sur window.innerWidth.
-//  Ne se recalcule QUE si la largeur change (pas la hauteur),
-//  ce qui évite les sauts quand la barre du navigateur mobile
-//  apparaît ou disparaît.
+//  Verrouillage px unique au premier chargement.
+//  Recalcul uniquement si la LARGEUR change (pas la hauteur),
+//  pour immuniser contre la barre URL mobile flottante.
 // ============================================================
 function lockHero() {
     const vw  = window.innerWidth;
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-
-    // Reproduit clamp(5rem, 17vw, 21rem) en px fixe
-    const min  = 5  * rem;
-    const max  = 21 * rem;
-    const size = Math.min(Math.max(vw * 0.17, min), max);
-
+    const size = Math.min(Math.max(vw * 0.17, 5 * rem), 21 * rem);
     const root = document.documentElement;
     root.style.setProperty('--hero-title-size', `${size}px`);
     root.style.setProperty('--hero-h', `${window.innerHeight}px`);
 }
-
 lockHero();
 
-// Surveillance UNIQUEMENT sur changement de largeur
-let prevViewportW = window.innerWidth;
+let prevW = window.innerWidth;
 window.addEventListener('resize', () => {
-    if (window.innerWidth !== prevViewportW) {
-        prevViewportW = window.innerWidth;
-        lockHero();
-    }
+    if (window.innerWidth !== prevW) { prevW = window.innerWidth; lockHero(); }
 }, { passive: true });
 
 // ============================================================
-//  THÈME — auto system + toggle (transition 1.5s)
+//  THÈME — auto system + toggle
 // ============================================================
 const body     = document.body;
 const themeBtn = document.getElementById('theme-toggle');
@@ -90,7 +79,7 @@ const strings = {
         'section-apps':    'Applications',
         'section-games':   'Jeux',
         'section-network': 'Réseau',
-        'toc-apps':        'Apps',
+        'toc-apps':        'Applications',
         'toc-games':       'Jeux',
         'toc-network':     'Réseau',
         'footer':          'Sano Bld © 2026',
@@ -102,7 +91,7 @@ const strings = {
         'section-apps':    'Applications',
         'section-games':   'Games',
         'section-network': 'Network',
-        'toc-apps':        'Apps',
+        'toc-apps':        'Applications',
         'toc-games':       'Games',
         'toc-network':     'Network',
         'footer':          'Sano Bld © 2026',
@@ -129,22 +118,38 @@ applyLang(currentLang);
 langBtn?.addEventListener('click', () => applyLang(currentLang === 'fr' ? 'en' : 'fr'));
 
 // ============================================================
-//  PRELOADER ENVELOPPE — Split Text
-//  Le texte SANO BLD est injecté dans les DEUX moitiés
-//  (pre-name-top ancré bottom:0 · pre-name-bot ancré top:0).
-//  overflow:hidden sur chaque .pre-half fait le découpage.
-//  À l'ouverture : moitié haute remonte / moitié basse descend.
-//  Effet : le nom a été scellé sur la jonction de l'enveloppe.
+//  PRELOADER — Vrai Split-Text via clip-path
+//
+//  Principe :
+//  Le texte SANO BLD est injecté dans DEUX spans superposés
+//  au centre de l'écran, positionnés identiquement.
+//  Chaque span n'affiche qu'une moitié du texte via clip-path.
+//
+//  .pre-text-top → clip-path: inset(0 padding 50% padding)
+//                  = moitié SUPÉRIEURE des lettres
+//                  → couleur Nuit (lisible sur fond Beige)
+//
+//  .pre-text-bot → clip-path: inset(50% padding 0 padding)
+//                  = moitié INFÉRIEURE des lettres
+//                  → couleur Beige (lisible sur fond Nuit)
+//
+//  Résultat visuel : UN seul mot bicolore, la jointure passant
+//  exactement à mi-hauteur des capitales.
+//
+//  À l'ouverture :
+//  · .pre-text-top + .pre-curtain-top → translateY(-120vh)
+//  · .pre-text-bot + .pre-curtain-bot → translateY(+120vh)
+//  → Déchirure physique nette.
 // ============================================================
-const preNameTop = document.getElementById('pre-name-top');
-const preNameBot = document.getElementById('pre-name-bot');
+const preTextTop = document.getElementById('pre-text-top');
+const preTextBot = document.getElementById('pre-text-bot');
 const preloader  = document.getElementById('preloader');
 
 const WORD       = 'SANO BLD';
-const CHAR_DELAY = 0.055; // secondes entre chaque lettre
+const CHAR_DELAY = 0.052;
 
-// Injection identique dans les deux moitiés
-[preNameTop, preNameBot].forEach(el => {
+// Injection des chars animés dans les deux spans
+[preTextTop, preTextBot].forEach(el => {
     if (!el) return;
     WORD.split('').forEach((ch, i) => {
         const span = document.createElement('span');
@@ -155,22 +160,21 @@ const CHAR_DELAY = 0.055; // secondes entre chaque lettre
     });
 });
 
-// Durée totale d'animation des chars
-const charsDuration = WORD.length * CHAR_DELAY * 1000 + 600; // +600ms de lecture
+const charsDuration = WORD.length * CHAR_DELAY * 1000 + 650;
 
 window.addEventListener('load', () => {
     setTimeout(() => {
         preloader?.classList.add('open');
-        setTimeout(() => preloader?.classList.add('gone'), 1000);
+        setTimeout(() => preloader?.classList.add('gone'), 1050);
     }, charsDuration);
 });
 
 // ============================================================
-//  CURSEUR — Flèche SVG fine type macOS
-//  • Flèche 16×24px, hotspot = coin supérieur gauche
-//  • Lerp 0.20 — fluidité soyeuse
-//  • fill: var(--text) + stroke: var(--bg) → adaptatif au thème
-//  • Pas d'anneau, pas de cercle
+//  CURSEUR CAMÉLÉON — mix-blend-mode: difference
+//  Le conteneur #cursor-arrow a mix-blend-mode: difference.
+//  Le SVG est forcé tout-blanc (filter: brightness(1000)).
+//  Blanc + difference = inversion parfaite du fond sous-jacent.
+//  Aucun calcul JS de couleur requis. Performances max.
 // ============================================================
 const cursorArrow = document.getElementById('cursor-arrow');
 const hasPointer  = window.matchMedia('(hover: hover)').matches;
@@ -181,42 +185,47 @@ if (!hasPointer) {
     let mx = window.innerWidth  / 2;
     let my = window.innerHeight / 2;
     let cx = mx, cy = my;
-
     const LERP = 0.20;
 
     document.addEventListener('mousemove', e => {
-        mx = e.clientX;
-        my = e.clientY;
+        mx = e.clientX; my = e.clientY;
     }, { passive: true });
 
     function animateCursor() {
         cx += (mx - cx) * LERP;
         cy += (my - cy) * LERP;
-
-        if (cursorArrow) {
-            // Pas de soustraction de 50% : le hotspot est le coin haut-gauche du SVG
-            cursorArrow.style.transform = `translate(${cx}px, ${cy}px)`;
-        }
-
+        if (cursorArrow) cursorArrow.style.transform = `translate(${cx}px, ${cy}px)`;
         requestAnimationFrame(animateCursor);
     }
     animateCursor();
 }
 
 // ============================================================
-//  SCROLL REVEAL — IntersectionObserver + stagger par liste
+//  GHOST SPANS — Italic sans pop de layout
+//  Injecte .pn-real (visible) + .pn-ghost (italic invisible)
+//  dans un conteneur inline-grid. Les deux partagent la même
+//  grid-area → le ghost fixe la largeur max (version italic).
+//  Au hover, .pn-real bascule en italic dans l'espace réservé.
+// ============================================================
+document.querySelectorAll('.project-name').forEach(el => {
+    const text = el.textContent.trim();
+    el.innerHTML =
+        `<span class="pn-real">${text}</span>` +
+        `<span class="pn-ghost" aria-hidden="true">${text}</span>`;
+});
+
+// ============================================================
+//  SCROLL REVEAL — stagger par liste
 // ============================================================
 const revealObs = new IntersectionObserver(entries => {
     entries.forEach(entry => {
         if (!entry.isIntersecting) return;
-
         const list    = entry.target.closest('.project-list');
         const pending = list
             ? [...list.querySelectorAll('.project-row:not(.visible)')]
             : [];
         const idx   = pending.indexOf(entry.target);
         const delay = Math.max(0, Math.min(idx, 5)) * 0.072;
-
         entry.target.style.transitionDelay = `${delay}s`;
         entry.target.classList.add('visible');
         revealObs.unobserve(entry.target);
@@ -226,29 +235,81 @@ const revealObs = new IntersectionObserver(entries => {
 document.querySelectorAll('.project-row').forEach(r => revealObs.observe(r));
 
 // ============================================================
-//  SOMMAIRE FLOTTANT — Scrollspy
+//  NAV CENTRALE — Scrollspy
 //  IntersectionObserver sur chaque .work-section[id].
-//  Active la classe .active sur le .toc-item correspondant.
+//  Active .active sur le .nav-toc-item correspondant.
 // ============================================================
-const tocItems   = document.querySelectorAll('.toc-item[data-section]');
-const wSections  = document.querySelectorAll('.work-section[id]');
+const navItems  = document.querySelectorAll('.nav-toc-item[data-section]');
+const wSections = document.querySelectorAll('.work-section[id]');
 
-if (tocItems.length && wSections.length) {
-    const tocMap = {};
-    tocItems.forEach(item => { tocMap[item.dataset.section] = item; });
+if (navItems.length && wSections.length) {
+    const navMap = {};
+    navItems.forEach(item => { navMap[item.dataset.section] = item; });
 
-    const tocObs = new IntersectionObserver(entries => {
+    const navObs = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-            const item = tocMap[entry.target.id];
+            const item = navMap[entry.target.id];
             if (item) item.classList.toggle('active', entry.isIntersecting);
         });
-    }, {
-        threshold: 0.25,
-        rootMargin: '-10% 0px -10% 0px'
-    });
+    }, { threshold: 0.25, rootMargin: '-10% 0px -10% 0px' });
 
-    wSections.forEach(s => tocObs.observe(s));
+    wSections.forEach(s => navObs.observe(s));
 }
+
+// ============================================================
+//  PARALLAXE — Asides défilent à 88% de la vitesse de scroll
+//  Effet couches éditoriales (livre d'art / catalogue)
+// ============================================================
+const parallaxAsides  = document.querySelectorAll('[data-parallax]');
+const PARALLAX_FACTOR = 0.12;
+
+function tickParallax() {
+    parallaxAsides.forEach(aside => {
+        const section = aside.closest('.work-section');
+        if (!section) return;
+        const rect          = section.getBoundingClientRect();
+        const sectionCenter = rect.top + rect.height / 2 - window.innerHeight / 2;
+        aside.style.transform = `translateY(${sectionCenter * PARALLAX_FACTOR}px)`;
+    });
+}
+
+// ============================================================
+//  PROFONDEUR DE CHAMP — Blur progressif au scroll
+//  Distance au centre du viewport → data-blur 0 / 1 / 2
+//  Les transitions CSS (filter + opacity) assurent la fluidité.
+// ============================================================
+function tickBlur() {
+    const vh      = window.innerHeight;
+    const vCenter = vh / 2;
+    const ZONE1   = vh * 0.30;
+    const ZONE2   = vh * 0.50;
+
+    document.querySelectorAll('.project-row.visible').forEach(row => {
+        const rect      = row.getBoundingClientRect();
+        const rowCenter = rect.top + rect.height / 2;
+        const dist      = Math.abs(rowCenter - vCenter);
+        const level     = dist > ZONE2 ? 2 : dist > ZONE1 ? 1 : 0;
+        const current   = row.getAttribute('data-blur') || '0';
+        if (String(level) !== current) row.setAttribute('data-blur', level);
+    });
+}
+
+// Scroll handler batché sur rAF
+let rafPending = false;
+function onScroll() {
+    if (!rafPending) {
+        rafPending = true;
+        requestAnimationFrame(() => {
+            tickParallax();
+            tickBlur();
+            rafPending = false;
+        });
+    }
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+tickParallax();
+tickBlur();
 
 // ============================================================
 //  HORLOGE — footer
