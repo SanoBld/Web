@@ -4,148 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sano Bld</title>
-    <link rel="icon" type="image/png" href="logo.png?v=2">
+    <link rel="icon" type="image/png" href="logo.png?v=3">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script defer src="https://cloud.umami.is/script.js" data-website-id="adc52595-b992-434a-8eaf-2a4880979675"></script>
 </head>
 <body>
 
-    <!-- PRELOADER — dots animés, z-index max -->
-    <div id="preloader">
-        <div class="preloader-dots">
-            <span></span>
-            <span></span>
-            <span></span>
+    <!-- PRELOADER ENVELOPPE -->
+    <div id="preloader" aria-hidden="true">
+        <div class="pre-half pre-top">
+            <span class="pre-name" id="pre-name" aria-hidden="true"></span>
         </div>
+        <div class="pre-half pre-bot"></div>
     </div>
 
-    <!-- OVERLAY DE SCAN — fond plein couleur bg, se découpe de haut en bas -->
-    <div id="scan-overlay"></div>
+    <!-- CURSEUR PRECISION SILK v2 -->
+    <div id="cursor-outer" aria-hidden="true"></div>
+    <div id="cursor-inner" aria-hidden="true"></div>
 
-    <!-- LIGNE DE SCAN — ligne rouge qui balaie l'écran -->
-    <div id="scan-line"></div>
+    <!-- HEADER -->
+    <header class="site-header">
+        <a class="header-logo" href="#">Sano Bld</a>
+        <nav class="header-nav">
+            <button id="lang-toggle"  class="ctrl-btn">EN</button>
+            <button id="theme-toggle" class="ctrl-btn">◐</button>
+        </nav>
+    </header>
 
-    <canvas id="particle-canvas"></canvas>
-    <div id="cursor-dot"></div>
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-eyebrow" data-i18n="hero-eyebrow">Portfolio · 2026</div>
+        <h1 class="hero-title">
+            <span class="title-mask"><span class="title-inner">SANO</span></span>
+            <span class="title-mask"><span class="title-inner">BLD</span></span>
+        </h1>
+        <p class="hero-sub" data-i18n="hero-sub">Creative Developer</p>
+        <span class="hero-scroll" data-i18n="scroll-hint">— scroll</span>
+        <div class="hero-rule"></div>
+    </section>
 
-    <div class="container">
+    <!-- WORK -->
+    <main class="work">
 
-        <!-- BARRE DE CONTRÔLES -->
-        <div class="top-controls">
-            <button id="perf-toggle"  class="ctrl-btn active-fx" data-i18n="btn-perf">PERF</button>
-            <button id="lang-toggle"  class="ctrl-btn active-fx">EN</button>
-            <button id="theme-toggle" class="ctrl-btn active-fx" data-i18n="btn-mode">MODE</button>
-        </div>
+        <!-- 01 APPLICATIONS -->
+        <section class="work-section">
+            <aside class="section-aside">
+                <span class="section-index">01</span>
+                <h2 class="section-title" data-i18n="section-apps">Applications</h2>
+            </aside>
+            <ul class="project-list">
+                <li class="project-row"><a href="https://sanobld.github.io/Unitix/"       target="_blank" class="project-link"><span class="project-name">Unitix</span><span class="project-tag">App</span></a></li>
+                <li class="project-row"><a href="https://sanobld.github.io/Eco-Drive/"    target="_blank" class="project-link"><span class="project-name">Eco Drive</span><span class="project-tag">App</span></a></li>
+                <li class="project-row"><a href="https://soboheme.github.io/Web/"         target="_blank" class="project-link"><span class="project-name">So Bohème</span><span class="project-tag">Web</span></a></li>
+                <li class="project-row"><a href="https://mostafaalagamy.github.io/"       target="_blank" class="project-link"><span class="project-name">Metrolist</span><span class="project-tag">App</span></a></li>
+                <li class="project-row"><a href="https://sanobld.github.io/BioLinkMaker/" target="_blank" class="project-link"><span class="project-name">BioLink Maker</span><span class="project-tag">Tool</span></a></li>
+                <li class="project-row"><a href="https://sanobld.github.io/LastStats/"    target="_blank" class="project-link"><span class="project-name">LastStats</span><span class="project-tag">PWA</span></a></li>
+            </ul>
+        </section>
 
-        <div id="main-content" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+        <!-- 02 JEUX -->
+        <section class="work-section">
+            <aside class="section-aside">
+                <span class="section-index">02</span>
+                <h2 class="section-title" data-i18n="section-games">Jeux</h2>
+            </aside>
+            <ul class="project-list">
+                <li class="project-row"><a href="https://sanobld.github.io/Glide/"         target="_blank" class="project-link"><span class="project-name">Glide</span><span class="project-tag">Game</span></a></li>
+                <li class="project-row"><a href="https://sanobld.github.io/Survivor.io/"   target="_blank" class="project-link"><span class="project-name">Survivor.io</span><span class="project-tag">Game</span></a></li>
+                <li class="project-row"><a href="https://sanobld.github.io/Tic-Tac-Boom/" target="_blank" class="project-link"><span class="project-name">Tic Tac Boom</span><span class="project-tag">Game</span></a></li>
+                <li class="project-row"><a href="https://sanobld.github.io/Cards/"         target="_blank" class="project-link"><span class="project-name">Cards</span><span class="project-tag">Game</span></a></li>
+            </ul>
+        </section>
 
-            <!-- LOGO -->
-            <div class="logo-wrapper">
-                <img src="logo.png" alt="Logo" class="main-logo">
-            </div>
+        <!-- 03 RÉSEAU -->
+        <section class="work-section">
+            <aside class="section-aside">
+                <span class="section-index">03</span>
+                <h2 class="section-title" data-i18n="section-network">Réseau</h2>
+            </aside>
+            <ul class="project-list">
+                <li class="project-row"><a href="https://x.com/SanoBld"                 target="_blank" class="project-link"><span class="project-name">Twitter</span><span class="project-tag">𝕏</span></a></li>
+                <li class="project-row"><a href="https://www.reddit.com/user/Sano_bld/" target="_blank" class="project-link"><span class="project-name">Reddit</span><span class="project-tag">R/</span></a></li>
+                <li class="project-row"><a href="https://github.com/SanoBld"            target="_blank" class="project-link"><span class="project-name">GitHub</span><span class="project-tag">⌥</span></a></li>
+                <li class="project-row"><a href="https://discord.gg/nothingtech"        target="_blank" class="project-link"><span class="project-name">Discord</span><span class="project-tag">#</span></a></li>
+            </ul>
+        </section>
 
-            <!-- TITRE -->
-            <h1 id="main-title">SANO BLD</h1>
+    </main>
 
-            <!-- ═══════════════════════════════════════════════════
-                 WIDGET MÉTÉO
-                 Format : ☀️  Paris  ●  18°C  ●  Ensoleillé
-                 ═══════════════════════════════════════════════════ -->
-            <div id="weather-widget" class="weather-widget">
-                <span id="ww-icon" class="ww-icon">⟳</span>
-                <span id="ww-city" class="ww-city">—</span>
-                <span class="ww-dot">●</span>
-                <span id="ww-temp" class="ww-temp">--°C</span>
-                <span class="ww-dot">●</span>
-                <span id="ww-cond" class="ww-cond" data-i18n="weather-loading">chargement</span>
-            </div>
-
-            <!-- ═══════════════════════════════════════════════════
-                 WIDGETS SYSTÈME
-                 ═══════════════════════════════════════════════════ -->
-            <div class="widgets-row">
-                <!-- Calendrier : cycle Date → Heure → Événement -->
-                <div class="widget active-fx" id="date-widget">
-                    <span id="date-val"   class="dyn-txt widget-val" style="font-size:1.1rem;">--.--.--</span>
-                    <span id="date-label" class="widget-lbl" data-i18n="widget-calendar"
-                          style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">
-                        Calendrier
-                    </span>
-                </div>
-
-                <!-- Vues / Infos système : cycle 9 indicateurs -->
-                <div class="widget active-fx" id="view-widget">
-                    <span id="view-val"   class="dyn-txt widget-val" style="font-size:1.1rem;">...</span>
-                    <span id="view-label" class="widget-lbl" data-i18n="widget-views"
-                          style="font-size:0.6rem; color:inherit; margin-top:4px; text-transform:uppercase;">
-                        Vues
-                    </span>
-                </div>
-            </div>
-
-            <!-- ═══════════════════════════════════════════════════
-                 NAVIGATION — Liens & Sections déroulantes
-                 ═══════════════════════════════════════════════════ -->
-            <nav class="links-grid">
-                <a href="https://x.com/SanoBld"                 target="_blank" class="link-item active-fx"><span>// TWITTER</span><span>→</span></a>
-                <a href="https://www.reddit.com/user/Sano_bld/" target="_blank" class="link-item active-fx"><span>// REDDIT</span><span>→</span></a>
-                <a href="https://github.com/SanoBld"            target="_blank" class="link-item active-fx"><span>// GITHUB</span><span>→</span></a>
-                <a href="https://discord.gg/nothingtech"        target="_blank" class="link-item active-fx"><span>// DISCORD NOTHING</span><span>→</span></a>
-
-                <!-- APPLICATIONS -->
-                <div class="about-section active-fx toggle-box" id="apps-trigger">
-                    <div class="about-header">
-                        <span data-i18n="section-apps">// APPLICATIONS</span>
-                        <span class="arrow-icon">→</span>
-                    </div>
-                    <div class="about-content-wrapper">
-                        <a href="https://sanobld.github.io/Unitix/"      target="_blank" class="project-link-item">// UNITIX</a>
-                        <a href="https://sanobld.github.io/Eco-Drive/"   target="_blank" class="project-link-item">// ECO DRIVE</a>
-                        <a href="https://soboheme.github.io/Web/"        target="_blank" class="project-link-item">// SO BOHEME</a>
-                        <a href="https://mostafaalagamy.github.io/"      target="_blank" class="project-link-item">// METROLIST</a>
-                        <a href="https://sanobld.github.io/BioLinkMaker/"      target="_blank" class="project-link-item">// BIOLINK MAKER</a>
-                        <a href="https://sanobld.github.io/LastStats/"      target="_blank" class="project-link-item">// LASTSTATS</a>
-
-                    </div>
-                </div>
-
-                <!-- JEUX -->
-                <div class="about-section active-fx toggle-box" id="games-trigger">
-                    <div class="about-header">
-                        <span data-i18n="section-games">// JEUX</span>
-                        <span class="arrow-icon">→</span>
-                    </div>
-                    <div class="about-content-wrapper">
-                        <a href="https://sanobld.github.io/Glide/"         target="_blank" class="project-link-item">// GLIDE</a>
-                        <a href="https://sanobld.github.io/Survivor.io/"   target="_blank" class="project-link-item">// SURVIVOR.IO</a>
-                        <a href="https://sanobld.github.io/Tic-Tac-Boom/" target="_blank" class="project-link-item">// TIC TAC BOOM</a>
-                        <a href="https://sanobld.github.io/Cards/" target="_blank" class="project-link-item">// CARDS</a>                   
-                    </div>
-                </div>
-
-                <!-- À PROPOS -->
-                <div class="about-section active-fx toggle-box" id="about-trigger">
-                    <div class="about-header">
-                        <span data-i18n="section-about">// À PROPOS</span>
-                        <span class="arrow-icon">→</span>
-                    </div>
-                    <div class="about-content-wrapper">
-                        <p id="about-text"
-                           style="font-size:1rem; line-height:1.4; color:inherit; margin:0;"
-                           data-i18n="about-body">
-                            Interface personnelle minimaliste développée par passion pour le code et le design.
-                            Ce hub regroupe mes projets web créés pour le plaisir d'explorer de nouvelles
-                            technologies et affiner mes compétences en développement front-end. Inspiré par
-                            l'esthétique brute et épurée de <span class="dyn-txt">Nothing</span>, ce site
-                            combine typographie dot-matrix, animations canvas et effets interactifs.
-                        </p>
-                    </div>
-                </div>
-            </nav>
-
-            <footer class="footer" data-i18n="footer">SANO BLD // 2025</footer>
-        </div>
-    </div>
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <span class="footer-copy" data-i18n="footer">Sano Bld © 2026</span>
+        <span id="footer-views" class="footer-views">—</span>
+        <span id="footer-time"  class="footer-time">00:00:00</span>
+    </footer>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>

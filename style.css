@@ -1,569 +1,472 @@
-/* ================================================================
-   POLICE DOT-MATRIX (Nothing OS)
-   ================================================================ */
-@font-face {
-    font-family: 'NothingSerif';
-    src: url('NothingSerif-5px.otf') format('opentype');
-    font-weight: normal;
-    font-style:  normal;
-}
+/* ============================================================
+   SANO BLD — Dualité Luxe
+   Beige Lin #F5F2ED · Bleu Nuit #0A1628
+   style.css
+   ============================================================ */
 
-::selection { background-color: #333; color: #fff; }
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@200;300;400&display=swap');
 
-/* ================================================================
-   VARIABLES GLOBALES — Thème sombre (défaut)
-   ================================================================ */
+/* ── TOKENS ── */
 :root {
-    --bg-color:     #050505;
-    --text-main:    #ffffff;
-    --text-dim:     #888888;
-    --accent-color: #ff0037;
-    --reveal-color: #ffffff;     /* utilisé dans h1::after */
-    --dynamic-color: inherit;   /* utilisé dans .dyn-txt  */
-    --font-serif:   'NothingSerif', serif;
-    --card-bg:      rgba(255, 255, 255, 0.03);
-    --card-border:  rgba(255, 255, 255, 0.10);
+    /* Palette identitaire */
+    --linen:  #F5F2ED;
+    --night:  #0A1628;
+
+    /* LIGHT (défaut) */
+    --bg:          var(--linen);
+    --text:        var(--night);
+    --text-dim:    rgba(10, 22, 40, 0.42);
+    --text-faint:  rgba(10, 22, 40, 0.18);
+    --rule:        rgba(10, 22, 40, 0.10);
+    --pre-bg:      var(--linen);
+    --pre-text:    var(--night);
+
+    --ease:  cubic-bezier(0.23, 1, 0.32, 1);
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-body:    'Jost', sans-serif;
 }
 
-/* ================================================================
-   THÈME CLAIR
-   ================================================================ */
-body.light-mode {
-    --bg-color:     #f2f2f2;
-    --text-main:    #000000;
-    --text-dim:     #444444;
-    --reveal-color: #000000;
-    --card-bg:      rgba(0, 0, 0, 0.04);
-    --card-border:  rgba(0, 0, 0, 0.10);
+/* DARK */
+body.dark {
+    --bg:         var(--night);
+    --text:       var(--linen);
+    --text-dim:   rgba(245, 242, 237, 0.40);
+    --text-faint: rgba(245, 242, 237, 0.16);
+    --rule:       rgba(245, 242, 237, 0.09);
+    --pre-bg:     var(--night);
+    --pre-text:   var(--linen);
 }
 
-/* ================================================================
-   RESET & BASE
-   ================================================================ */
-* {
-    cursor: none !important;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-    margin: 0; padding: 0;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: var(--font-serif);
-    display: flex;
-    justify-content: center;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-weight: 200;
     min-height: 100vh;
-    overflow-y: auto;
     overflow-x: hidden;
-    transition: background-color 0.4s ease;
+    cursor: none;
+    /* Transition très lente — lumière qui s'éteint */
+    transition:
+        background 1.5s var(--ease),
+        color      1.5s var(--ease);
 }
 
-/* ================================================================
-   PRELOADER — dots animés, z-index absolu maximal
-   ================================================================ */
+a { color: inherit; text-decoration: none; }
+
+@media (hover: none) {
+    body { cursor: auto; }
+    #cursor-outer, #cursor-inner { display: none; }
+}
+
+/* ============================================================
+   CURSEUR PRECISION SILK v2
+   Point 6px + anneau 30px · mix-blend-mode: difference
+   LERP 0.18 sur l'anneau, instantané sur le dot
+   ============================================================ */
+#cursor-outer {
+    position: fixed;
+    width:  30px;
+    height: 30px;
+    border: 0.5px solid #fff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    /* transform: translate(-50%, -50%) géré par JS */
+    top: 0; left: 0;
+    will-change: transform;
+    transition:
+        width  0.4s var(--ease),
+        height 0.4s var(--ease),
+        border-color 0.1s;
+}
+
+#cursor-inner {
+    position: fixed;
+    width:  6px;
+    height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    top: 0; left: 0;
+    will-change: transform;
+}
+
+/* Expand sur hover */
+body.cursor-hover #cursor-outer {
+    width:  52px;
+    height: 52px;
+}
+
+/* ============================================================
+   PRELOADER ENVELOPPE
+   Deux moitiés (haut/bas) qui s'écartent
+   ============================================================ */
 #preloader {
-    position: fixed; inset: 0;
-    background-color: var(--bg-color);
+    position: fixed;
+    inset: 0;
     z-index: 99999;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-}
-#preloader.fade-out { opacity: 0; pointer-events: none; }
-
-.preloader-dots { display: flex; gap: 10px; align-items: center; }
-
-.preloader-dots span {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background-color: var(--text-main);
-    animation: dotPulse 1.2s ease-in-out infinite;
-    opacity: 0.15;
-}
-.preloader-dots span:nth-child(1) { animation-delay: 0s;    }
-.preloader-dots span:nth-child(2) { animation-delay: 0.22s; }
-.preloader-dots span:nth-child(3) { animation-delay: 0.44s; }
-
-@keyframes dotPulse {
-    0%, 80%, 100% { opacity: 0.15; transform: scale(0.85); }
-    40%            { opacity: 1;    transform: scale(1.2);  }
-}
-
-/* ================================================================
-   OVERLAY DE SCAN
-   Fond plein = même couleur que --bg-color.
-   Il est progressivement "rogné" du haut vers le bas par clip-path
-   au passage de la ligne rouge, révélant le site dessous.
-   ================================================================ */
-#scan-overlay {
-    position: fixed; inset: 0;
-    background-color: var(--bg-color);
-    z-index: 9000;          /* au-dessus du contenu, sous le scan-line */
-    pointer-events: none;
-    will-change: clip-path;
-    /* État initial : couvre tout → clip-path animé via JS */
-    clip-path: inset(0 0 0 0);
-}
-
-/* ================================================================
-   LIGNE DE SCAN — barre rouge avec halo lumineux
-   ================================================================ */
-#scan-line {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 2px;
-    background: var(--accent-color);
-    box-shadow:
-        0 0  6px  2px var(--accent-color),
-        0 0 18px  4px rgba(255, 0, 55, 0.40),
-        0 0 40px  8px rgba(255, 0, 55, 0.18);
-    z-index: 9001;          /* juste au-dessus de l'overlay */
-    display: none;
-    pointer-events: none;
-    will-change: transform;
-}
-
-/* ================================================================
-   CONTENEUR PRINCIPAL
-   Pas de clip-path ici — c'est l'overlay qui masque, pas le container.
-   ================================================================ */
-.container {
-    position: relative;
-    width: 100%; max-width: 500px;
-    padding: 40px 24px 80px;
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    z-index: 10;
+    pointer-events: none;
 }
 
-/* Barre de contrôles toujours visible dès que l'overlay se retire */
-.top-controls {
+.pre-half {
+    flex: 1;
+    background: var(--pre-bg);
     display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transition: transform 0.95s var(--ease);
+    overflow: hidden;
+}
+.pre-bot { align-items: flex-start; }
+
+/* Le nom s'affiche à cheval sur la ligne centrale */
+.pre-top { padding-bottom: 0.12em; }
+
+.pre-name {
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 7vw, 7.5rem);
+    font-weight: 300;
+    letter-spacing: 0.38em;
+    color: var(--pre-text);
+    white-space: nowrap;
+    line-height: 1;
+    /* Chars injectés par JS, chacun avec animation */
+}
+
+.pre-name .char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: charIn 0.5s var(--ease) forwards;
+}
+
+@keyframes charIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ouverture enveloppe */
+#preloader.open .pre-top { transform: translateY(-100%); }
+#preloader.open .pre-bot { transform: translateY(100%); }
+#preloader.gone { display: none; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    width: 100%; max-width: 500px;
-    margin-bottom: 20px;
+    padding: 28px max(7vw, 36px);
+    pointer-events: none;
 }
 
-/* ================================================================
-   CARTE DE BASE — style commun à tous les éléments interactifs
-   ================================================================ */
-.ctrl-btn, .widget, .link-item, .about-section {
-    border: 1px solid var(--card-border);
-    transition:
-        transform     0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        background    0.22s ease,
-        color         0.22s ease,
-        border-color  0.22s ease,
-        box-shadow    0.22s ease;
-}
-
-.ctrl-btn, .widget, .link-item, .about-section {
-    background: var(--card-bg);
-}
-
-/* ================================================================
-   HOVER — inversion Nothing OS (fond blanc/noir, texte inversé)
-   ================================================================ */
-.ctrl-btn:hover,
-.widget:hover,
-.link-item:hover,
-.about-section:hover {
-    background:   var(--text-main) !important;
-    color:        var(--bg-color);
-    border-color: var(--text-main) !important;
-    transform:    translateY(-2px);
-    box-shadow:   0 6px 20px rgba(0, 0, 0, 0.18);
-}
-
-body.light-mode .ctrl-btn:hover,
-body.light-mode .widget:hover,
-body.light-mode .link-item:hover,
-body.light-mode .about-section:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-/* ================================================================
-   FEEDBACK CLIC — micro-scale
-   ================================================================ */
-.about-section:active, .link-item:active {
-    transform: translateY(0) scale(0.99) !important;
-    transition: transform 0.08s ease;
-}
-.widget:active, .ctrl-btn:active {
-    transform: translateY(0) scale(0.97) !important;
-    transition: transform 0.08s ease;
-}
-
-/* ================================================================
-   WIDGETS — transition fade + slide (style Nothing)
-   ================================================================ */
-.widget-val,
-.widget-lbl {
-    display: block;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-}
-
-/* Sortie : disparaît vers le bas */
-.widget-exit .widget-val,
-.widget-exit .widget-lbl {
-    opacity: 0;
-    transform: translateY(5px);
-    transition: opacity 0.13s ease, transform 0.13s ease;
-}
-
-/* Entrée : arrive depuis le haut (transition désactivée pour le flash) */
-.widget-enter .widget-val,
-.widget-enter .widget-lbl {
-    opacity: 0;
-    transform: translateY(-5px);
-    transition: none;
-}
-
-/* ================================================================
-   BOUTONS CIRCULAIRES
-   ================================================================ */
-.ctrl-btn {
-    background: transparent;
-    color: var(--text-main);
-    width: 65px; height: 65px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-serif);
-    font-size: 10px;
-    font-weight: bold;
-    flex-shrink: 0;
-}
-
-/* ================================================================
-   LOGO
-   ================================================================ */
-.logo-wrapper {
-    width: 100px; height: 100px;
-    border: 1px solid var(--card-border);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    background: var(--card-bg);
-    overflow: hidden;
-    transition: border-color 0.4s ease;
-}
-.main-logo { width: 80px; height: 80px; object-fit: contain; }
-
-/* ================================================================
-   TITRE H1 — outline + révélation au survol souris
-   ================================================================ */
-h1 {
-    font-family: var(--font-serif) !important;
-    font-size: clamp(2rem, 9vw, 3.5rem);
-    margin: 0;
-    text-transform: uppercase;
-    text-align: center;
-    color: transparent;
-    -webkit-text-stroke: 1px var(--text-main);
-    position: relative;
-    letter-spacing: 8px;
-    text-indent: 8px;
-}
-h1::after {
-    content: "SANO BLD";
-    position: absolute; left: 0; top: 0; width: 100%;
-    color: var(--reveal-color);
-    clip-path: circle(80px at var(--m-x, -500px) var(--m-y, -500px));
-    -webkit-text-stroke: 0;
-    transition: color 0.4s ease;
-}
-
-/* ================================================================
-   WIDGET MÉTÉO — sous le titre
-   Format : ☀️  Paris  ●  18°C  ●  Ensoleillé
-   ================================================================ */
-.weather-widget {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 16px 0 30px 0;
-    font-family: var(--font-serif);
-    letter-spacing: 2px;
-
-    /* Fade-in à l'apparition des données */
-    opacity: 0;
-    transition: opacity 0.7s ease;
-}
-.weather-widget.loaded { opacity: 1; }
-
-/* Icône météo */
-.ww-icon {
-    font-size: 1.05rem;
-    line-height: 1;
-}
-
-/* Nom de ville — discret mais lisible */
-.ww-city {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 2.5px;
-}
-
-/* Séparateur ● */
-.ww-dot {
-    font-size: 0.4rem;
-    color: var(--accent-color);
-    opacity: 0.7;
-    line-height: 1;
-}
-
-/* Température — accentuée */
-.ww-temp {
+.header-logo {
+    pointer-events: all;
+    font-family: var(--font-display);
     font-size: 0.85rem;
-    font-weight: bold;
-    color: var(--text-main);
-    letter-spacing: 1.5px;
-}
-
-/* Condition — dim */
-.ww-cond {
-    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
     color: var(--text-dim);
-    text-transform: lowercase;
-    letter-spacing: 1.5px;
+    transition: color 0.3s ease;
+}
+.header-logo:hover { color: var(--text); }
+
+.header-nav {
+    pointer-events: all;
+    display: flex;
+    gap: 24px;
 }
 
-/* ================================================================
-   WIDGETS SYSTÈME — grille 2 colonnes
-   ================================================================ */
-.widget {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 12px;
-    backdrop-filter: blur(12px);
+.ctrl-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--font-body);
+    font-size: 0.58rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: none;
+    padding: 2px 0;
+    transition: color 0.3s ease;
+}
+.ctrl-btn:hover { color: var(--text); }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+    position: relative;
+    height: 100svh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     text-align: center;
-    min-height: 80px;
-    width: 100%;
-    font-family: var(--font-serif);
-}
-
-.widgets-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    width: 100%;
-    margin-bottom: 12px;
-}
-
-/* ================================================================
-   GRILLE DE LIENS
-   ================================================================ */
-.links-grid {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.link-item, .about-section {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 22px 28px;
-    text-decoration: none;
-    color: var(--text-main);
-    backdrop-filter: blur(12px);
-    display: block;
-    font-family: var(--font-serif);
-    font-size: 1.1rem;
-}
-
-.about-section  { grid-column: 1 / -1; cursor: pointer; overflow: hidden; }
-#about-trigger  { margin-top: 0; }
-.link-item      { display: flex; align-items: center; justify-content: space-between; }
-
-.about-header { display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
-.arrow-icon   { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
-.about-section.open .arrow-icon            { transform: rotate(90deg); }
-.about-content-wrapper                     { max-height: 0; opacity: 0; transition: 0.4s ease; overflow: hidden; }
-.about-section.open .about-content-wrapper { max-height: 500px; opacity: 1; margin-top: 15px; }
-
-/* ================================================================
-   LIENS DE PROJETS — style puce rouge
-   ================================================================ */
-.project-link-item {
-    display: block !important;
-    color: inherit !important;
-    text-decoration: none;
-    font-size: 1.05rem;
-    padding: 20px 24px 20px 50px;
-    margin: 14px 0;
-    background: rgba(127, 127, 127, 0.03);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(127, 127, 127, 0.15);
-    border-radius: 16px;
-    transition: all 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-    text-align: left;
+    padding: 0 max(7vw, 36px);
     overflow: hidden;
 }
 
-.project-link-item::before {
-    content: '';
-    position: absolute; left: 20px; top: 50%;
-    transform: translateY(-50%);
-    height: 12px; width: 4px;
-    background: var(--accent-color);
-    border-radius: 20px;
-    transition: all 0.28s ease;
+.hero-eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.5rem;
+    font-weight: 300;
+    letter-spacing: 0.44em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 3.2rem;
+    opacity: 0;
+    animation: fadeUp 1.2s var(--ease) 0.2s forwards;
 }
 
-.project-link-item:hover {
-    background: var(--text-main) !important;
-    color: var(--bg-color) !important;
-    transform: translateY(-2px);
-    border-color: var(--text-main) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
-}
-.project-link-item:hover::before { height: 25px; background: var(--bg-color); }
-.project-link-item:active        { transform: translateY(0) scale(0.99) !important; }
-
-body.light-mode .project-link-item {
-    background: rgba(0, 0, 0, 0.02);
-}
-
-/* ================================================================
-   TEXTE DYNAMIQUE (accent) & FOOTER
-   ================================================================ */
-.dyn-txt {
-    font-weight: bold;
-    color: var(--dynamic-color);
-    transition: color 0.4s ease;
+/* Titre — masque de texte, remontée depuis une ligne invisible */
+.hero-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 17vw, 21rem);
+    font-weight: 300;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 0.9;
+    color: var(--text);
+    user-select: none;
 }
 
-.footer {
-    font-family: var(--font-serif);
-    margin-top: 60px;
-    font-size: 0.7rem;
+/* Conteneur-masque : overflow hidden = le inner ne dépasse pas */
+.title-mask {
+    display: block;
+    overflow: hidden;
+    /* petit padding vertical pour ne pas couper les ascendantes */
+    padding: 0.04em 0;
+}
+
+.title-inner {
+    display: block;
+    opacity: 0;
+    transform: translateY(105%);
+    animation: maskReveal 1.1s var(--ease) forwards;
+}
+
+.title-mask:nth-child(1) .title-inner { animation-delay: 0.3s; }
+.title-mask:nth-child(2) .title-inner { animation-delay: 0.52s; }
+
+@keyframes maskReveal {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-sub {
+    font-family: var(--font-body);
+    font-size: 0.6rem;
+    font-weight: 200;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
     color: var(--text-dim);
-    letter-spacing: 4px;
+    margin-top: 2.8rem;
+    opacity: 0;
+    animation: fadeUp 1.1s var(--ease) 1.1s forwards;
 }
 
-/* ================================================================
-   CANVAS PARTICULES
-   ================================================================ */
-#particle-canvas {
-    position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 1100;
-    pointer-events: none;
+.hero-scroll {
+    position: absolute;
+    bottom: 30px;
+    right: max(7vw, 36px);
+    font-family: var(--font-body);
+    font-size: 0.48rem;
+    font-weight: 200;
+    letter-spacing: 0.3em;
+    color: var(--text-faint);
+    opacity: 0;
+    animation: fadeUp 1s var(--ease) 1.6s forwards;
 }
 
-/* ================================================================
-   CURSEUR PERSONNALISÉ
-   ================================================================ */
-#cursor-dot {
-    position: fixed;
-    width: 6px; height: 6px;
-    background-color: var(--accent-color);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 99999;
-    top: 0; left: 0;
+.hero-rule {
+    position: absolute;
+    bottom: 0;
+    left: max(7vw, 36px);
+    right: max(7vw, 36px);
+    height: 1px;
+    background: var(--rule);
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   WORK
+   ============================================================ */
+.work {
+    padding: 18vh max(7vw, 36px);
+    display: flex;
+    flex-direction: column;
+    gap: 16vh;
+}
+
+/* Section : sidebar gauche + liste droite */
+.work-section {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 0 6vw;
+    align-items: start;
+}
+
+.section-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: sticky;
+    top: 96px;
+}
+
+.section-index {
+    font-family: var(--font-body);
+    font-size: 0.48rem;
+    font-weight: 300;
+    letter-spacing: 0.26em;
+    color: var(--text-faint);
+}
+
+.section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.6vw, 2.6rem);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    line-height: 1;
+    transition: color 1.5s var(--ease);
+}
+
+/* ── LISTE ── */
+.project-list {
+    list-style: none;
+    border-top: 1px solid var(--rule);
+    transition: border-color 1.5s var(--ease);
+}
+
+.project-row {
+    border-bottom: 1px solid var(--rule);
     transition:
-        width            0.2s,
-        height           0.2s,
-        transform        0.15s ease,
-        background-color 0.3s,
-        opacity          0.2s;
-    will-change: transform;
-    transform: translate(-50%, -50%);
+        border-color 1.5s var(--ease),
+        opacity      0.7s var(--ease),
+        transform    0.7s var(--ease);
+
+    /* Reveal initial */
+    opacity: 0;
+    transform: translateY(20px);
 }
-#cursor-dot.hover {
-    width: 14px; height: 14px;
-    background-color: transparent;
-    border: 2px solid var(--accent-color);
-}
-#cursor-dot.clicking {
-    transform: translate(-50%, -50%) scale(0.45);
-    transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1);
+.project-row.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-/* ================================================================
-   MODE PERFORMANCE — désactive toutes les animations coûteuses
-   ================================================================ */
-body.perf-mode .active-fx,
-body.perf-mode .active-fx:hover { transform: none !important; }
-
-/* ================================================================
-   RESPONSIVE — DESKTOP INTERMÉDIAIRE
-   ================================================================ */
-@media (max-width: 900px) and (min-width: 769px) {
-    .links-grid { grid-template-columns: 1fr 1fr; }
+.project-link {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 1.3rem 0;
+    cursor: none;
 }
 
-/* ================================================================
-   RESPONSIVE — MOBILE
-   ================================================================ */
-@media (max-width: 768px) {
-    .container   { padding: 30px 20px 60px; }
-    .links-grid  { grid-template-columns: 1fr; gap: 14px; }
+/* Nom projet */
+.project-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.9rem);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    transition:
+        font-style     0.5s var(--ease),
+        letter-spacing 0.55s var(--ease),
+        color          1.5s var(--ease);
+}
 
-    .ctrl-btn { width: 70px; height: 70px; font-size: 9px; position: relative; }
-    .ctrl-btn::after {
-        content: ''; position: absolute;
-        top: -10px; right: -10px; bottom: -10px; left: -10px;
+.project-link:hover .project-name {
+    font-style: italic;
+    letter-spacing: 0.07em;
+}
+
+/* Tag */
+.project-tag {
+    font-family: var(--font-body);
+    font-size: 0.46rem;
+    font-weight: 300;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    flex-shrink: 0;
+    margin-left: 1.5rem;
+    transition:
+        color      0.4s ease,
+        opacity    1.5s var(--ease);
+}
+.project-link:hover .project-tag { color: var(--text-dim); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3vh max(7vw, 36px);
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-body);
+    font-size: 0.48rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    transition:
+        border-color 1.5s var(--ease),
+        color        1.5s var(--ease);
+}
+
+.footer-views { opacity: 0.6; font-variant-numeric: tabular-nums; }
+.footer-time  { font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 840px) {
+    .work-section {
+        grid-template-columns: 1fr;
+        gap: 2rem;
     }
-
-    .widget              { min-height: 90px; padding: 16px 12px; }
-    .link-item,
-    .about-section       { padding: 24px 30px; font-size: 1.05rem; }
-    .project-link-item   { padding: 22px 26px 22px 52px; margin: 16px 0; font-size: 1rem; }
-    .widgets-row         { gap: 14px; }
-    h1                   { letter-spacing: 6px; text-indent: 6px; }
-
-    .weather-widget      { gap: 8px; flex-wrap: wrap; justify-content: center; }
-}
-
-@media (max-width: 380px) {
-    .ctrl-btn            { width: 60px; height: 60px; font-size: 8px; }
-    .link-item,
-    .about-section       { padding: 20px 24px; font-size: 1rem; }
-    .project-link-item   { padding: 20px 22px 20px 48px; font-size: 0.95rem; }
-    h1                   { letter-spacing: 4px; text-indent: 4px; }
-}
-
-/* ================================================================
-   ÉCRAN TACTILE (coarse pointer)
-   ================================================================ */
-@media (pointer: coarse) {
-    #cursor-dot { display: none; }
-    * { cursor: auto !important; }
-
-    .ctrl-btn:active,
-    .widget:active,
-    .link-item:active,
-    .about-section:active { transform: scale(0.98); }
-
-    .ctrl-btn:active,
-    .widget:active,
-    .link-item:active,
-    .about-section:active {
-        background:   var(--text-main) !important;
-        color:        var(--bg-color)  !important;
-        border-color: var(--text-main) !important;
+    .section-aside {
+        position: static;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 1rem;
     }
+    .work { gap: 12vh; }
+}
 
-    body.perf-mode .active-fx            { transform: none !important; }
-    .active-fx:active                    { transform: scale(0.98) !important; }
-    body.perf-mode .active-fx:active     { transform: scale(0.98) !important; }
+@media (max-width: 520px) {
+    .hero-title { font-size: clamp(4rem, 22vw, 7rem); letter-spacing: 0.08em; }
+    .project-name { font-size: 1.5rem; }
+    .work { padding: 12vh 6vw; }
+    .site-header { padding: 20px 6vw; }
+    .site-footer { flex-wrap: wrap; gap: 10px; padding: 3vh 6vw; }
 }
