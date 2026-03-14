@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sano Bld</title>
-    <link rel="icon" type="image/png" href="logo.png?v=3">
+    <link rel="icon" type="image/png" href="logo.png?v=4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
@@ -14,11 +14,7 @@
 <body>
 
     <!-- ═══════════════════════════════════════════════════════
-         PRELOADER — Split-Text Corrigé
-         Architecture : grille 1×1 — les deux spans partagent
-         exactement la même cellule → alignement pixel-perfect.
-         clip-path coupe à 50% de la hauteur de l'élément.
-         Rideaux : Beige (haut) · Nuit (bas)
+         PRELOADER — Split-Text (inchangé, pixel-perfect)
     ═══════════════════════════════════════════════════════ -->
     <div id="preloader" aria-hidden="true">
         <div class="pre-curtain pre-curtain-top"></div>
@@ -29,102 +25,46 @@
         </div>
     </div>
 
-    <!-- CURSEUR CAMÉLÉON — SVG blanc + mix-blend-mode: difference -->
-    <div id="cursor-arrow" aria-hidden="true">
-        <svg width="14" height="22" viewBox="0 0 14 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1.5 1.5 L1.5 18.5 L5.2 14.4 L7.6 20.5 L9.8 19.6 L7.4 13.5 L12.8 13.5 Z"
-                  fill="white" paint-order="stroke fill"/>
-        </svg>
+    <!-- ═══════════════════════════════════════════════════════
+         CURSEUR GHOST — cercle mix-blend-mode:difference
+         S'agrandit sur le titre actif → "VOIR LE PROJET"
+    ═══════════════════════════════════════════════════════ -->
+    <div id="cursor-ghost" aria-hidden="true">
+        <span class="cursor-text">VOIR LE PROJET</span>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
-         BARRE DE NAVIGATION CENTRALE — agrandie
-         Logo · Sommaire scrollspy · Thème + Langue
+         HUD — 4 coins internes du viewport
+         Opacité 20% → 100% au survol
     ═══════════════════════════════════════════════════════ -->
-    <header class="site-nav" id="site-nav">
-        <a class="nav-logo" href="#">Sano Bld</a>
 
-        <nav class="nav-toc" aria-label="Sections">
-            <a href="#section-apps"    class="nav-toc-item" data-section="section-apps"    data-i18n="toc-apps">Applications</a>
-            <span class="nav-sep" aria-hidden="true">·</span>
-            <a href="#section-games"   class="nav-toc-item" data-section="section-games"   data-i18n="toc-games">Jeux</a>
-            <span class="nav-sep" aria-hidden="true">·</span>
-            <a href="#section-network" class="nav-toc-item" data-section="section-network" data-i18n="toc-network">Réseau</a>
-        </nav>
+    <!-- Haut-Gauche : Logo -->
+    <div class="hud hud-tl">
+        <a href="#" class="hud-logo" aria-label="Sano Bld — accueil">Sano Bld</a>
+    </div>
 
-        <div class="nav-controls">
-            <button id="lang-toggle"  class="ctrl-btn" aria-label="Langue">EN</button>
-            <button id="theme-toggle" class="ctrl-btn" aria-label="Thème">◐</button>
-        </div>
-    </header>
+    <!-- Haut-Droite : Contrôles -->
+    <div class="hud hud-tr">
+        <button id="lang-toggle"  class="hud-btn" aria-label="Basculer la langue">EN</button>
+        <button id="theme-toggle" class="hud-btn" aria-label="Basculer le thème">◐</button>
+    </div>
 
-    <!-- HERO — Tilt souris sur .hero-title -->
-    <section class="hero">
-        <div class="hero-eyebrow" data-i18n="hero-eyebrow">Portfolio · 2026</div>
-        <h1 class="hero-title" id="hero-title">
-            <span class="title-mask"><span class="title-inner">SANO</span></span>
-            <span class="title-mask"><span class="title-inner">BLD</span></span>
-        </h1>
-        <p class="hero-sub" data-i18n="hero-sub">Creative Developer</p>
-        <span class="hero-scroll" data-i18n="scroll-hint">— scroll</span>
-        <div class="hero-rule"></div>
-    </section>
+    <!-- Bas-Gauche : Index + Catégorie -->
+    <div class="hud hud-bl">
+        <span id="hud-index" class="hud-index">[01 // 14]</span>
+    </div>
 
-    <!-- WORK -->
-    <main class="work">
+    <!-- Bas-Droite : Vues + Horloge -->
+    <div class="hud hud-br">
+        <span id="hud-views" class="hud-meta">—</span>
+        <span id="hud-time"  class="hud-meta">00:00:00</span>
+    </div>
 
-        <!-- 01 APPLICATIONS -->
-        <section class="work-section" id="section-apps">
-            <aside class="section-aside" data-parallax>
-                <span class="section-index">01</span>
-                <h2 class="section-title" data-i18n="section-apps">Applications</h2>
-            </aside>
-            <ul class="project-list">
-                <li class="project-row"><a href="https://sanobld.github.io/Unitix/"       target="_blank" class="project-link"><span class="project-name">Unitix</span><span class="project-tag">App</span></a></li>
-                <li class="project-row"><a href="https://sanobld.github.io/Eco-Drive/"    target="_blank" class="project-link"><span class="project-name">Eco Drive</span><span class="project-tag">App</span></a></li>
-                <li class="project-row"><a href="https://soboheme.github.io/Web/"         target="_blank" class="project-link"><span class="project-name">So Bohème</span><span class="project-tag">Web</span></a></li>
-                <li class="project-row"><a href="https://mostafaalagamy.github.io/"       target="_blank" class="project-link"><span class="project-name">Metrolist</span><span class="project-tag">App</span></a></li>
-                <li class="project-row"><a href="https://sanobld.github.io/BioLinkMaker/" target="_blank" class="project-link"><span class="project-name">BioLink Maker</span><span class="project-tag">Tool</span></a></li>
-                <li class="project-row"><a href="https://sanobld.github.io/LastStats/"    target="_blank" class="project-link"><span class="project-name">LastStats</span><span class="project-tag">PWA</span></a></li>
-            </ul>
-        </section>
-
-        <!-- 02 JEUX -->
-        <section class="work-section" id="section-games">
-            <aside class="section-aside" data-parallax>
-                <span class="section-index">02</span>
-                <h2 class="section-title" data-i18n="section-games">Jeux</h2>
-            </aside>
-            <ul class="project-list">
-                <li class="project-row"><a href="https://sanobld.github.io/Glide/"         target="_blank" class="project-link"><span class="project-name">Glide</span><span class="project-tag">Game</span></a></li>
-                <li class="project-row"><a href="https://sanobld.github.io/Survivor.io/"   target="_blank" class="project-link"><span class="project-name">Survivor.io</span><span class="project-tag">Game</span></a></li>
-                <li class="project-row"><a href="https://sanobld.github.io/Tic-Tac-Boom/" target="_blank" class="project-link"><span class="project-name">Tic Tac Boom</span><span class="project-tag">Game</span></a></li>
-                <li class="project-row"><a href="https://sanobld.github.io/Cards/"         target="_blank" class="project-link"><span class="project-name">Cards</span><span class="project-tag">Game</span></a></li>
-            </ul>
-        </section>
-
-        <!-- 03 RÉSEAU -->
-        <section class="work-section" id="section-network">
-            <aside class="section-aside" data-parallax>
-                <span class="section-index">03</span>
-                <h2 class="section-title" data-i18n="section-network">Réseau</h2>
-            </aside>
-            <ul class="project-list">
-                <li class="project-row"><a href="https://x.com/SanoBld"                 target="_blank" class="project-link"><span class="project-name">Twitter</span><span class="project-tag">𝕏</span></a></li>
-                <li class="project-row"><a href="https://www.reddit.com/user/Sano_bld/" target="_blank" class="project-link"><span class="project-name">Reddit</span><span class="project-tag">R/</span></a></li>
-                <li class="project-row"><a href="https://github.com/SanoBld"            target="_blank" class="project-link"><span class="project-name">GitHub</span><span class="project-tag">⌥</span></a></li>
-                <li class="project-row"><a href="https://discord.gg/nothingtech"        target="_blank" class="project-link"><span class="project-name">Discord</span><span class="project-tag">#</span></a></li>
-            </ul>
-        </section>
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="site-footer">
-        <span class="footer-copy" data-i18n="footer">Sano Bld © 2026</span>
-        <span id="footer-views" class="footer-views">—</span>
-        <span id="footer-time"  class="footer-time">00:00:00</span>
-    </footer>
+    <!-- ═══════════════════════════════════════════════════════
+         SCENE — galerie verticale snap
+         Slides générés dynamiquement par script.js
+    ═══════════════════════════════════════════════════════ -->
+    <main id="scene" role="main" aria-label="Galerie de projets"></main>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
