@@ -124,6 +124,43 @@ function applyTranslations(lang) {
 }
 
 // ─────────────────────────────────────────────
+// PRÉFÉRENCES : SON + ANIMATIONS
+// ─────────────────────────────────────────────
+let soundEnabled = localStorage.getItem('sound') !== '0';
+let animEnabled  = localStorage.getItem('anim')  !== '0';
+
+function initPreferenceToggles() {
+  const soundBtn = document.getElementById('sound-toggle');
+  const animBtn  = document.getElementById('anim-toggle');
+  if (!soundBtn || !animBtn) return;
+
+  function applySoundState() {
+    soundBtn.classList.toggle('ctrl-off', !soundEnabled);
+    soundBtn.title = soundEnabled ? 'Sons actifs' : 'Sons désactivés';
+  }
+  function applyAnimState() {
+    animBtn.classList.toggle('ctrl-off', !animEnabled);
+    document.body.classList.toggle('no-anim', !animEnabled);
+    animBtn.title = animEnabled ? 'Animations actives' : 'Animations désactivées';
+  }
+
+  applySoundState();
+  applyAnimState();
+
+  soundBtn.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    localStorage.setItem('sound', soundEnabled ? '1' : '0');
+    applySoundState();
+  });
+  animBtn.addEventListener('click', () => {
+    animEnabled = !animEnabled;
+    localStorage.setItem('anim', animEnabled ? '1' : '0');
+    applyAnimState();
+  });
+}
+initPreferenceToggles();
+
+// ─────────────────────────────────────────────
 // SON (Web Audio API) — très discrets
 // ─────────────────────────────────────────────
 let audioCtx = null;
@@ -133,6 +170,7 @@ function getAudioCtx() {
 }
 
 function playTick(freq = 700, dur = 0.07, vol = 0.055) {
+  if (!soundEnabled) return;
   try {
     const ctx  = getAudioCtx();
     const osc  = ctx.createOscillator();
@@ -150,6 +188,7 @@ function playTick(freq = 700, dur = 0.07, vol = 0.055) {
 }
 
 function playWhoosh(vol = 0.04) {
+  if (!soundEnabled) return;
   try {
     const ctx    = getAudioCtx();
     const buf    = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate);
@@ -456,16 +495,45 @@ function applyTheme(theme, mode) {
   else localStorage.removeItem('theme');
 }
 
+function fireThemeRing(cx, cy) {
+  const ring = document.createElement('div');
+  const maxD = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) * 2 + 40;
+  Object.assign(ring.style, {
+    position:      'fixed',
+    left:          cx + 'px',
+    top:           cy + 'px',
+    width:         '6px',
+    height:        '6px',
+    borderRadius:  '50%',
+    border:        '2.5px solid #C98A35',
+    transform:     'translate(-50%, -50%)',
+    pointerEvents: 'none',
+    zIndex:        '19998',
+  });
+  document.body.appendChild(ring);
+  ring.animate(
+    [
+      { width: '6px',       height: '6px',       opacity: 1, offset: 0 },
+      { width: maxD + 'px', height: maxD + 'px', opacity: 0, offset: 1 },
+    ],
+    { duration: 680, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+  ).onfinish = () => ring.remove();
+}
+
 function cycleTheme(originEl) {
   const cur = getCurrentMode();
   const next = cur === 'light' ? 'dark' : cur === 'dark' ? 'auto' : 'light';
   const nextTheme = getEffectiveTheme(next === 'auto' ? null : next);
 
+  const rect = originEl.getBoundingClientRect();
+  const cx   = rect.left + rect.width  / 2;
+  const cy   = rect.top  + rect.height / 2;
+
+  // Anneau orange systématique
+  fireThemeRing(cx, cy);
+
   // Animation masque cercle
   if (typeof document.startViewTransition === 'function') {
-    const rect = originEl.getBoundingClientRect();
-    const cx   = rect.left + rect.width  / 2;
-    const cy   = rect.top  + rect.height / 2;
     const maxR = Math.hypot(
       Math.max(cx, window.innerWidth  - cx),
       Math.max(cy, window.innerHeight - cy)
@@ -479,20 +547,17 @@ function cycleTheme(originEl) {
       );
     }).catch(() => {});
   } else {
-    // Fallback clip-path overlay
-    const rect = originEl.getBoundingClientRect();
-    const cx   = rect.left + rect.width  / 2;
-    const cy   = rect.top  + rect.height / 2;
     const maxR = Math.hypot(
       Math.max(cx, window.innerWidth  - cx),
       Math.max(cy, window.innerHeight - cy)
     ) + 20;
 
-    const bgNew = nextTheme === 'dark' ? '#1c2330' : '#F2D99B';
-    themeOverlay.style.background  = bgNew;
+    // Overlay orange visible → puis thème appliqué
+    themeOverlay.style.background  = '#C98A35';
+    themeOverlay.style.opacity     = '0.18';
     themeOverlay.style.clipPath    = `circle(0px at ${cx}px ${cy}px)`;
     themeOverlay.style.transition  = 'none';
-    themeOverlay.offsetHeight; // reflow
+    themeOverlay.offsetHeight;
     themeOverlay.style.transition  = `clip-path 0.62s cubic-bezier(0.22, 1, 0.36, 1)`;
     themeOverlay.style.clipPath    = `circle(${maxR}px at ${cx}px ${cy}px)`;
 
@@ -500,6 +565,7 @@ function cycleTheme(originEl) {
       applyTheme(nextTheme, next);
       themeOverlay.style.transition = 'none';
       themeOverlay.style.clipPath   = `circle(0px at ${cx}px ${cy}px)`;
+      themeOverlay.style.opacity    = '1';
     }, 580);
   }
 
@@ -583,6 +649,7 @@ let skewTarget     = 0;
 let skewRafId      = null;
 
 function updateGhostParallax() {
+  if (!animEnabled) return;
   const sy = window.scrollY;
   document.querySelectorAll('.card-ghost').forEach((ghost, i) => {
     const speed = 0.022 + (i % 4) * 0.007;
@@ -591,6 +658,7 @@ function updateGhostParallax() {
 }
 
 function skewTick() {
+  if (!animEnabled) { mainContent.style.transform = ''; skewRafId = null; return; }
   skewCurrent += (skewTarget - skewCurrent) * 0.1;
   skewTarget  *= 0.78;
   const val = parseFloat(skewCurrent.toFixed(3));

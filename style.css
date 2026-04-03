@@ -11,7 +11,7 @@
   --red:          #AA211F;
   --slate:        #283543;
   --mustard:      #C98A35;
-  --cursor-color: #2563EB;
+  --cursor-color: #1D2330;
 
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans:  'Montserrat', sans-serif;
@@ -28,7 +28,7 @@
   --bg-hover:     #1a2538;
   --text:         #F2D99B;
   --muted:        #8a9baa;
-  --cursor-color: #F2D99B;
+  --cursor-color: #C88C3B;
 }
 [data-theme="light"] {
   --bg:           #F2D99B;
@@ -36,7 +36,7 @@
   --bg-hover:     #eccf7e;
   --text:         #2B2B31;
   --muted:        #556070;
-  --cursor-color: #2563EB;
+  --cursor-color: #1D2330;
 }
 
 ::selection { background: var(--text); color: var(--bg); }
@@ -311,6 +311,8 @@ body.cursor-link .cursor {
   transition: border-color var(--transition), color var(--transition);
 }
 .ctrl-btn:hover { border-color: var(--mustard); color: var(--mustard); }
+.ctrl-btn.ctrl-off { opacity: 0.35; }
+.ctrl-btn.ctrl-off:hover { opacity: 1; }
 
 /* Theme button state glyph */
 .theme-btn[data-mode="light"]  { letter-spacing: 0; font-size: 0.9rem; padding: 0.18rem 0.55rem; }
@@ -525,12 +527,26 @@ body.cursor-link .cursor {
 .project-card:nth-child(1) { grid-column: 1 / span 2; }
 .project-card:nth-child(4) { grid-column: 2 / span 2; }
 
+.project-card:nth-child(5):last-child { grid-column: 1 / -1; }
+
 .project-grid.grid-compact { grid-template-columns: 1fr 1fr; }
 .project-grid.grid-compact .project-card:nth-child(1),
 .project-grid.grid-compact .project-card:nth-child(4) { grid-column: auto; }
+.project-grid.grid-compact .project-card:last-child { grid-column: auto; }
 
-.project-grid:has(.project-link:hover) .project-card:not(:has(.project-link:hover)) {
-  opacity: 0.28;
+/* Overlay sur les cartes non-survolées */
+.project-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.35s var(--ease-out);
+}
+.project-grid:has(.project-link:hover) .project-card:not(:has(.project-link:hover))::after {
+  opacity: 0.58;
 }
 
 .project-card {
@@ -586,8 +602,9 @@ body.cursor-link .cursor {
   transform: translateY(var(--py, 0px));
 }
 .project-link:hover .card-ghost {
-  transform: translateY(var(--py, 0px)) scale(1.07) translate(3%, 2%);
-  opacity: 0.6;
+  transform: translateY(calc(var(--py, 0px) - 1.8rem));
+  opacity: 0.82;
+  -webkit-text-stroke: 1.5px var(--text);
 }
 
 .card-num {
@@ -878,6 +895,12 @@ body.cursor-link .cursor {
 
 /* ── Easter Egg Konami ──────────────────────── */
 html.konami-active { animation: konami-glow 4s ease forwards; }
+
+/* ── No-anim mode ───────────────────────────── */
+body.no-anim * { animation-play-state: paused !important; }
+body.no-anim .grain { opacity: 0 !important; }
+body.no-anim #main-content { transform: none !important; }
+body.no-anim .card-ghost { transform: translateY(0) !important; }
 
 @keyframes konami-glow {
   0%   { filter: hue-rotate(0deg)   saturate(1); }
