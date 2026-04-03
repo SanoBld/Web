@@ -3,14 +3,15 @@
    ============================================================ */
 
 :root {
-  --bg:        #F2D99B;
-  --bg-dim:    #e8cc88;
-  --bg-hover:  #eccf7e;
-  --text:      #2B2B31;
-  --muted:     #556070;
-  --red:       #AA211F;
-  --slate:     #283543;
-  --mustard:   #C98A35;
+  --bg:           #F2D99B;
+  --bg-dim:       #e8cc88;
+  --bg-hover:     #eccf7e;
+  --text:         #2B2B31;
+  --muted:        #556070;
+  --red:          #AA211F;
+  --slate:        #283543;
+  --mustard:      #C98A35;
+  --cursor-color: #2563EB;
 
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans:  'Montserrat', sans-serif;
@@ -22,18 +23,20 @@
 }
 
 [data-theme="dark"] {
-  --bg:       #1c2330;
-  --bg-dim:   #242d3c;
-  --bg-hover: #1a2538;
-  --text:     #F2D99B;
-  --muted:    #8a9baa;
+  --bg:           #1c2330;
+  --bg-dim:       #242d3c;
+  --bg-hover:     #1a2538;
+  --text:         #F2D99B;
+  --muted:        #8a9baa;
+  --cursor-color: #F2D99B;
 }
 [data-theme="light"] {
-  --bg:       #F2D99B;
-  --bg-dim:   #e8cc88;
-  --bg-hover: #eccf7e;
-  --text:     #2B2B31;
-  --muted:    #556070;
+  --bg:           #F2D99B;
+  --bg-dim:       #e8cc88;
+  --bg-hover:     #eccf7e;
+  --text:         #2B2B31;
+  --muted:        #556070;
+  --cursor-color: #2563EB;
 }
 
 ::selection { background: var(--text); color: var(--bg); }
@@ -69,6 +72,23 @@ body {
   z-index: 99999;
   pointer-events: none;
   transition: width 0.08s linear;
+}
+
+.progress-checkpoint {
+  position: fixed;
+  top: 0;
+  width: 2px;
+  height: 7px;
+  background: var(--bg-dim);
+  z-index: 99998;
+  pointer-events: none;
+  transform: translateX(-50%);
+  border-radius: 0 0 2px 2px;
+  transition: background 0.3s ease;
+}
+.progress-checkpoint.passed {
+  background: var(--mustard);
+  opacity: 0.6;
 }
 
 /* ── Theme Overlay (mask transition) ────────── */
@@ -143,7 +163,7 @@ body {
   transform: translateY(0);
 }
 .preloader-logo.fly-out {
-  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease 0.45s !important;
+  transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 /* ── Grain ──────────────────────────────────── */
@@ -162,7 +182,7 @@ body {
   position: fixed;
   top: 0; left: 0;
   width: 13px; height: 13px;
-  border: 1.5px solid var(--mustard);
+  border: 1.5px solid var(--cursor-color);
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
@@ -193,13 +213,13 @@ body {
 }
 body.cursor-open .cursor {
   width: 68px; height: 68px;
-  background: var(--mustard);
-  border-color: var(--mustard);
+  background: var(--cursor-color);
+  border-color: var(--cursor-color);
 }
 body.cursor-open .cursor-label { opacity: 1; }
 body.cursor-link .cursor {
   width: 32px; height: 32px;
-  background: rgba(201,138,53,0.15);
+  background: color-mix(in srgb, var(--cursor-color) 14%, transparent);
 }
 
 /* ── Header / Nav ───────────────────────────── */
@@ -562,7 +582,7 @@ body.cursor-link .cursor {
   pointer-events: none;
   z-index: 0;
   will-change: transform;
-  transition: opacity 0.4s var(--ease-out);
+  transition: opacity 0.4s var(--ease-out), transform 0.45s var(--ease-out);
   transform: translateY(var(--py, 0px));
 }
 .project-link:hover .card-ghost {
@@ -613,28 +633,12 @@ body.cursor-link .cursor {
   color: var(--text);
   position: relative;
   z-index: 1;
-  transition: transform 0.4s var(--ease-out);
+  transition: transform 0.4s var(--ease-out), color 0.35s var(--ease-out);
 }
-.project-link:hover .card-name { transform: translateY(-4px); }
-
-.name-normal {
-  display: block;
-  transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
-}
-.name-italic {
-  position: absolute;
-  top: 0; left: 0;
-  font-style: italic;
-  letter-spacing: 0.03em;
+.project-link:hover .card-name {
+  transform: translateY(-4px);
   color: var(--red);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
-  pointer-events: none;
-  white-space: nowrap;
 }
-.project-link.scramble-done .name-normal { opacity: 0; transform: translateY(-7px); }
-.project-link.scramble-done .name-italic { opacity: 1; transform: translateY(0); }
 
 /* ── Commit Overlay sur carte ───────────────── */
 .card-commit-overlay {

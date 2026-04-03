@@ -191,7 +191,6 @@ function renderCard(project, i) {
       <span class="card-ghost" aria-hidden="true">${idx}</span>
       <h3 class="card-name">
         <span class="name-normal">${project.name}</span>
-        <span class="name-italic">${project.name}</span>
       </h3>
       <span class="card-category" data-category="${project.category}">${catLbl}</span>
       <span class="card-arrow">↗</span>
@@ -230,7 +229,6 @@ function renderGrid(filter) {
   gridEl.classList.toggle('grid-compact', filtered.length < 3);
   filtered.forEach((proj, i) => gridEl.appendChild(renderCard(proj, i)));
 
-  attachScrambleListeners();
   attachCursorListeners();
   updateGhostParallax();
 
@@ -393,17 +391,21 @@ function dismissPreloader() {
     heroRect.height / (logoRect.height || 1)
   );
 
-  // Anime le texte vers la position du hero title
+  // Le logo vole vers la position exacte du hero title (sans fade pendant le vol)
   preloaderLogo.classList.add('fly-out');
   preloaderLogo.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-  preloaderLogo.style.opacity   = '0';
 
-  // 500ms après : révèle le hero title, retire le preloader
+  // À l'arrivée (670ms) : crossfade simultané logo ↔ hero title
   setTimeout(() => {
-    heroTitle.classList.add('appear');
-    preloader.classList.add('out');
-    preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
-  }, 480);
+    heroTitle.classList.add('appear');                        // hero apparaît
+    preloaderLogo.style.transition = 'opacity 0.22s ease';   // override fly-out
+    preloaderLogo.style.opacity    = '0';                    // logo disparaît
+
+    setTimeout(() => {
+      preloader.classList.add('out');
+      preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+    }, 300);
+  }, 660);
 }
 
 // Phase 1 : couronne (950ms) → Phase 2 : titre → dismiss
@@ -564,103 +566,8 @@ function attachCursorListeners() {
 }
 
 // ─────────────────────────────────────────────
-// SCRAMBLE + CROSSFADE ITALIC
+// STACK INTERACTIVE — supprimé
 // ─────────────────────────────────────────────
-const SCRAMBLE_CHARS    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#%&';
-const SCRAMBLE_MS       = 380;
-const SCRAMBLE_INTERVAL = 28;
-
-function startScramble(link) {
-  const span     = link.querySelector('.name-normal');
-  const realName = link.dataset.name;
-  const total    = Math.ceil(SCRAMBLE_MS / SCRAMBLE_INTERVAL);
-  let frame = 0;
-  link._scramble = setInterval(() => {
-    const locked = Math.floor((frame / total) * realName.length);
-    span.textContent = realName.split('').map((ch, i) => {
-      if (ch === ' ' || ch === "'" || ch === 'Ô') return ch;
-      if (i < locked) return ch;
-      return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
-    }).join('');
-    frame++;
-    if (frame > total) {
-      clearInterval(link._scramble);
-      span.textContent = realName;
-      link.classList.add('scramble-done');
-    }
-  }, SCRAMBLE_INTERVAL);
-}
-
-function stopScramble(link) {
-  clearInterval(link._scramble);
-  link.classList.remove('scramble-done');
-  link.querySelector('.name-normal').textContent = link.dataset.name;
-}
-
-function attachScrambleListeners() {
-  document.querySelectorAll('.project-link').forEach(link => {
-    link.addEventListener('mouseenter', () => startScramble(link));
-    link.addEventListener('mouseleave', () => stopScramble(link));
-  });
-}
-
-// ─────────────────────────────────────────────
-// STACK INTERACTIVE — badges flottants + répulsion souris
-// ─────────────────────────────────────────────
-const STACK_ITEMS = [
-  { icon: '🌐', label: 'HTML5' },
-  { icon: '🎨', label: 'CSS3' },
-  { icon: '⚡', label: 'JavaScript ES6+' },
-  { icon: '🖼', label: 'Canvas API' },
-  { icon: '🔥', label: 'Firebase' },
-  { icon: '🔌', label: 'WebSockets' },
-  { icon: '📡', label: 'PeerJS' },
-  { icon: '🎵', label: 'Last.fm API' },
-  { icon: '🎧', label: 'Web Audio API' },
-  { icon: '📐', label: 'CSS Grid' },
-];
-
-(function initStack() {
-  const grid = document.getElementById('stack-grid');
-  if (!grid) return;
-
-  STACK_ITEMS.forEach((item, i) => {
-    const badge = document.createElement('div');
-    badge.className = 'stack-badge';
-    badge.style.setProperty('--float-dur',   `${2.4 + (i % 5) * 0.4}s`);
-    badge.style.setProperty('--float-delay', `${(i * 0.17) % 1.5}s`);
-    badge.innerHTML = `<span class="badge-icon" aria-hidden="true">${item.icon}</span>${item.label}`;
-    grid.appendChild(badge);
-  });
-
-  // Répulsion légère au survol de la souris
-  const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!isDesktop) return;
-
-  let mouseX = -999, mouseY = -999;
-  grid.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-  grid.addEventListener('mouseleave', () => { mouseX = -999; mouseY = -999; });
-
-  function repulse() {
-    grid.querySelectorAll('.stack-badge').forEach(badge => {
-      const r    = badge.getBoundingClientRect();
-      const bcx  = r.left + r.width  / 2;
-      const bcy  = r.top  + r.height / 2;
-      const dist = Math.hypot(mouseX - bcx, mouseY - bcy);
-      const rad  = 80;
-      if (dist < rad && mouseX > 0) {
-        const force = (1 - dist / rad) * 14;
-        const ang   = Math.atan2(bcy - mouseY, bcx - mouseX);
-        badge.style.transform = `translate(${Math.cos(ang) * force}px, ${Math.sin(ang) * force}px)`;
-      } else {
-        badge.style.transform = '';
-      }
-    });
-    requestAnimationFrame(repulse);
-  }
-  repulse();
-})();
-
 // ─────────────────────────────────────────────
 // SCROLL : header · barre · parallaxe · skew
 // ─────────────────────────────────────────────
@@ -712,10 +619,12 @@ function updateHeader(sy) {
 window.addEventListener('scroll', () => {
   const sy   = window.scrollY;
   const docH = document.documentElement.scrollHeight - window.innerHeight;
+  const pct  = Math.min(100, (sy / docH) * 100);
 
-  progressBar.style.width = `${Math.min(100, (sy / docH) * 100)}%`;
+  progressBar.style.width = `${pct}%`;
   updateHeader(sy);
   updateGhostParallax();
+  updateProgressCheckpoints(pct);
 
   const delta = sy - prevSkewScroll;
   prevSkewScroll = sy;
@@ -726,6 +635,44 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 updateHeader(window.scrollY);
+
+// ─────────────────────────────────────────────
+// PROGRESS BAR CHECKPOINTS
+// ─────────────────────────────────────────────
+const CHECKPOINT_SECTIONS = [
+  { id: 'about',    label: 'About'    },
+  { id: 'projects', label: 'Projects' },
+];
+let checkpointEls = [];
+
+function initProgressCheckpoints() {
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+  if (docH <= 0) return;
+  checkpointEls.forEach(el => el.remove());
+  checkpointEls = [];
+  CHECKPOINT_SECTIONS.forEach(({ id, label }) => {
+    const section = document.getElementById(id);
+    if (!section) return;
+    const pct = (section.offsetTop / docH) * 100;
+    const dot = document.createElement('div');
+    dot.className = 'progress-checkpoint';
+    dot.style.left = `${pct}%`;
+    dot.title = label;
+    dot.dataset.pct = pct;
+    document.body.appendChild(dot);
+    checkpointEls.push(dot);
+  });
+}
+
+function updateProgressCheckpoints(currentPct) {
+  checkpointEls.forEach(dot => {
+    dot.classList.toggle('passed', currentPct >= parseFloat(dot.dataset.pct));
+  });
+}
+
+// Init après chargement complet (positions stables)
+window.addEventListener('load', () => setTimeout(initProgressCheckpoints, 400));
+window.addEventListener('resize', () => setTimeout(initProgressCheckpoints, 200));
 
 // ─────────────────────────────────────────────
 // SMOOTH SCROLL (desktop)
@@ -831,7 +778,6 @@ function getCommands() {
   return [
     { icon: '↓', label: t('cmdGoAbout'),    action: () => { document.getElementById('about').scrollIntoView({ behavior: 'smooth' }); } },
     { icon: '↓', label: t('cmdGoProjects'), action: () => { document.getElementById('projects').scrollIntoView({ behavior: 'smooth' }); } },
-    { icon: '↓', label: t('cmdGoStack'),    action: () => { document.getElementById('stack').scrollIntoView({ behavior: 'smooth' }); } },
     { icon: '◐', label: t('cmdToggleTheme'), action: () => { cycleTheme(themeToggle); } },
     { icon: '⟳', label: t('cmdToggleLang'),  action: () => {
         currentLang = currentLang === 'en' ? 'fr' : 'en';
