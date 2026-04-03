@@ -1,449 +1,618 @@
-// ============================================================
-//  SANO BLD — Galerie Monolithique
-//  script.js
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-
-// ============================================================
-//  PROJETS — Source de vérité unique
-// ============================================================
-const PROJECTS = [
-    // 01–06 · Applications
-    { name: 'Unitix',        tag: 'App',  cat: 'apps', url: 'https://sanobld.github.io/Unitix/'       },
-    { name: 'Eco Drive',     tag: 'App',  cat: 'apps', url: 'https://sanobld.github.io/Eco-Drive/'    },
-    { name: 'So Bohème',     tag: 'Web',  cat: 'apps', url: 'https://soboheme.github.io/Web/'         },
-    { name: 'Metrolist',     tag: 'App',  cat: 'apps', url: 'https://mostafaalagamy.github.io/'       },
-    { name: 'BioLink Maker', tag: 'Tool', cat: 'apps', url: 'https://sanobld.github.io/BioLinkMaker/' },
-    { name: 'LastStats',     tag: 'PWA',  cat: 'apps', url: 'https://sanobld.github.io/LastStats/'    },
-    // 07–10 · Jeux
-    { name: 'Glide',         tag: 'Game', cat: 'games', url: 'https://sanobld.github.io/Glide/'         },
-    { name: 'Survivor.io',   tag: 'Game', cat: 'games', url: 'https://sanobld.github.io/Survivor.io/'   },
-    { name: 'Tic Tac Boom',  tag: 'Game', cat: 'games', url: 'https://sanobld.github.io/Tic-Tac-Boom/' },
-    { name: 'Cards',         tag: 'Game', cat: 'games', url: 'https://sanobld.github.io/Cards/'         },
-    // 11–14 · Réseau
-    { name: 'Twitter',       tag: '𝕏',    cat: 'network', url: 'https://x.com/SanoBld'                 },
-    { name: 'Reddit',        tag: 'R/',   cat: 'network', url: 'https://www.reddit.com/user/Sano_bld/' },
-    { name: 'GitHub',        tag: '⌥',    cat: 'network', url: 'https://github.com/SanoBld'            },
-    { name: 'Discord',       tag: '#',    cat: 'network', url: 'https://discord.gg/nothingtech'        },
+// ─────────────────────────────────────────────
+// DONNÉES PROJETS
+// ─────────────────────────────────────────────
+const projects = [
+  { name: 'LastStats',    url: 'https://sanobld.github.io/LastStats/',   category: 'musique', repo: 'SanoBld/LastStats' },
+  { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',         category: 'musique', repo: 'SanoBld/Aura' },
+  { name: "SO'BÔHÈME",    url: 'https://soboheme.github.io/Web/',          category: 'web',     repo: 'soboheme/Web' },
+  { name: 'BioLinkMaker', url: 'https://sanobld.github.io/BioLinkMaker/', category: 'appjeu',  repo: 'SanoBld/BioLinkMaker' },
 ];
 
-const TOTAL = PROJECTS.length; // 14
-
-// Libellés catégories par langue
-const CAT_LABELS = {
-    fr: { apps: 'Applications', games: 'Jeux',  network: 'Réseau'   },
-    en: { apps: 'Applications', games: 'Games', network: 'Network'  },
+const CATEGORY_LABELS = {
+  musique: { en: 'Music',      fr: 'Musique' },
+  web:     { en: 'Web',        fr: 'Web' },
+  appjeu:  { en: 'App / Game', fr: 'App / Jeu' },
 };
 
-// ============================================================
-//  FIREBASE — Compteur de vues
-// ============================================================
-const firebaseConfig = {
-    apiKey:      "AIzaSyCo84qaR5dUOWutGE4w3g-HjxAiNZLldpM",
-    databaseURL: "https://sanobld-portfolio-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId:   "sanobld-portfolio"
+// ─────────────────────────────────────────────
+// i18n — détection automatique de la langue
+// ─────────────────────────────────────────────
+const i18n = {
+  en: {
+    sectionTag:      'Selected Work',
+    sectionTitle:    'Projects',
+    ctaTitle:        'See the full picture',
+    ctaBtn:          'View on GitHub',
+    footer:          '© 2025 SanoBld',
+    cursorOpen:      'OPEN',
+    navGithub:       'GitHub',
+    aboutTag:        'About',
+    aboutText:       'Developer & designer based in France. I build refined web experiences in pure HTML, CSS and JavaScript — no frameworks, just deliberate code.',
+    activityTag:     'Latest Activity',
+    activityTitle:   'Commits',
+    commitsLoading:  'Fetching commits…',
+    commitsError:    'Unavailable',
+    filterAll:       'All',
+    filterMusique:   'Music',
+    filterWeb:       'Web',
+    filterAppjeu:    'App / Game',
+    shortcutTheme:   'Theme toggled',
+    shortcutGithub:  'Opening GitHub…',
+    shortcutsHint:   'D = Theme · G = GitHub · ? = Shortcuts',
+    konamiMsg:       '👑 Royal Mode — Activated',
+  },
+  fr: {
+    sectionTag:      'Travaux Choisis',
+    sectionTitle:    'Projets',
+    ctaTitle:        "Voir l'ensemble du travail",
+    ctaBtn:          'Voir sur GitHub',
+    footer:          '© 2025 SanoBld',
+    cursorOpen:      'VOIR',
+    navGithub:       'GitHub',
+    aboutTag:        'À propos',
+    aboutText:       'Développeur & designer basé en France. Je construis des expériences web soignées en HTML, CSS et JavaScript pur — sans framework, juste du code réfléchi.',
+    activityTag:     'Activité récente',
+    activityTitle:   'Commits',
+    commitsLoading:  'Chargement…',
+    commitsError:    'Indisponible',
+    filterAll:       'Tout',
+    filterMusique:   'Musique',
+    filterWeb:       'Web',
+    filterAppjeu:    'App / Jeu',
+    shortcutTheme:   'Thème changé',
+    shortcutGithub:  'Ouverture GitHub…',
+    shortcutsHint:   'D = Thème · G = GitHub · ? = Raccourcis',
+    konamiMsg:       '👑 Mode Royal — Activé',
+  },
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const viewRef = db.ref('views');
-viewRef.transaction(n => (n || 0) + 1);
-viewRef.on('value', snap => {
-    const el = document.getElementById('hud-views');
-    if (el) el.textContent = (snap.val() ?? 0).toLocaleString() + ' vues';
+
+let currentLang = navigator.language.startsWith('fr') ? 'fr' : 'en';
+
+function t(key) {
+  return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
+}
+
+function applyTranslations(lang) {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const val = i18n[lang][el.dataset.i18n];
+    if (val !== undefined) el.textContent = val;
+  });
+  document.getElementById('lang-toggle').textContent = lang === 'en' ? 'FR' : 'EN';
+
+  // Labels filtres
+  document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+    const key = 'filter' + btn.dataset.filter.charAt(0).toUpperCase() + btn.dataset.filter.slice(1);
+    if (i18n[lang][key]) btn.textContent = i18n[lang][key];
+  });
+
+  // Tags catégorie sur les cartes
+  document.querySelectorAll('.card-category[data-category]').forEach(el => {
+    const cat = el.dataset.category;
+    if (CATEGORY_LABELS[cat]) el.textContent = CATEGORY_LABELS[cat][lang] || cat;
+  });
+}
+
+// ─────────────────────────────────────────────
+// RENDU D'UNE CARTE PROJET
+// ─────────────────────────────────────────────
+function renderCard(project, i) {
+  const idx    = String(i + 1).padStart(2, '0');
+  const catLbl = (CATEGORY_LABELS[project.category] || {})[currentLang] || project.category;
+  const li     = document.createElement('li');
+  li.className       = 'project-card';
+  li.dataset.category = project.category;
+  li.innerHTML = `
+    <a href="${project.url}" target="_blank" rel="noopener" class="project-link"
+       data-cursor="open" data-name="${project.name}" data-index="${idx}">
+      <span class="card-num">${idx}</span>
+      <span class="card-ghost" aria-hidden="true">${idx}</span>
+      <h3 class="card-name">
+        <span class="name-normal">${project.name}</span>
+        <span class="name-italic">${project.name}</span>
+      </h3>
+      <span class="card-category" data-category="${project.category}">${catLbl}</span>
+      <span class="card-arrow">↗</span>
+    </a>`;
+  return li;
+}
+
+// ─────────────────────────────────────────────
+// GRILLE PROJETS + FILTRE CATÉGORIES
+// ─────────────────────────────────────────────
+const gridEl      = document.getElementById('project-grid');
+let   activeFilter = 'all';
+
+function renderGrid(filter) {
+  activeFilter = filter;
+  const filtered = filter === 'all' ? projects : projects.filter(p => p.category === filter);
+
+  // Fade-out
+  gridEl.style.opacity   = '0';
+  gridEl.style.transform = 'translateY(10px)';
+
+  setTimeout(() => {
+    gridEl.innerHTML = '';
+    gridEl.classList.toggle('grid-compact', filtered.length < 3);
+
+    filtered.forEach((proj, i) => gridEl.appendChild(renderCard(proj, i)));
+
+    attachScrambleListeners();
+    attachCursorListeners();
+    updateGhostParallax();
+
+    // Fade-in + stagger
+    requestAnimationFrame(() => {
+      gridEl.style.opacity   = '1';
+      gridEl.style.transform = '';
+      gridEl.querySelectorAll('.project-card').forEach((card, i) => {
+        setTimeout(() => card.classList.add('visible'), i * 90);
+      });
+    });
+  }, 290);
+}
+
+renderGrid('all');
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+    renderGrid(btn.dataset.filter);
+  });
 });
 
-// ============================================================
-//  GÉNÉRATION DES SLIDES
-// ============================================================
-const scene = document.getElementById('scene');
+// ─────────────────────────────────────────────
+// GRAIN TEXTURE (canvas généré)
+// ─────────────────────────────────────────────
+(function () {
+  const size = 200;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(size, size);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = Math.random() * 255 | 0;
+    img.data[i] = img.data[i+1] = img.data[i+2] = v;
+    img.data[i+3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  document.querySelector('.grain').style.backgroundImage = `url(${canvas.toDataURL()})`;
+})();
 
-PROJECTS.forEach((proj, i) => {
-    const slide   = document.createElement('div');
-    slide.className = 'slide';
-    slide.id        = `slide-${i}`;
-    slide.setAttribute('data-index', i);
-    slide.setAttribute('data-cat', proj.cat);
+// ─────────────────────────────────────────────
+// PRELOADER — couronne → titre plein écran
+// ─────────────────────────────────────────────
+const preloader      = document.getElementById('preloader');
+const preloaderLogo  = document.getElementById('preloader-logo');
+const preloaderCrown = document.getElementById('preloader-crown');
 
-    // .slide-content → reçoit translateY + scale + blur (scroll JS)
-    const content = document.createElement('div');
-    content.className = 'slide-content';
+function fitLoaderText() {
+  preloaderLogo.style.fontSize = '10px';
+  const maxW = window.innerWidth * 0.82;
+  let lo = 10, hi = 700, mid;
+  while (lo < hi - 1) {
+    mid = (lo + hi) >> 1;
+    preloaderLogo.style.fontSize = mid + 'px';
+    preloaderLogo.scrollWidth > maxW ? (hi = mid) : (lo = mid);
+  }
+  preloaderLogo.style.fontSize = lo + 'px';
+}
 
-    // .slide-tilt → fournit la perspective pour le tilt du titre
-    const tilt  = document.createElement('div');
-    tilt.className = 'slide-tilt';
+function dismissPreloader() {
+  document.body.classList.add('loaded');
+  preloader.classList.add('out');
+  preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+}
 
-    const link  = document.createElement('a');
-    link.href          = proj.url;
-    link.target        = '_blank';
-    link.rel           = 'noopener noreferrer';
-    link.className     = 'slide-link';
-    link.setAttribute('aria-label', `Voir ${proj.name}`);
+// Phase 1 : couronne (950ms), Phase 2 : titre
+setTimeout(() => {
+  preloaderCrown.classList.add('out');
+  fitLoaderText();
+  setTimeout(() => {
+    preloaderLogo.classList.add('show');
+    Promise.race([
+      document.fonts.ready,
+      new Promise(r => setTimeout(r, 900)),
+    ]).then(() => setTimeout(dismissPreloader, 280));
+  }, 180);
+}, 950);
 
-    const title = document.createElement('h2');
-    title.className = 'slide-title';
-    title.textContent = proj.name;
+// ─────────────────────────────────────────────
+// THÈME (le flash est déjà géré dans le <head>)
+// ─────────────────────────────────────────────
+const html        = document.documentElement;
+const themeToggle = document.getElementById('theme-toggle');
 
-    const tag   = document.createElement('span');
-    tag.className   = 'slide-tag';
-    tag.textContent = proj.tag;
+function getEffectiveTheme() {
+  const s = localStorage.getItem('theme');
+  return (s === 'dark' || s === 'light') ? s
+    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
 
-    const rule  = document.createElement('div');
-    rule.className = 'slide-rule';
+function applyTheme(theme) {
+  html.setAttribute('data-theme', theme);
+  themeToggle.textContent = theme === 'dark' ? '◑' : '◐';
+  localStorage.setItem('theme', theme);
+}
 
-    link.appendChild(title);
-    link.appendChild(tag);
-    tilt.appendChild(link);
-    content.appendChild(tilt);
-    slide.appendChild(content);
-    slide.appendChild(rule);
-    scene.appendChild(slide);
+themeToggle.addEventListener('click', () =>
+  applyTheme(getEffectiveTheme() === 'dark' ? 'light' : 'dark')
+);
+applyTheme(getEffectiveTheme());
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+  if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
 });
 
-// Références pré-calculées pour la perf
-const allSlides   = [...document.querySelectorAll('.slide')];
-const allContents = [...document.querySelectorAll('.slide-content')];
-const allTitles   = [...document.querySelectorAll('.slide-title')];
-const allTags     = [...document.querySelectorAll('.slide-tag')];
-
-let currentIndex = 0;
-let vh = window.innerHeight;
-
-// ============================================================
-//  SCROLL PARALLAXE — boucle rAF
-//
-//  progress = 0 → slide centré dans le viewport
-//  progress > 0 → slide en dessous (titre monte en entrant)
-//  progress < 0 → slide au-dessus (titre monte en sortant)
-//
-//  La formule translateY(progress * PARALLAX_PX) crée
-//  naturellement l'effet "monte depuis le bas, sort par le haut".
-// ============================================================
-const PARALLAX_RATIO = 0.30; // 30% de vh de décalage pour ±1 slide
-let   rafScrollId    = null;
-let   nextActiveIndex = 0;
-
-function updateSlides() {
-    const scrollTop = scene.scrollTop;
-    let   minDist   = Infinity;
-    nextActiveIndex = currentIndex;
-
-    allSlides.forEach((slide, i) => {
-        // progress : 0 = centré, ±1 = ±1 slide hors centre
-        const progress = (i * vh - scrollTop) / vh;
-        const absProg  = Math.abs(progress);
-
-        // Ignorer les slides très éloignées (opt. perf.)
-        if (absProg > 2.5) {
-            allContents[i].style.opacity   = '0';
-            allContents[i].style.transform = '';
-            allContents[i].style.filter    = '';
-            allTags[i].style.opacity       = '0';
-            return;
-        }
-
-        // Suivre le plus proche du centre
-        if (absProg < minDist) { minDist = absProg; nextActiveIndex = i; }
-
-        // ── Parallaxe vertical du titre ──
-        const parallaxPx = progress * vh * PARALLAX_RATIO;
-
-        // ── Réduction d'échelle ──
-        const scale = Math.max(0.76, 1 - Math.min(absProg, 1) * 0.24);
-
-        // ── Opacité ──
-        const opacity = Math.max(0, 1 - absProg * 1.6);
-
-        // ── Flou ──
-        const blur = absProg < 0.08 ? 0 : Math.min(7, absProg * 5.5);
-
-        // ── Opacité du tag (disparaît plus vite) ──
-        const tagOpacity = Math.max(0, 1 - absProg * 4.0);
-
-        // Application directe (pas de transition CSS — rAF assure la fluidité)
-        allContents[i].style.transform = `translateY(${parallaxPx.toFixed(1)}px) scale(${scale.toFixed(4)})`;
-        allContents[i].style.opacity   = opacity.toFixed(4);
-        allContents[i].style.filter    = blur > 0.05
-            ? `blur(${blur.toFixed(2)}px)`
-            : 'none';
-        allTags[i].style.opacity = tagOpacity.toFixed(4);
-
-        // Marquage actif
-        const wasActive = slide.classList.contains('active');
-        const isActive  = absProg < 0.38;
-
-        if (isActive !== wasActive) {
-            slide.classList.toggle('active', isActive);
-            if (!isActive) {
-                // Effacer le tilt résiduel sur les slides inactives
-                allTitles[i].style.transform = '';
-            }
-        }
-    });
-
-    // Mise à jour de l'index HUD si le projet centré a changé
-    if (nextActiveIndex !== currentIndex) {
-        currentIndex = nextActiveIndex;
-        updateIndexHUD();
-    }
-
-    rafScrollId = null;
-}
-
-function scheduleScrollUpdate() {
-    if (!rafScrollId) {
-        rafScrollId = requestAnimationFrame(updateSlides);
-    }
-}
-
-scene.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
-
-// Rendu initial
-updateSlides();
-
-// ============================================================
-//  INDEX HUD — [01 // 14] · Catégorie
-// ============================================================
-const hudIndexEl = document.getElementById('hud-index');
-
-function updateIndexHUD() {
-    if (!hudIndexEl) return;
-    const n       = String(currentIndex + 1).padStart(2, '0');
-    const t       = String(TOTAL).padStart(2, '0');
-    const cat     = PROJECTS[currentIndex].cat;
-    const catName = CAT_LABELS[currentLang]?.[cat] || cat;
-    hudIndexEl.innerHTML =
-        `[${n}&thinsp;&#47;&#47;&thinsp;${t}]<span class="hud-cat"> · ${catName}</span>`;
-}
-
-// ============================================================
-//  TILT 3D — Profondeur cinétique sur le titre actif
-//
-//  Perspective : 1000px (CSS sur .slide-tilt)
-//  Rotation max : 8° — plus accentuée que l'ancienne version
-//  LERP : 0.07 — inertie longue et luxueuse
-// ============================================================
-const hasHover  = window.matchMedia('(hover: hover)').matches;
-
-let tiltTargetRX = 0, tiltTargetRY = 0;
-let tiltCurrentRX = 0, tiltCurrentRY = 0;
-let tiltRafId    = null;
-
-const MAX_ROT   = 8;
-const LERP_TILT = 0.07;
-
-function animateTilt() {
-    tiltCurrentRX += (tiltTargetRX - tiltCurrentRX) * LERP_TILT;
-    tiltCurrentRY += (tiltTargetRY - tiltCurrentRY) * LERP_TILT;
-
-    // Appliquer uniquement sur le titre du slide actif
-    const activeTitle = allSlides[currentIndex]?.querySelector('.slide-title');
-    if (activeTitle) {
-        activeTitle.style.transform =
-            `rotateX(${tiltCurrentRX.toFixed(3)}deg) rotateY(${tiltCurrentRY.toFixed(3)}deg)`;
-    }
-
-    const delta = Math.abs(tiltTargetRX - tiltCurrentRX) + Math.abs(tiltTargetRY - tiltCurrentRY);
-    if (delta > 0.004) {
-        tiltRafId = requestAnimationFrame(animateTilt);
-    } else {
-        tiltRafId = null;
-    }
-}
-
-if (hasHover) {
-    document.addEventListener('mousemove', e => {
-        // Normalisation : −1 → +1 sur chaque axe
-        const nx = (e.clientX / window.innerWidth  - 0.5) * 2;
-        const ny = (e.clientY / window.innerHeight - 0.5) * 2;
-
-        tiltTargetRX = -ny * MAX_ROT; // souris en haut → titre penche vers viewer
-        tiltTargetRY =  nx * MAX_ROT;
-
-        if (!tiltRafId) tiltRafId = requestAnimationFrame(animateTilt);
-    }, { passive: true });
-
-    document.addEventListener('mouseleave', () => {
-        tiltTargetRX = 0;
-        tiltTargetRY = 0;
-        if (!tiltRafId) tiltRafId = requestAnimationFrame(animateTilt);
-    });
-}
-
-// ============================================================
-//  CURSEUR GHOST
-//  Lerp 0.22 pour une réactivité immédiate mais douce.
-//  Expand sur le titre du slide actif → "VOIR LE PROJET"
-// ============================================================
-const cursorGhost = document.getElementById('cursor-ghost');
-
-if (hasHover && cursorGhost) {
-    let ghostMX = window.innerWidth  / 2;
-    let ghostMY = window.innerHeight / 2;
-    let ghostCX = ghostMX;
-    let ghostCY = ghostMY;
-    const LERP_CURSOR = 0.22;
-    let isExpanded = false;
-
-    // Boucle permanente — très peu coûteuse (juste un style.transform)
-    function animateCursor() {
-        ghostCX += (ghostMX - ghostCX) * LERP_CURSOR;
-        ghostCY += (ghostMY - ghostCY) * LERP_CURSOR;
-        cursorGhost.style.transform =
-            `translate(${ghostCX.toFixed(1)}px, ${ghostCY.toFixed(1)}px) translate(-50%, -50%)`;
-        requestAnimationFrame(animateCursor);
-    }
-    requestAnimationFrame(animateCursor);
-
-    document.addEventListener('mousemove', e => {
-        ghostMX = e.clientX;
-        ghostMY = e.clientY;
-    }, { passive: true });
-
-    // Expand : uniquement sur le titre du slide actif
-    document.addEventListener('mouseover', e => {
-        if (isExpanded) return;
-        const t = e.target.closest('.slide-title');
-        if (t && t.closest('.slide')?.classList.contains('active')) {
-            isExpanded = true;
-            cursorGhost.classList.add('expand');
-        }
-    });
-
-    document.addEventListener('mouseout', e => {
-        if (!isExpanded) return;
-        const t = e.target.closest('.slide-title');
-        if (t) {
-            isExpanded = false;
-            cursorGhost.classList.remove('expand');
-        }
-    });
-}
-
-// ============================================================
-//  THÈME
-//  Fond : transition 1.5s (CSS sur body)
-//  Texte : instantané (pas de transition color sur les éléments)
-// ============================================================
-const body     = document.body;
-const themeBtn = document.getElementById('theme-toggle');
-
-function detectTheme() {
-    const saved = localStorage.getItem('sb-theme');
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-let currentTheme = detectTheme();
-
-function applyTheme(t) {
-    currentTheme = t;
-    body.classList.toggle('dark', t === 'dark');
-    if (themeBtn) themeBtn.textContent = t === 'dark' ? '◑' : '◐';
-    localStorage.setItem('sb-theme', t);
-}
-
-// Premier appel sans attendre → évite le flash
-applyTheme(currentTheme);
-
-themeBtn?.addEventListener('click', () =>
-    applyTheme(currentTheme === 'dark' ? 'light' : 'dark'));
-
-// ============================================================
-//  LANGUE
-// ============================================================
-let currentLang = localStorage.getItem('sb-lang')
-    || (navigator.language?.startsWith('en') ? 'en' : 'fr');
-
-const langBtn = document.getElementById('lang-toggle');
-
-function applyLang(lang) {
-    currentLang = lang;
-    document.documentElement.lang = lang;
-    if (langBtn) langBtn.textContent = lang === 'fr' ? 'EN' : 'FR';
-    localStorage.setItem('sb-lang', lang);
-    // Mettre à jour le compteur de vues label
-    updateViewsLabel();
-    // Mettre à jour l'index (nom de catégorie)
-    updateIndexHUD();
-}
-
-applyLang(currentLang);
-
-langBtn?.addEventListener('click', () =>
-    applyLang(currentLang === 'fr' ? 'en' : 'fr'));
-
-function updateViewsLabel() {
-    // On conserve juste le nombre existant et on remet le bon suffixe
-    const el = document.getElementById('hud-views');
-    if (!el || el.textContent === '—') return;
-    const num = el.textContent.replace(/[^\d]/g, '');
-    if (num) {
-        const suffix = currentLang === 'fr' ? ' vues' : ' views';
-        el.textContent = parseInt(num, 10).toLocaleString() + suffix;
-    }
-}
-
-// ============================================================
-//  PRELOADER (identique au précédent — split-text)
-// ============================================================
-const preTextTop = document.getElementById('pre-text-top');
-const preTextBot = document.getElementById('pre-text-bot');
-const preloader  = document.getElementById('preloader');
-
-const WORD       = 'SANO BLD';
-const CHAR_DELAY = 0.052;
-
-function injectChars(el) {
-    if (!el) return;
-    el.innerHTML = '';
-    WORD.split('').forEach((ch, i) => {
-        const span = document.createElement('span');
-        span.className   = 'char';
-        span.textContent = ch === ' ' ? '\u00A0' : ch;
-        span.style.animationDelay = `${i * CHAR_DELAY}s`;
-        el.appendChild(span);
-    });
-}
-
-document.fonts.ready.then(() => {
-    injectChars(preTextTop);
-    injectChars(preTextBot);
+// ─────────────────────────────────────────────
+// LANGUE
+// ─────────────────────────────────────────────
+document.getElementById('lang-toggle').addEventListener('click', () => {
+  currentLang = currentLang === 'en' ? 'fr' : 'en';
+  applyTranslations(currentLang);
+  renderGrid(activeFilter); // rerender les labels catégorie
 });
+applyTranslations(currentLang);
 
-const charsDuration = WORD.length * CHAR_DELAY * 1000 + 700; // ≈ 1116 ms
+// ─────────────────────────────────────────────
+// CURSEUR CUSTOM (uniquement desktop avec pointeur précis)
+// ─────────────────────────────────────────────
+(function initCursor() {
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        preloader?.classList.add('open');
+  document.body.classList.add('has-custom-cursor');
+  const cursor = document.querySelector('.cursor');
+  let mx = window.innerWidth  / 2, my = window.innerHeight / 2;
+  let cx = mx, cy = my;
+  const LERP = 0.22;
 
-        // Révéler le HUD une fois le preloader terminé
-        setTimeout(() => {
-            preloader?.classList.add('gone');
-            document.querySelectorAll('.hud').forEach(h => h.classList.add('ready'));
-        }, 1050);
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
 
-    }, charsDuration);
-});
+  (function tick() {
+    cx += (mx - cx) * LERP;
+    cy += (my - cy) * LERP;
+    cursor.style.left = `${cx}px`;
+    cursor.style.top  = `${cy}px`;
+    requestAnimationFrame(tick);
+  })();
 
-// ============================================================
-//  HORLOGE
-// ============================================================
-function updateClock() {
-    const el = document.getElementById('hud-time');
-    if (!el) return;
-    const now = new Date();
-    const pad = v => String(v).padStart(2, '0');
-    el.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  attachCursorListeners();
+})();
+
+function attachCursorListeners() {
+  document.querySelectorAll('[data-cursor="open"]').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-open'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-open'));
+  });
+  document.querySelectorAll('[data-cursor="link"]').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-link'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-link'));
+  });
 }
-setInterval(updateClock, 1000);
-updateClock();
 
-// ============================================================
-//  RESIZE — recalcul de vh
-// ============================================================
-window.addEventListener('resize', () => {
-    vh = window.innerHeight;
-    scheduleScrollUpdate();
+// ─────────────────────────────────────────────
+// SCRAMBLE + CROSSFADE ITALIC
+// ─────────────────────────────────────────────
+const SCRAMBLE_CHARS    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#%&';
+const SCRAMBLE_MS       = 380;
+const SCRAMBLE_INTERVAL = 28;
+
+function startScramble(link) {
+  const span     = link.querySelector('.name-normal');
+  const realName = link.dataset.name;
+  const total    = Math.ceil(SCRAMBLE_MS / SCRAMBLE_INTERVAL);
+  let frame = 0;
+  link._scramble = setInterval(() => {
+    const locked = Math.floor((frame / total) * realName.length);
+    span.textContent = realName.split('').map((ch, i) => {
+      if (ch === ' ' || ch === "'") return ch;
+      if (i < locked) return ch;
+      return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+    }).join('');
+    frame++;
+    if (frame > total) {
+      clearInterval(link._scramble);
+      span.textContent = realName;
+      link.classList.add('scramble-done');
+    }
+  }, SCRAMBLE_INTERVAL);
+}
+
+function stopScramble(link) {
+  clearInterval(link._scramble);
+  link.classList.remove('scramble-done');
+  link.querySelector('.name-normal').textContent = link.dataset.name;
+}
+
+function attachScrambleListeners() {
+  document.querySelectorAll('.project-link').forEach(link => {
+    link.addEventListener('mouseenter', () => startScramble(link));
+    link.addEventListener('mouseleave', () => stopScramble(link));
+  });
+}
+
+// ─────────────────────────────────────────────
+// SCROLL : header · barre de progression · parallaxe fantômes · skew
+// ─────────────────────────────────────────────
+const siteHeader  = document.getElementById('site-header');
+const progressBar = document.getElementById('progress-bar');
+const mainContent = document.getElementById('main-content');
+const heroSection = document.querySelector('.hero');
+
+let lastScrollY    = window.scrollY;
+let prevSkewScroll = window.scrollY;
+let skewCurrent    = 0;
+let skewTarget     = 0;
+let skewRafId      = null;
+
+// Parallaxe sur les numéros fantômes
+function updateGhostParallax() {
+  const sy = window.scrollY;
+  document.querySelectorAll('.card-ghost').forEach((ghost, i) => {
+    const speed = 0.022 + (i % 4) * 0.007;
+    ghost.style.setProperty('--py', `${sy * speed}px`);
+  });
+}
+
+// RAF pour le skew fluide
+function skewTick() {
+  skewCurrent += (skewTarget - skewCurrent) * 0.1;
+  skewTarget  *= 0.78;
+  const val = parseFloat(skewCurrent.toFixed(3));
+  mainContent.style.transform = Math.abs(val) > 0.02 ? `skewY(${val}deg)` : '';
+  if (Math.abs(skewCurrent) > 0.02 || Math.abs(skewTarget) > 0.02) {
+    skewRafId = requestAnimationFrame(skewTick);
+  } else {
+    mainContent.style.transform = '';
+    skewRafId = null;
+  }
+}
+
+// Gestion du header : hero invisible, smart hide/show
+function updateHeader(sy) {
+  const heroH = heroSection.offsetHeight;
+  if (sy < heroH * 0.78) {
+    siteHeader.classList.add('header-in-hero');
+    siteHeader.classList.remove('header-hidden', 'scrolled');
+    return;
+  }
+  siteHeader.classList.remove('header-in-hero');
+  siteHeader.classList.add('scrolled');
+
+  if (sy > lastScrollY + 5)      siteHeader.classList.add('header-hidden');
+  else if (sy < lastScrollY - 3) siteHeader.classList.remove('header-hidden');
+}
+
+window.addEventListener('scroll', () => {
+  const sy  = window.scrollY;
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+
+  // Barre progression
+  progressBar.style.width = `${Math.min(100, (sy / docH) * 100)}%`;
+
+  // Header
+  updateHeader(sy);
+
+  // Parallaxe fantômes
+  updateGhostParallax();
+
+  // Skew
+  const delta = sy - prevSkewScroll;
+  prevSkewScroll = sy;
+  skewTarget = Math.max(-1.8, Math.min(1.8, delta * -0.065));
+  if (!skewRafId) skewRafId = requestAnimationFrame(skewTick);
+
+  lastScrollY = sy;
 }, { passive: true });
 
+// Init header au chargement
+updateHeader(window.scrollY);
+
+// ─────────────────────────────────────────────
+// SMOOTH SCROLL (desktop uniquement)
+// ─────────────────────────────────────────────
+(function initSmoothScroll() {
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+  let target  = window.scrollY;
+  let current = target;
+  const ease  = 0.09;
+  let rafId   = null;
+
+  function tick() {
+    current += (target - current) * ease;
+    window.scrollTo(0, Math.round(current));
+    if (Math.abs(target - current) > 0.3) {
+      rafId = requestAnimationFrame(tick);
+    } else {
+      window.scrollTo(0, target);
+      rafId = null;
+    }
+  }
+
+  function start() { if (!rafId) rafId = requestAnimationFrame(tick); }
+
+  window.addEventListener('wheel', e => {
+    e.preventDefault();
+    target = Math.max(0, Math.min(
+      target + e.deltaY,
+      document.documentElement.scrollHeight - window.innerHeight
+    ));
+    start();
+  }, { passive: false });
+
+  window.addEventListener('keydown', e => {
+    if (e.target.closest('input, textarea, select')) return;
+    const map = {
+      ArrowDown:  90,  ArrowUp:  -90,
+      PageDown:   window.innerHeight * 0.85,
+      PageUp:    -window.innerHeight * 0.85,
+      ' ':        window.innerHeight * 0.85,
+    };
+    if (map[e.key] !== undefined) {
+      e.preventDefault();
+      target = Math.max(0, Math.min(target + map[e.key],
+        document.documentElement.scrollHeight - window.innerHeight));
+      start();
+    }
+    if (e.key === 'Home') { target = 0; start(); }
+    if (e.key === 'End')  { target = document.documentElement.scrollHeight - window.innerHeight; start(); }
+  });
+})();
+
+// ─────────────────────────────────────────────
+// INTERSECTION OBSERVER — about + commits
+// ─────────────────────────────────────────────
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add('visible');
+    revealObs.unobserve(entry.target);
+  });
+}, { threshold: 0.08 });
+
+const aboutSection = document.querySelector('.about');
+if (aboutSection) revealObs.observe(aboutSection);
+
+// ─────────────────────────────────────────────
+// COMMITS GITHUB
+// ─────────────────────────────────────────────
+async function fetchCommits() {
+  const list = document.getElementById('commit-list');
+
+  function timeAgo(dateStr) {
+    try {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const rtf  = new Intl.RelativeTimeFormat(currentLang, { numeric: 'auto' });
+      const sec  = diff / 1000;
+      const min  = sec  / 60;
+      const hr   = min  / 60;
+      const day  = hr   / 24;
+      if (sec < 60)  return rtf.format(-Math.round(sec), 'second');
+      if (min < 60)  return rtf.format(-Math.round(min), 'minute');
+      if (hr  < 24)  return rtf.format(-Math.round(hr),  'hour');
+      if (day < 30)  return rtf.format(-Math.round(day), 'day');
+      return new Date(dateStr).toLocaleDateString(currentLang);
+    } catch { return new Date(dateStr).toLocaleDateString(); }
+  }
+
+  const results = await Promise.allSettled(
+    projects.map(p =>
+      fetch(`https://api.github.com/repos/${p.repo}/commits?per_page=1`)
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(data => ({
+          name: p.name,
+          msg:  (data[0]?.commit?.message || '—').split('\n')[0],
+          date: data[0]?.commit?.author?.date || null,
+        }))
+    )
+  );
+
+  list.innerHTML = '';
+  results.forEach((res, i) => {
+    const li = document.createElement('li');
+    li.className = 'commit-item';
+    if (res.status === 'fulfilled') {
+      const { name, msg, date } = res.value;
+      li.innerHTML = `
+        <span class="commit-repo">${name}</span>
+        <span class="commit-msg">${msg}</span>
+        <span class="commit-time">${date ? timeAgo(date) : t('commitsError')}</span>`;
+    } else {
+      li.innerHTML = `
+        <span class="commit-repo">${projects[i].name}</span>
+        <span class="commit-msg">—</span>
+        <span class="commit-time">${t('commitsError')}</span>`;
+    }
+    list.appendChild(li);
+    setTimeout(() => li.classList.add('visible'), i * 130);
+  });
+}
+
+fetchCommits();
+
+// ─────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+// ─────────────────────────────────────────────
+// RACCOURCIS CLAVIER + CODE KONAMI
+// ─────────────────────────────────────────────
+const KONAMI_SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown',
+                    'ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiIdx = 0;
+
+window.addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea, select')) return;
+
+  // Suivi Konami
+  if (e.key === KONAMI_SEQ[konamiIdx]) {
+    konamiIdx++;
+    if (konamiIdx === KONAMI_SEQ.length) {
+      konamiIdx = 0;
+      activateKonami();
+      return;
+    }
+  } else {
+    konamiIdx = 0;
+  }
+
+  // Raccourcis simples (pas en conflit avec des combos)
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+  switch (e.key.toLowerCase()) {
+    case 'd':
+      applyTheme(getEffectiveTheme() === 'dark' ? 'light' : 'dark');
+      showToast(t('shortcutTheme'));
+      break;
+    case 'g':
+      window.open('https://github.com/SanoBld', '_blank', 'noopener');
+      showToast(t('shortcutGithub'));
+      break;
+    case '?':
+      showToast(t('shortcutsHint'));
+      break;
+  }
 });
+
+function activateKonami() {
+  showToast(t('konamiMsg'));
+  html.classList.add('konami-active');
+  setTimeout(() => html.classList.remove('konami-active'), 4000);
+}
+
+// ─────────────────────────────────────────────
+// MESSAGE CONSOLE — pour les curieux
+// ─────────────────────────────────────────────
+/* eslint-disable no-console */
+console.log(
+  '%c👑  SanoBld',
+  'color:#AA211F;font-size:30px;font-family:serif;font-weight:bold;padding:4px 0;'
+);
+console.log(
+  '%cDu code fait avec passion. Curieux de voir comment ça marche ? Bienvenue.\n'
++ 'Made with passion. Curious how it works? Welcome.',
+  'color:#C98A35;font-size:12px;font-family:monospace;line-height:1.6;'
+);
+console.log(
+  '%cStack → HTML · CSS · Vanilla JS · Canvas API · Firebase · Last.fm API',
+  'color:#8a9baa;font-size:11px;font-family:monospace;'
+);
+console.log(
+  '%c→ github.com/SanoBld',
+  'color:#F2D99B;background:#1c2330;font-size:12px;font-family:monospace;'
++ 'padding:3px 10px;border-radius:2px;'
+);
+/* eslint-enable no-console */

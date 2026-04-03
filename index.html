@@ -1,73 +1,117 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="auto">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sano Bld</title>
-    <link rel="icon" type="image/png" href="logo.png?v=4">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="adc52595-b992-434a-8eaf-2a4880979675"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SanoBld — Portfolio</title>
+
+  <!-- Prévention du flash thème : s'exécute avant tout rendu -->
+  <script>
+    (function(){
+      var s=localStorage.getItem('theme');
+      document.documentElement.setAttribute('data-theme',
+        s==='dark'||s==='light'?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <!-- ═══════════════════════════════════════════════════════
-         PRELOADER — Split-Text (inchangé, pixel-perfect)
-    ═══════════════════════════════════════════════════════ -->
-    <div id="preloader" aria-hidden="true">
-        <div class="pre-curtain pre-curtain-top"></div>
-        <div class="pre-curtain pre-curtain-bot"></div>
-        <div id="pre-text-wrap">
-            <span class="pre-text pre-text-top" id="pre-text-top" aria-hidden="true"></span>
-            <span class="pre-text pre-text-bot" id="pre-text-bot" aria-hidden="true"></span>
-        </div>
-    </div>
+  <!-- Barre de progression de lecture -->
+  <div class="progress-bar" id="progress-bar" aria-hidden="true"></div>
 
-    <!-- ═══════════════════════════════════════════════════════
-         CURSEUR GHOST — cercle mix-blend-mode:difference
-         S'agrandit sur le titre actif → "VOIR LE PROJET"
-    ═══════════════════════════════════════════════════════ -->
-    <div id="cursor-ghost" aria-hidden="true">
-        <span class="cursor-text">VOIR LE PROJET</span>
-    </div>
+  <!-- Preloader : couronne → titre plein écran -->
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <img class="preloader-crown" id="preloader-crown" src="logo.png" alt="" aria-hidden="true" />
+    <span class="preloader-logo" id="preloader-logo">SanoBld</span>
+  </div>
 
-    <!-- ═══════════════════════════════════════════════════════
-         HUD — 4 coins internes du viewport
-         Opacité 20% → 100% au survol
-    ═══════════════════════════════════════════════════════ -->
+  <div class="cursor" aria-hidden="true">
+    <span class="cursor-label" data-i18n="cursorOpen">VOIR</span>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
 
-    <!-- Haut-Gauche : Logo -->
-    <div class="hud hud-tl">
-        <a href="#" class="hud-logo" aria-label="Sano Bld — accueil">Sano Bld</a>
-    </div>
+  <header class="site-header" id="site-header">
+    <nav class="nav">
+      <span class="nav-logo">SanoBld</span>
+      <div class="nav-controls">
+        <button class="ctrl-btn" id="lang-toggle" aria-label="Switch language">EN</button>
+        <button class="ctrl-btn" id="theme-toggle" aria-label="Toggle dark mode">◐</button>
+        <a href="https://github.com/SanoBld" target="_blank" rel="noopener" class="nav-link" data-cursor="link" data-i18n="navGithub">GitHub</a>
+      </div>
+    </nav>
+  </header>
 
-    <!-- Haut-Droite : Contrôles -->
-    <div class="hud hud-tr">
-        <button id="lang-toggle"  class="hud-btn" aria-label="Basculer la langue">EN</button>
-        <button id="theme-toggle" class="hud-btn" aria-label="Basculer le thème">◐</button>
-    </div>
+  <main id="main-content">
 
-    <!-- Bas-Gauche : Index + Catégorie -->
-    <div class="hud hud-bl">
-        <span id="hud-index" class="hud-index">[01 // 14]</span>
-    </div>
+    <section class="hero">
+      <h1 class="hero-title">SanoBld</h1>
+    </section>
 
-    <!-- Bas-Droite : Vues + Horloge -->
-    <div class="hud hud-br">
-        <span id="hud-views" class="hud-meta">—</span>
-        <span id="hud-time"  class="hud-meta">00:00:00</span>
-    </div>
+    <!-- Section À propos -->
+    <section class="about" id="about">
+      <div class="about-inner">
+        <span class="section-tag" data-i18n="aboutTag">À propos</span>
+        <p class="about-text" data-i18n="aboutText">Développeur &amp; designer basé en France. Je construis des expériences web soignées en HTML, CSS et JavaScript pur — sans framework, juste du code réfléchi.</p>
+        <ul class="skills-list" aria-label="Technologies">
+          <li>HTML / CSS</li>
+          <li>JavaScript ES6+</li>
+          <li>Canvas API</li>
+          <li>Firebase</li>
+          <li>WebSockets</li>
+          <li>PeerJS</li>
+          <li>Last.fm API</li>
+        </ul>
+      </div>
+    </section>
 
-    <!-- ═══════════════════════════════════════════════════════
-         SCENE — galerie verticale snap
-         Slides générés dynamiquement par script.js
-    ═══════════════════════════════════════════════════════ -->
-    <main id="scene" role="main" aria-label="Galerie de projets"></main>
+    <!-- Section Projets -->
+    <section class="projects" id="projects">
+      <div class="section-header">
+        <span class="section-tag" data-i18n="sectionTag">Travaux Choisis</span>
+        <h2 class="section-title" data-i18n="sectionTitle">Projets</h2>
+      </div>
+      <div class="filters" id="filters" role="tablist" aria-label="Filtrer les projets">
+        <button class="filter-btn active" data-filter="all"     role="tab" aria-selected="true"  data-i18n="filterAll">Tout</button>
+        <button class="filter-btn"        data-filter="musique" role="tab" aria-selected="false" data-i18n="filterMusique">Musique</button>
+        <button class="filter-btn"        data-filter="web"     role="tab" aria-selected="false" data-i18n="filterWeb">Web</button>
+        <button class="filter-btn"        data-filter="appjeu"  role="tab" aria-selected="false" data-i18n="filterAppjeu">App / Jeu</button>
+      </div>
+      <ul class="project-grid" id="project-grid"></ul>
+    </section>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    <script src="script.js"></script>
+    <!-- Section Commits GitHub -->
+    <section class="activity" id="activity">
+      <div class="section-header">
+        <span class="section-tag" data-i18n="activityTag">Activité récente</span>
+        <h2 class="section-title" data-i18n="activityTitle">Commits</h2>
+      </div>
+      <ul class="commit-list" id="commit-list">
+        <li class="commit-item commit-loading"><span data-i18n="commitsLoading">Chargement…</span></li>
+      </ul>
+    </section>
+
+    <section class="cta-section">
+      <div class="cta-inner">
+        <h2 class="cta-title" data-i18n="ctaTitle">Voir l'ensemble du travail</h2>
+        <a href="https://github.com/SanoBld" target="_blank" rel="noopener" class="cta-btn" data-cursor="link" data-i18n="ctaBtn">Voir sur GitHub</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <span data-i18n="footer">© 2025 SanoBld</span>
+    <a href="https://github.com/SanoBld" target="_blank" rel="noopener" data-cursor="link">github.com/SanoBld</a>
+  </footer>
+
+  <!-- Toast notifications (raccourcis clavier, easter egg…) -->
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <script src="script.js"></script>
 </body>
 </html>
