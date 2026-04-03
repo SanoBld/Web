@@ -8,9 +8,10 @@
   <!-- Prévention du flash thème : s'exécute avant tout rendu -->
   <script>
     (function(){
-      var s=localStorage.getItem('theme');
-      document.documentElement.setAttribute('data-theme',
-        s==='dark'||s==='light'?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+      var s = localStorage.getItem('theme');
+      var isDark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      if (!s) document.documentElement.setAttribute('data-theme-mode', 'auto');
     })();
   </script>
 
@@ -23,6 +24,12 @@
 
   <!-- Barre de progression de lecture -->
   <div class="progress-bar" id="progress-bar" aria-hidden="true"></div>
+
+  <!-- Overlay d'animation de transition de thème -->
+  <div class="theme-overlay" id="theme-overlay" aria-hidden="true"></div>
+
+  <!-- Canvas pour la traînée dorée Konami -->
+  <canvas class="konami-trail-canvas" id="konami-trail" aria-hidden="true"></canvas>
 
   <!-- Preloader : couronne → titre plein écran -->
   <div class="preloader" id="preloader" aria-hidden="true">
@@ -38,9 +45,13 @@
   <header class="site-header" id="site-header">
     <nav class="nav">
       <span class="nav-logo">SanoBld</span>
+      <div class="nav-sections" id="nav-sections">
+        <a href="#about"    class="nav-section-link" data-i18n="navAbout"    data-cursor="link">À propos</a>
+        <a href="#projects" class="nav-section-link" data-i18n="navProjects" data-cursor="link">Projets</a>
+      </div>
       <div class="nav-controls">
         <button class="ctrl-btn" id="lang-toggle" aria-label="Switch language">EN</button>
-        <button class="ctrl-btn" id="theme-toggle" aria-label="Toggle dark mode">◐</button>
+        <button class="ctrl-btn theme-btn" id="theme-toggle" aria-label="Toggle theme">◐</button>
         <a href="https://github.com/SanoBld" target="_blank" rel="noopener" class="nav-link" data-cursor="link" data-i18n="navGithub">GitHub</a>
       </div>
     </nav>
@@ -49,7 +60,7 @@
   <main id="main-content">
 
     <section class="hero">
-      <h1 class="hero-title">SanoBld</h1>
+      <h1 class="hero-title" id="hero-title">SanoBld</h1>
     </section>
 
     <!-- Section À propos -->
@@ -69,6 +80,15 @@
       </div>
     </section>
 
+    <!-- Section Stack Interactive -->
+    <section class="stack-section" id="stack">
+      <div class="section-header">
+        <span class="section-tag" data-i18n="stackTag">Stack</span>
+        <h2 class="section-title" data-i18n="stackTitle">Technologies</h2>
+      </div>
+      <div class="stack-grid" id="stack-grid"></div>
+    </section>
+
     <!-- Section Projets -->
     <section class="projects" id="projects">
       <div class="section-header">
@@ -82,17 +102,6 @@
         <button class="filter-btn"        data-filter="appjeu"  role="tab" aria-selected="false" data-i18n="filterAppjeu">App / Jeu</button>
       </div>
       <ul class="project-grid" id="project-grid"></ul>
-    </section>
-
-    <!-- Section Commits GitHub -->
-    <section class="activity" id="activity">
-      <div class="section-header">
-        <span class="section-tag" data-i18n="activityTag">Activité récente</span>
-        <h2 class="section-title" data-i18n="activityTitle">Commits</h2>
-      </div>
-      <ul class="commit-list" id="commit-list">
-        <li class="commit-item commit-loading"><span data-i18n="commitsLoading">Chargement…</span></li>
-      </ul>
     </section>
 
     <section class="cta-section">
@@ -109,8 +118,20 @@
     <a href="https://github.com/SanoBld" target="_blank" rel="noopener" data-cursor="link">github.com/SanoBld</a>
   </footer>
 
-  <!-- Toast notifications (raccourcis clavier, easter egg…) -->
+  <!-- Toast notifications -->
   <div class="toast" id="toast" aria-live="polite"></div>
+
+  <!-- Command Palette -->
+  <div class="cmd-palette" id="cmd-palette" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="cmd-backdrop" id="cmd-backdrop"></div>
+    <div class="cmd-panel">
+      <div class="cmd-input-wrap">
+        <span class="cmd-icon">⌘</span>
+        <input class="cmd-input" id="cmd-input" type="text" autocomplete="off" spellcheck="false" data-i18n-placeholder="cmdPlaceholder" placeholder="Taper une commande…" />
+      </div>
+      <ul class="cmd-list" id="cmd-list"></ul>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

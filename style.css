@@ -21,15 +21,6 @@
                 border-color 0.55s var(--ease-out);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg:       #1c2330;
-    --bg-dim:   #242d3c;
-    --bg-hover: #1a2538;
-    --text:     #F2D99B;
-    --muted:    #8a9baa;
-  }
-}
 [data-theme="dark"] {
   --bg:       #1c2330;
   --bg-dim:   #242d3c;
@@ -47,7 +38,6 @@
 
 ::selection { background: var(--text); color: var(--bg); }
 
-/* Reset — cursor: none uniquement si JS a initialisé le curseur custom */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -81,23 +71,43 @@ body {
   transition: width 0.08s linear;
 }
 
+/* ── Theme Overlay (mask transition) ────────── */
+.theme-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 19999;
+  pointer-events: none;
+  clip-path: circle(0px at 50% 50%);
+  will-change: clip-path;
+}
+
+/* ── Konami Trail Canvas ────────────────────── */
+.konami-trail-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.konami-trail-canvas.active { opacity: 1; }
+
 /* ── Preloader ──────────────────────────────── */
 .preloader {
   position: fixed;
   inset: 0;
   z-index: 20000;
-  background: var(--slate);
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.5s ease 0.1s;
+  transition: opacity 0.6s ease 0.15s;
 }
 .preloader.out {
   opacity: 0;
   pointer-events: none;
 }
 
-/* Couronne (phase 1) */
 .preloader-crown {
   position: absolute;
   width: 108px;
@@ -115,25 +125,25 @@ body {
   transform: scale(0.65) translateY(-14px) !important;
 }
 
-/* Titre (phase 2) */
 .preloader-logo {
   position: absolute;
   font-family: var(--font-serif);
   font-weight: 700;
-  color: var(--red);
+  color: var(--text);
   letter-spacing: -0.01em;
   white-space: nowrap;
   opacity: 0;
   transform: translateY(10px);
+  transform-origin: center center;
   transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out);
+  will-change: transform, opacity;
 }
 .preloader-logo.show {
   opacity: 1;
   transform: translateY(0);
 }
-.preloader.out .preloader-logo {
-  opacity: 0;
-  transform: translateY(44px) scale(0.96);
+.preloader-logo.fly-out {
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease 0.45s !important;
 }
 
 /* ── Grain ──────────────────────────────────── */
@@ -210,20 +220,22 @@ body.cursor-link .cursor {
   background: var(--bg);
   box-shadow: 0 1px 0 var(--bg-dim);
 }
-
-/* Plein écran hero : header invisible */
 .site-header.header-in-hero {
   opacity: 0;
   pointer-events: none;
 }
-
-/* Smart header : masqué au scroll bas */
 .site-header.header-hidden {
   transform: translateY(-100%);
   opacity: 0;
 }
 
-.nav { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+.nav {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
 
 .nav-logo {
   font-family: var(--font-serif);
@@ -231,9 +243,39 @@ body.cursor-link .cursor {
   font-weight: 700;
   color: var(--red);
   letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
-.nav-controls { display: flex; align-items: center; gap: 1.5rem; }
+/* Nav section links (À propos, Projets) */
+.nav-sections {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex: 1;
+  justify-content: center;
+}
+.nav-section-link {
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-decoration: none;
+  position: relative;
+  transition: color var(--transition);
+}
+.nav-section-link::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -3px;
+  width: 0; height: 1px;
+  background: var(--mustard);
+  transition: width 0.3s var(--ease-out);
+}
+.nav-section-link:hover { color: var(--mustard); }
+.nav-section-link:hover::after { width: 100%; }
+
+.nav-controls { display: flex; align-items: center; gap: 1.5rem; flex-shrink: 0; }
 
 .ctrl-btn {
   background: none;
@@ -249,6 +291,11 @@ body.cursor-link .cursor {
   transition: border-color var(--transition), color var(--transition);
 }
 .ctrl-btn:hover { border-color: var(--mustard); color: var(--mustard); }
+
+/* Theme button state glyph */
+.theme-btn[data-mode="light"]  { letter-spacing: 0; font-size: 0.9rem; padding: 0.18rem 0.55rem; }
+.theme-btn[data-mode="dark"]   { letter-spacing: 0; font-size: 0.9rem; padding: 0.18rem 0.55rem; }
+.theme-btn[data-mode="auto"]   { letter-spacing: 0; font-size: 0.9rem; padding: 0.18rem 0.55rem; }
 
 .nav-link {
   font-size: 0.75rem;
@@ -291,10 +338,10 @@ body.cursor-link .cursor {
   position: relative;
   z-index: 1;
   opacity: 0;
-  transform: translateY(-35vh) scale(1.1);
 }
-body.loaded .hero-title {
-  animation: fall-in 0.95s cubic-bezier(0.22, 0.85, 0.36, 1) 0.2s forwards;
+.hero-title.appear {
+  opacity: 1;
+  transition: opacity 0.5s var(--ease-out);
 }
 
 /* ── About ──────────────────────────────────── */
@@ -337,6 +384,61 @@ body.loaded .hero-title {
   transition: border-color var(--transition), color var(--transition);
 }
 .skills-list li:hover { border-color: var(--mustard); color: var(--mustard); }
+
+/* ── Stack Interactive ──────────────────────── */
+.stack-section {
+  padding: 6rem 3rem;
+  border-bottom: 1px solid var(--bg-dim);
+  background: var(--bg-dim);
+  transition: background var(--theme-t);
+  overflow: hidden;
+}
+
+.stack-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  margin-top: 2rem;
+  position: relative;
+}
+
+.stack-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1.5px solid var(--bg-hover);
+  border-radius: 2px;
+  background: var(--bg);
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: default;
+  user-select: none;
+  will-change: transform;
+  transition: border-color 0.3s var(--ease-out),
+              color 0.3s var(--ease-out),
+              background 0.3s var(--ease-out),
+              box-shadow 0.3s var(--ease-out);
+  animation: badge-float var(--float-dur, 3s) ease-in-out var(--float-delay, 0s) infinite alternate;
+}
+.stack-badge:hover {
+  border-color: var(--mustard);
+  color: var(--mustard);
+  background: var(--bg);
+  box-shadow: 0 0 18px rgba(201,138,53,0.18);
+}
+.stack-badge .badge-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+@keyframes badge-float {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-5px); }
+}
 
 /* ── Projects ───────────────────────────────── */
 .projects { padding: 6rem 3rem; }
@@ -400,16 +502,13 @@ body.loaded .hero-title {
   transition: opacity 0.28s var(--ease-out), transform 0.28s var(--ease-out);
 }
 
-/* Asymétrie : cartes 1 et 4 sur 2 colonnes */
 .project-card:nth-child(1) { grid-column: 1 / span 2; }
 .project-card:nth-child(4) { grid-column: 2 / span 2; }
 
-/* Grille compacte (< 3 projets filtrés) */
 .project-grid.grid-compact { grid-template-columns: 1fr 1fr; }
 .project-grid.grid-compact .project-card:nth-child(1),
 .project-grid.grid-compact .project-card:nth-child(4) { grid-column: auto; }
 
-/* Assombrissement des cartes non survolées */
 .project-grid:has(.project-link:hover) .project-card:not(:has(.project-link:hover)) {
   opacity: 0.28;
 }
@@ -448,7 +547,7 @@ body.loaded .hero-title {
 }
 .project-link:hover::before { opacity: 1; }
 
-/* Filigrane numéro — parallaxe JS via --py */
+/* Filigrane numéro */
 .card-ghost {
   position: absolute;
   bottom: -0.12em;
@@ -463,7 +562,6 @@ body.loaded .hero-title {
   pointer-events: none;
   z-index: 0;
   will-change: transform;
-  /* Pas de transition sur transform (mis à jour par JS au scroll) */
   transition: opacity 0.4s var(--ease-out);
   transform: translateY(var(--py, 0px));
 }
@@ -472,7 +570,6 @@ body.loaded .hero-title {
   opacity: 0.6;
 }
 
-/* Badge numéro */
 .card-num {
   font-size: 0.6rem;
   font-weight: 600;
@@ -483,7 +580,6 @@ body.loaded .hero-title {
   z-index: 1;
 }
 
-/* Tag catégorie sur la carte */
 .card-category {
   font-size: 0.55rem;
   font-weight: 700;
@@ -495,7 +591,6 @@ body.loaded .hero-title {
   z-index: 1;
 }
 
-/* Flèche */
 .card-arrow {
   position: absolute;
   top: 2rem;
@@ -510,7 +605,6 @@ body.loaded .hero-title {
   transform: translate(4px, -4px);
 }
 
-/* Nom du projet avec crossfade italic */
 .card-name {
   font-family: var(--font-serif);
   font-size: clamp(2rem, 4vw, 3.2rem);
@@ -542,63 +636,60 @@ body.loaded .hero-title {
 .project-link.scramble-done .name-normal { opacity: 0; transform: translateY(-7px); }
 .project-link.scramble-done .name-italic { opacity: 1; transform: translateY(0); }
 
-/* ── Activité / Commits ─────────────────────── */
-.activity {
-  padding: 6rem 3rem;
-  background: var(--bg-dim);
-  border-top: 3px solid var(--text);
-  border-bottom: 3px solid var(--text);
-  transition: background var(--theme-t);
+/* ── Commit Overlay sur carte ───────────────── */
+.card-commit-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 0.9rem 2rem;
+  background: var(--bg);
+  border-top: 1px solid var(--bg-dim);
+  z-index: 3;
+  transform: translateY(100%);
+  transition: transform 0.42s var(--ease-out);
+  pointer-events: none;
+}
+.project-link:hover .card-commit-overlay {
+  transform: translateY(0);
 }
 
-.commit-list { list-style: none; }
-
-.commit-item {
+.commit-skeleton {
   display: flex;
-  align-items: baseline;
-  gap: 1.5rem;
-  padding: 1.15rem 0;
-  border-bottom: 1px solid rgba(0,0,0,0.08);
-  opacity: 0;
-  transform: translateX(-14px);
-  transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out);
+  flex-direction: column;
+  gap: 0.4rem;
 }
-.commit-item.visible { opacity: 1; transform: none; }
-.commit-item:last-child { border-bottom: none; }
+.commit-skeleton-line {
+  height: 7px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-dim) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-dim) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 2px;
+}
 
-.commit-repo {
-  font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: var(--text);
-  white-space: nowrap;
-  flex-shrink: 0;
-  min-width: 130px;
-}
-.commit-msg {
+.commit-overlay-msg {
   font-family: 'Courier New', monospace;
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   color: var(--muted);
-  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-bottom: 0.25rem;
 }
-.commit-time {
-  font-size: 0.6rem;
-  font-weight: 600;
+.commit-overlay-time {
+  font-size: 0.55rem;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--mustard);
-  white-space: nowrap;
-  flex-shrink: 0;
 }
-.commit-loading {
-  font-size: 0.72rem;
-  color: var(--muted);
-  letter-spacing: 0.08em;
-  padding: 1rem 0;
-  opacity: 0.6;
+
+@keyframes shimmer {
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ── CTA ────────────────────────────────────── */
@@ -679,6 +770,108 @@ body.loaded .hero-title {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ── Command Palette ────────────────────────── */
+.cmd-palette {
+  position: fixed;
+  inset: 0;
+  z-index: 99000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 18vh;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s var(--ease-out);
+}
+.cmd-palette.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cmd-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+}
+.cmd-panel {
+  position: relative;
+  z-index: 1;
+  width: min(540px, 90vw);
+  background: var(--bg);
+  border: 1.5px solid var(--bg-dim);
+  border-radius: 4px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+  overflow: hidden;
+  transform: translateY(-10px) scale(0.97);
+  transition: transform 0.22s var(--ease-out);
+}
+.cmd-palette.open .cmd-panel {
+  transform: none;
+}
+.cmd-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--bg-dim);
+}
+.cmd-icon {
+  font-size: 1rem;
+  color: var(--mustard);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.cmd-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.cmd-input::placeholder { color: var(--muted); opacity: 0.6; }
+.cmd-list {
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 0.4rem 0;
+}
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 1.2rem;
+  font-size: 0.78rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  font-family: var(--font-sans);
+  letter-spacing: 0.03em;
+}
+.cmd-item:hover,
+.cmd-item.selected {
+  background: var(--bg-dim);
+  color: var(--mustard);
+}
+.cmd-item-icon {
+  font-size: 0.95rem;
+  width: 1.4rem;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--mustard);
+  opacity: 0.7;
+}
+.cmd-empty {
+  padding: 1.2rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+
 /* ── Easter Egg Konami ──────────────────────── */
 html.konami-active { animation: konami-glow 4s ease forwards; }
 
@@ -695,33 +888,23 @@ html.konami-active { animation: konami-glow 4s ease forwards; }
 
 /* ── Keyframes ──────────────────────────────── */
 @keyframes crown-in { to { opacity: 1; transform: scale(1); } }
-
-@keyframes fall-in {
-  0%   { opacity: 0; transform: translateY(-35vh) scale(1.1); }
-  55%  { opacity: 1; transform: translateY(5px) scale(0.988); }
-  75%  { transform: translateY(-2px) scale(1.003); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes fade-up { to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-up  { to { opacity: 1; transform: translateY(0); } }
 
 /* ── Responsive ─────────────────────────────── */
+@media (max-width: 900px) {
+  .nav-sections { display: none; }
+}
+
 @media (max-width: 768px) {
-  /* Curseur : retour au curseur natif */
   *, *::before, *::after { cursor: auto !important; }
   .cursor { display: none !important; }
-
-  /* Smart header désactivé sur mobile (position au scroll géré) */
   .site-header.header-hidden { transform: none; opacity: 1; }
-
   .site-header { padding: 1.25rem 1.5rem; }
   .nav-controls { gap: 0.8rem; }
-
   .about { padding: 4rem 1.5rem; }
   .about-text { font-size: 1.2rem; }
-
+  .stack-section { padding: 4rem 1.5rem; }
   .projects { padding: 4rem 1.5rem; }
-
   .project-grid {
     grid-template-columns: 1fr;
     gap: 3px;
@@ -730,14 +913,9 @@ html.konami-active { animation: konami-glow 4s ease forwards; }
   .project-card:nth-child(4) { grid-column: 1; }
   .project-card, .project-link { min-height: 20rem; }
   .card-ghost { font-size: clamp(6rem, 30vw, 10rem); }
-
-  .activity { padding: 4rem 1.5rem; }
-  .commit-item { flex-wrap: wrap; gap: 0.4rem; }
-  .commit-msg { min-width: 100%; }
-
   .cta-section { padding: 4rem 1.5rem; }
   .cta-inner { flex-direction: column; align-items: flex-start; }
-
   .site-footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
   .filters { gap: 0.3rem; }
+  .card-commit-overlay { padding: 0.7rem 1.5rem; }
 }

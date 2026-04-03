@@ -2,9 +2,10 @@
 // DONNÉES PROJETS
 // ─────────────────────────────────────────────
 const projects = [
-  { name: 'LastStats',    url: 'https://sanobld.github.io/LastStats/',   category: 'musique', repo: 'SanoBld/LastStats' },
-  { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',         category: 'musique', repo: 'SanoBld/Aura' },
-  { name: "SO'BÔHÈME",    url: 'https://soboheme.github.io/Web/',          category: 'web',     repo: 'soboheme/Web' },
+  { name: 'LastStats',    url: 'https://sanobld.github.io/LastStats/',    category: 'musique', repo: 'SanoBld/LastStats' },
+  { name: 'Pulse',        url: 'https://sanobld.github.io/Pulse/',         category: 'musique', repo: 'SanoBld/Pulse' },
+  { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',          category: 'musique', repo: 'SanoBld/Aura' },
+  { name: "SO'BÔHÈME",   url: 'https://soboheme.github.io/Web/',           category: 'web',     repo: 'soboheme/Web' },
   { name: 'BioLinkMaker', url: 'https://sanobld.github.io/BioLinkMaker/', category: 'appjeu',  repo: 'SanoBld/BioLinkMaker' },
 ];
 
@@ -14,8 +15,11 @@ const CATEGORY_LABELS = {
   appjeu:  { en: 'App / Game', fr: 'App / Jeu' },
 };
 
+// Map pour stocker les commits par nom de projet
+const commitCache = {};
+
 // ─────────────────────────────────────────────
-// i18n — détection automatique de la langue
+// i18n
 // ─────────────────────────────────────────────
 const i18n = {
   en: {
@@ -26,20 +30,32 @@ const i18n = {
     footer:          '© 2025 SanoBld',
     cursorOpen:      'OPEN',
     navGithub:       'GitHub',
+    navAbout:        'About',
+    navProjects:     'Projects',
     aboutTag:        'About',
     aboutText:       'Developer & designer based in France. I build refined web experiences in pure HTML, CSS and JavaScript — no frameworks, just deliberate code.',
-    activityTag:     'Latest Activity',
-    activityTitle:   'Commits',
-    commitsLoading:  'Fetching commits…',
-    commitsError:    'Unavailable',
+    stackTag:        'Stack',
+    stackTitle:      'Technologies',
     filterAll:       'All',
     filterMusique:   'Music',
     filterWeb:       'Web',
     filterAppjeu:    'App / Game',
     shortcutTheme:   'Theme toggled',
     shortcutGithub:  'Opening GitHub…',
-    shortcutsHint:   'D = Theme · G = GitHub · ? = Shortcuts',
+    shortcutsHint:   'D = Theme · G = GitHub · K = Palette',
     konamiMsg:       '👑 Royal Mode — Activated',
+    cmdPlaceholder:  'Type a command…',
+    cmdGoAbout:      'Go to About',
+    cmdGoProjects:   'Go to Projects',
+    cmdGoStack:      'Go to Stack',
+    cmdToggleTheme:  'Toggle Theme',
+    cmdToggleLang:   'Toggle Language',
+    cmdGitHub:       'Open GitHub',
+    cmdEmpty:        'No results',
+    themeLight:      'Light',
+    themeDark:       'Dark',
+    themeAuto:       'Auto',
+    commitLoading:   'loading…',
   },
   fr: {
     sectionTag:      'Travaux Choisis',
@@ -49,20 +65,32 @@ const i18n = {
     footer:          '© 2025 SanoBld',
     cursorOpen:      'VOIR',
     navGithub:       'GitHub',
+    navAbout:        'À propos',
+    navProjects:     'Projets',
     aboutTag:        'À propos',
     aboutText:       'Développeur & designer basé en France. Je construis des expériences web soignées en HTML, CSS et JavaScript pur — sans framework, juste du code réfléchi.',
-    activityTag:     'Activité récente',
-    activityTitle:   'Commits',
-    commitsLoading:  'Chargement…',
-    commitsError:    'Indisponible',
+    stackTag:        'Stack',
+    stackTitle:      'Technologies',
     filterAll:       'Tout',
     filterMusique:   'Musique',
     filterWeb:       'Web',
     filterAppjeu:    'App / Jeu',
     shortcutTheme:   'Thème changé',
     shortcutGithub:  'Ouverture GitHub…',
-    shortcutsHint:   'D = Thème · G = GitHub · ? = Raccourcis',
+    shortcutsHint:   'D = Thème · G = GitHub · K = Palette',
     konamiMsg:       '👑 Mode Royal — Activé',
+    cmdPlaceholder:  'Taper une commande…',
+    cmdGoAbout:      'Aller à À propos',
+    cmdGoProjects:   'Aller aux Projets',
+    cmdGoStack:      'Aller au Stack',
+    cmdToggleTheme:  'Changer le thème',
+    cmdToggleLang:   'Changer la langue',
+    cmdGitHub:       'Ouvrir GitHub',
+    cmdEmpty:        'Aucun résultat',
+    themeLight:      'Clair',
+    themeDark:       'Sombre',
+    themeAuto:       'Auto',
+    commitLoading:   'chargement…',
   },
 };
 
@@ -78,19 +106,69 @@ function applyTranslations(lang) {
     const val = i18n[lang][el.dataset.i18n];
     if (val !== undefined) el.textContent = val;
   });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const val = i18n[lang][el.dataset.i18nPlaceholder];
+    if (val !== undefined) el.placeholder = val;
+  });
   document.getElementById('lang-toggle').textContent = lang === 'en' ? 'FR' : 'EN';
 
-  // Labels filtres
   document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
     const key = 'filter' + btn.dataset.filter.charAt(0).toUpperCase() + btn.dataset.filter.slice(1);
     if (i18n[lang][key]) btn.textContent = i18n[lang][key];
   });
 
-  // Tags catégorie sur les cartes
   document.querySelectorAll('.card-category[data-category]').forEach(el => {
     const cat = el.dataset.category;
     if (CATEGORY_LABELS[cat]) el.textContent = CATEGORY_LABELS[cat][lang] || cat;
   });
+}
+
+// ─────────────────────────────────────────────
+// SON (Web Audio API) — très discrets
+// ─────────────────────────────────────────────
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTick(freq = 700, dur = 0.07, vol = 0.055) {
+  try {
+    const ctx  = getAudioCtx();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.5, ctx.currentTime + dur);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur);
+  } catch (_) {}
+}
+
+function playWhoosh(vol = 0.04) {
+  try {
+    const ctx    = getAudioCtx();
+    const buf    = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate);
+    const data   = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+    const src    = ctx.createBufferSource();
+    src.buffer   = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type  = 'bandpass';
+    filter.frequency.setValueAtTime(1800, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.18);
+    const gain   = ctx.createGain();
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+  } catch (_) {}
 }
 
 // ─────────────────────────────────────────────
@@ -100,8 +178,12 @@ function renderCard(project, i) {
   const idx    = String(i + 1).padStart(2, '0');
   const catLbl = (CATEGORY_LABELS[project.category] || {})[currentLang] || project.category;
   const li     = document.createElement('li');
-  li.className       = 'project-card';
+  li.className        = 'project-card';
   li.dataset.category = project.category;
+  li.dataset.name     = project.name;
+
+  const hasCommit = commitCache[project.name];
+
   li.innerHTML = `
     <a href="${project.url}" target="_blank" rel="noopener" class="project-link"
        data-cursor="open" data-name="${project.name}" data-index="${idx}">
@@ -113,12 +195,22 @@ function renderCard(project, i) {
       </h3>
       <span class="card-category" data-category="${project.category}">${catLbl}</span>
       <span class="card-arrow">↗</span>
+      <div class="card-commit-overlay" aria-hidden="true">
+        ${hasCommit
+          ? `<div class="commit-overlay-msg">${hasCommit.msg}</div>
+             <div class="commit-overlay-time">${hasCommit.time}</div>`
+          : `<div class="commit-skeleton">
+               <div class="commit-skeleton-line" style="width:72%"></div>
+               <div class="commit-skeleton-line" style="width:38%"></div>
+             </div>`
+        }
+      </div>
     </a>`;
   return li;
 }
 
 // ─────────────────────────────────────────────
-// GRILLE PROJETS + FILTRE CATÉGORIES
+// GRILLE PROJETS + FILTRE FLIP
 // ─────────────────────────────────────────────
 const gridEl      = document.getElementById('project-grid');
 let   activeFilter = 'all';
@@ -127,29 +219,55 @@ function renderGrid(filter) {
   activeFilter = filter;
   const filtered = filter === 'all' ? projects : projects.filter(p => p.category === filter);
 
-  // Fade-out
-  gridEl.style.opacity   = '0';
-  gridEl.style.transform = 'translateY(10px)';
+  // FLIP — Step 1 : snapshot positions actuelles
+  const first = {};
+  gridEl.querySelectorAll('.project-card').forEach(card => {
+    if (card.dataset.name) first[card.dataset.name] = card.getBoundingClientRect();
+  });
 
-  setTimeout(() => {
-    gridEl.innerHTML = '';
-    gridEl.classList.toggle('grid-compact', filtered.length < 3);
+  // Re-render immédiat (pas de délai)
+  gridEl.innerHTML = '';
+  gridEl.classList.toggle('grid-compact', filtered.length < 3);
+  filtered.forEach((proj, i) => gridEl.appendChild(renderCard(proj, i)));
 
-    filtered.forEach((proj, i) => gridEl.appendChild(renderCard(proj, i)));
+  attachScrambleListeners();
+  attachCursorListeners();
+  updateGhostParallax();
 
-    attachScrambleListeners();
-    attachCursorListeners();
-    updateGhostParallax();
+  // FLIP — Step 2 : animer depuis l'ancienne position
+  requestAnimationFrame(() => {
+    gridEl.querySelectorAll('.project-card').forEach((card, idx) => {
+      card.classList.add('visible');
+      const name  = card.dataset.name;
+      const after = card.getBoundingClientRect();
+      const bef   = first[name];
 
-    // Fade-in + stagger
-    requestAnimationFrame(() => {
-      gridEl.style.opacity   = '1';
-      gridEl.style.transform = '';
-      gridEl.querySelectorAll('.project-card').forEach((card, i) => {
-        setTimeout(() => card.classList.add('visible'), i * 90);
-      });
+      if (bef) {
+        // Carte déjà présente → FLIP translate
+        const dx = bef.left - after.left;
+        const dy = bef.top  - after.top;
+        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+          card.animate(
+            [
+              { transform: `translate(${dx}px,${dy}px)`, opacity: 0.7 },
+              { transform: 'translate(0,0)',              opacity: 1   }
+            ],
+            { duration: 520, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+          );
+        }
+      } else {
+        // Nouvelle carte → fade-in décalé
+        card.style.opacity   = '0';
+        card.style.transform = 'translateY(14px) scale(0.97)';
+        setTimeout(() => {
+          card.style.transition = 'opacity 0.4s ease, transform 0.42s cubic-bezier(0.22, 1, 0.36, 1)';
+          card.style.opacity    = '1';
+          card.style.transform  = 'none';
+          setTimeout(() => { card.style.transition = ''; }, 500);
+        }, idx * 60 + 40);
+      }
     });
-  }, 290);
+  });
 }
 
 renderGrid('all');
@@ -162,12 +280,63 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     });
     btn.classList.add('active');
     btn.setAttribute('aria-selected', 'true');
+    playTick(620, 0.06, 0.05);
     renderGrid(btn.dataset.filter);
   });
 });
 
 // ─────────────────────────────────────────────
-// GRAIN TEXTURE (canvas généré)
+// COMMITS GITHUB → affichés sur chaque carte
+// ─────────────────────────────────────────────
+function timeAgo(dateStr) {
+  try {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const rtf  = new Intl.RelativeTimeFormat(currentLang, { numeric: 'auto' });
+    const sec  = diff / 1000;
+    const min  = sec  / 60;
+    const hr   = min  / 60;
+    const day  = hr   / 24;
+    if (sec < 60)  return rtf.format(-Math.round(sec), 'second');
+    if (min < 60)  return rtf.format(-Math.round(min), 'minute');
+    if (hr  < 24)  return rtf.format(-Math.round(hr),  'hour');
+    if (day < 30)  return rtf.format(-Math.round(day), 'day');
+    return new Date(dateStr).toLocaleDateString(currentLang);
+  } catch { return new Date(dateStr).toLocaleDateString(); }
+}
+
+function updateCardCommit(name) {
+  const data = commitCache[name];
+  document.querySelectorAll(`.project-card[data-name="${CSS.escape(name)}"] .card-commit-overlay`)
+    .forEach(overlay => {
+      overlay.innerHTML = `
+        <div class="commit-overlay-msg">${data.msg}</div>
+        <div class="commit-overlay-time">${data.time}</div>`;
+    });
+}
+
+async function fetchCommits() {
+  await Promise.allSettled(
+    projects.map(p =>
+      fetch(`https://api.github.com/repos/${p.repo}/commits?per_page=1`)
+        .then(r => { if (!r.ok) throw r.status; return r.json(); })
+        .then(data => {
+          const msg  = (data[0]?.commit?.message || '—').split('\n')[0];
+          const date = data[0]?.commit?.author?.date || null;
+          commitCache[p.name] = { msg, time: date ? timeAgo(date) : '—' };
+          updateCardCommit(p.name);
+        })
+        .catch(() => {
+          commitCache[p.name] = { msg: '—', time: '—' };
+          updateCardCommit(p.name);
+        })
+    )
+  );
+}
+
+fetchCommits();
+
+// ─────────────────────────────────────────────
+// GRAIN TEXTURE
 // ─────────────────────────────────────────────
 (function () {
   const size = 200;
@@ -185,11 +354,12 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 })();
 
 // ─────────────────────────────────────────────
-// PRELOADER — couronne → titre plein écran
+// PRELOADER — couronne → titre fusionné hero
 // ─────────────────────────────────────────────
 const preloader      = document.getElementById('preloader');
 const preloaderLogo  = document.getElementById('preloader-logo');
 const preloaderCrown = document.getElementById('preloader-crown');
+const heroTitle      = document.getElementById('hero-title');
 
 function fitLoaderText() {
   preloaderLogo.style.fontSize = '10px';
@@ -205,11 +375,38 @@ function fitLoaderText() {
 
 function dismissPreloader() {
   document.body.classList.add('loaded');
-  preloader.classList.add('out');
-  preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+
+  // Mesure : position du hero title (déjà dans le DOM, opacity 0)
+  const heroRect = heroTitle.getBoundingClientRect();
+  const logoRect = preloaderLogo.getBoundingClientRect();
+
+  // Centre hero vs centre logo
+  const cx1 = logoRect.left  + logoRect.width  / 2;
+  const cy1  = logoRect.top   + logoRect.height / 2;
+  const cx2  = heroRect.left  + heroRect.width  / 2;
+  const cy2  = heroRect.top   + heroRect.height / 2;
+
+  const dx    = cx2 - cx1;
+  const dy    = cy2 - cy1;
+  const scale = Math.min(
+    heroRect.width  / (logoRect.width  || 1),
+    heroRect.height / (logoRect.height || 1)
+  );
+
+  // Anime le texte vers la position du hero title
+  preloaderLogo.classList.add('fly-out');
+  preloaderLogo.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+  preloaderLogo.style.opacity   = '0';
+
+  // 500ms après : révèle le hero title, retire le preloader
+  setTimeout(() => {
+    heroTitle.classList.add('appear');
+    preloader.classList.add('out');
+    preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+  }, 480);
 }
 
-// Phase 1 : couronne (950ms), Phase 2 : titre
+// Phase 1 : couronne (950ms) → Phase 2 : titre → dismiss
 setTimeout(() => {
   preloaderCrown.classList.add('out');
   fitLoaderText();
@@ -223,29 +420,100 @@ setTimeout(() => {
 }, 950);
 
 // ─────────────────────────────────────────────
-// THÈME (le flash est déjà géré dans le <head>)
+// THÈME — 3 modes : light · dark · auto
+// Mode sauvegardé : 'light' | 'dark' | null (auto)
 // ─────────────────────────────────────────────
 const html        = document.documentElement;
 const themeToggle = document.getElementById('theme-toggle');
+const themeOverlay = document.getElementById('theme-overlay');
 
-function getEffectiveTheme() {
-  const s = localStorage.getItem('theme');
-  return (s === 'dark' || s === 'light') ? s
-    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+// Mapping mode → icône
+const THEME_ICONS = { light: '◐', dark: '◑', auto: '◎' };
+
+function getStoredMode() {
+  return localStorage.getItem('theme'); // 'light', 'dark', ou null
 }
 
-function applyTheme(theme) {
+function getEffectiveTheme(mode) {
+  if (mode === 'light') return 'light';
+  if (mode === 'dark')  return 'dark';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function getCurrentMode() {
+  return getStoredMode() || 'auto';
+}
+
+function applyTheme(theme, mode) {
   html.setAttribute('data-theme', theme);
-  themeToggle.textContent = theme === 'dark' ? '◑' : '◐';
-  localStorage.setItem('theme', theme);
+  html.setAttribute('data-theme-mode', mode || 'auto');
+  const m = mode || 'auto';
+  themeToggle.textContent = THEME_ICONS[m] || '◐';
+  themeToggle.setAttribute('data-mode', m);
+  if (mode && mode !== 'auto') localStorage.setItem('theme', mode);
+  else localStorage.removeItem('theme');
 }
 
-themeToggle.addEventListener('click', () =>
-  applyTheme(getEffectiveTheme() === 'dark' ? 'light' : 'dark')
-);
-applyTheme(getEffectiveTheme());
+function cycleTheme(originEl) {
+  const cur = getCurrentMode();
+  const next = cur === 'light' ? 'dark' : cur === 'dark' ? 'auto' : 'light';
+  const nextTheme = getEffectiveTheme(next === 'auto' ? null : next);
+
+  // Animation masque cercle
+  if (typeof document.startViewTransition === 'function') {
+    const rect = originEl.getBoundingClientRect();
+    const cx   = rect.left + rect.width  / 2;
+    const cy   = rect.top  + rect.height / 2;
+    const maxR = Math.hypot(
+      Math.max(cx, window.innerWidth  - cx),
+      Math.max(cy, window.innerHeight - cy)
+    ) + 20;
+
+    const transition = document.startViewTransition(() => applyTheme(nextTheme, next));
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        { clipPath: [`circle(0 at ${cx}px ${cy}px)`, `circle(${maxR}px at ${cx}px ${cy}px)`] },
+        { duration: 620, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' }
+      );
+    }).catch(() => {});
+  } else {
+    // Fallback clip-path overlay
+    const rect = originEl.getBoundingClientRect();
+    const cx   = rect.left + rect.width  / 2;
+    const cy   = rect.top  + rect.height / 2;
+    const maxR = Math.hypot(
+      Math.max(cx, window.innerWidth  - cx),
+      Math.max(cy, window.innerHeight - cy)
+    ) + 20;
+
+    const bgNew = nextTheme === 'dark' ? '#1c2330' : '#F2D99B';
+    themeOverlay.style.background  = bgNew;
+    themeOverlay.style.clipPath    = `circle(0px at ${cx}px ${cy}px)`;
+    themeOverlay.style.transition  = 'none';
+    themeOverlay.offsetHeight; // reflow
+    themeOverlay.style.transition  = `clip-path 0.62s cubic-bezier(0.22, 1, 0.36, 1)`;
+    themeOverlay.style.clipPath    = `circle(${maxR}px at ${cx}px ${cy}px)`;
+
+    setTimeout(() => {
+      applyTheme(nextTheme, next);
+      themeOverlay.style.transition = 'none';
+      themeOverlay.style.clipPath   = `circle(0px at ${cx}px ${cy}px)`;
+    }, 580);
+  }
+
+  playWhoosh();
+}
+
+themeToggle.addEventListener('click', () => cycleTheme(themeToggle));
+
+// Initialisation
+applyTheme(getEffectiveTheme(getStoredMode()), getCurrentMode());
+
+// Écoute system preference change (mode auto)
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-  if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
+  if (!localStorage.getItem('theme')) {
+    applyTheme(e.matches ? 'dark' : 'light', 'auto');
+  }
 });
 
 // ─────────────────────────────────────────────
@@ -254,12 +522,13 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e =
 document.getElementById('lang-toggle').addEventListener('click', () => {
   currentLang = currentLang === 'en' ? 'fr' : 'en';
   applyTranslations(currentLang);
-  renderGrid(activeFilter); // rerender les labels catégorie
+  renderGrid(activeFilter);
+  buildCommandList();
 });
 applyTranslations(currentLang);
 
 // ─────────────────────────────────────────────
-// CURSEUR CUSTOM (uniquement desktop avec pointeur précis)
+// CURSEUR CUSTOM
 // ─────────────────────────────────────────────
 (function initCursor() {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
@@ -309,7 +578,7 @@ function startScramble(link) {
   link._scramble = setInterval(() => {
     const locked = Math.floor((frame / total) * realName.length);
     span.textContent = realName.split('').map((ch, i) => {
-      if (ch === ' ' || ch === "'") return ch;
+      if (ch === ' ' || ch === "'" || ch === 'Ô') return ch;
       if (i < locked) return ch;
       return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
     }).join('');
@@ -336,7 +605,64 @@ function attachScrambleListeners() {
 }
 
 // ─────────────────────────────────────────────
-// SCROLL : header · barre de progression · parallaxe fantômes · skew
+// STACK INTERACTIVE — badges flottants + répulsion souris
+// ─────────────────────────────────────────────
+const STACK_ITEMS = [
+  { icon: '🌐', label: 'HTML5' },
+  { icon: '🎨', label: 'CSS3' },
+  { icon: '⚡', label: 'JavaScript ES6+' },
+  { icon: '🖼', label: 'Canvas API' },
+  { icon: '🔥', label: 'Firebase' },
+  { icon: '🔌', label: 'WebSockets' },
+  { icon: '📡', label: 'PeerJS' },
+  { icon: '🎵', label: 'Last.fm API' },
+  { icon: '🎧', label: 'Web Audio API' },
+  { icon: '📐', label: 'CSS Grid' },
+];
+
+(function initStack() {
+  const grid = document.getElementById('stack-grid');
+  if (!grid) return;
+
+  STACK_ITEMS.forEach((item, i) => {
+    const badge = document.createElement('div');
+    badge.className = 'stack-badge';
+    badge.style.setProperty('--float-dur',   `${2.4 + (i % 5) * 0.4}s`);
+    badge.style.setProperty('--float-delay', `${(i * 0.17) % 1.5}s`);
+    badge.innerHTML = `<span class="badge-icon" aria-hidden="true">${item.icon}</span>${item.label}`;
+    grid.appendChild(badge);
+  });
+
+  // Répulsion légère au survol de la souris
+  const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!isDesktop) return;
+
+  let mouseX = -999, mouseY = -999;
+  grid.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+  grid.addEventListener('mouseleave', () => { mouseX = -999; mouseY = -999; });
+
+  function repulse() {
+    grid.querySelectorAll('.stack-badge').forEach(badge => {
+      const r    = badge.getBoundingClientRect();
+      const bcx  = r.left + r.width  / 2;
+      const bcy  = r.top  + r.height / 2;
+      const dist = Math.hypot(mouseX - bcx, mouseY - bcy);
+      const rad  = 80;
+      if (dist < rad && mouseX > 0) {
+        const force = (1 - dist / rad) * 14;
+        const ang   = Math.atan2(bcy - mouseY, bcx - mouseX);
+        badge.style.transform = `translate(${Math.cos(ang) * force}px, ${Math.sin(ang) * force}px)`;
+      } else {
+        badge.style.transform = '';
+      }
+    });
+    requestAnimationFrame(repulse);
+  }
+  repulse();
+})();
+
+// ─────────────────────────────────────────────
+// SCROLL : header · barre · parallaxe · skew
 // ─────────────────────────────────────────────
 const siteHeader  = document.getElementById('site-header');
 const progressBar = document.getElementById('progress-bar');
@@ -349,7 +675,6 @@ let skewCurrent    = 0;
 let skewTarget     = 0;
 let skewRafId      = null;
 
-// Parallaxe sur les numéros fantômes
 function updateGhostParallax() {
   const sy = window.scrollY;
   document.querySelectorAll('.card-ghost').forEach((ghost, i) => {
@@ -358,7 +683,6 @@ function updateGhostParallax() {
   });
 }
 
-// RAF pour le skew fluide
 function skewTick() {
   skewCurrent += (skewTarget - skewCurrent) * 0.1;
   skewTarget  *= 0.78;
@@ -372,7 +696,6 @@ function skewTick() {
   }
 }
 
-// Gestion du header : hero invisible, smart hide/show
 function updateHeader(sy) {
   const heroH = heroSection.offsetHeight;
   if (sy < heroH * 0.78) {
@@ -382,25 +705,18 @@ function updateHeader(sy) {
   }
   siteHeader.classList.remove('header-in-hero');
   siteHeader.classList.add('scrolled');
-
   if (sy > lastScrollY + 5)      siteHeader.classList.add('header-hidden');
   else if (sy < lastScrollY - 3) siteHeader.classList.remove('header-hidden');
 }
 
 window.addEventListener('scroll', () => {
-  const sy  = window.scrollY;
+  const sy   = window.scrollY;
   const docH = document.documentElement.scrollHeight - window.innerHeight;
 
-  // Barre progression
   progressBar.style.width = `${Math.min(100, (sy / docH) * 100)}%`;
-
-  // Header
   updateHeader(sy);
-
-  // Parallaxe fantômes
   updateGhostParallax();
 
-  // Skew
   const delta = sy - prevSkewScroll;
   prevSkewScroll = sy;
   skewTarget = Math.max(-1.8, Math.min(1.8, delta * -0.065));
@@ -409,11 +725,10 @@ window.addEventListener('scroll', () => {
   lastScrollY = sy;
 }, { passive: true });
 
-// Init header au chargement
 updateHeader(window.scrollY);
 
 // ─────────────────────────────────────────────
-// SMOOTH SCROLL (desktop uniquement)
+// SMOOTH SCROLL (desktop)
 // ─────────────────────────────────────────────
 (function initSmoothScroll() {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
@@ -433,7 +748,6 @@ updateHeader(window.scrollY);
       rafId = null;
     }
   }
-
   function start() { if (!rafId) rafId = requestAnimationFrame(tick); }
 
   window.addEventListener('wheel', e => {
@@ -448,10 +762,10 @@ updateHeader(window.scrollY);
   window.addEventListener('keydown', e => {
     if (e.target.closest('input, textarea, select')) return;
     const map = {
-      ArrowDown:  90,  ArrowUp:  -90,
-      PageDown:   window.innerHeight * 0.85,
-      PageUp:    -window.innerHeight * 0.85,
-      ' ':        window.innerHeight * 0.85,
+      ArrowDown: 90, ArrowUp: -90,
+      PageDown:  window.innerHeight * 0.85,
+      PageUp:   -window.innerHeight * 0.85,
+      ' ':       window.innerHeight * 0.85,
     };
     if (map[e.key] !== undefined) {
       e.preventDefault();
@@ -464,8 +778,19 @@ updateHeader(window.scrollY);
   });
 })();
 
+// Smooth scroll sur les liens de nav
+document.querySelectorAll('.nav-section-link').forEach(link => {
+  link.addEventListener('click', e => {
+    const href = link.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+    e.preventDefault();
+    const target = document.querySelector(href);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
 // ─────────────────────────────────────────────
-// INTERSECTION OBSERVER — about + commits
+// INTERSECTION OBSERVER
 // ─────────────────────────────────────────────
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(entry => {
@@ -477,63 +802,6 @@ const revealObs = new IntersectionObserver(entries => {
 
 const aboutSection = document.querySelector('.about');
 if (aboutSection) revealObs.observe(aboutSection);
-
-// ─────────────────────────────────────────────
-// COMMITS GITHUB
-// ─────────────────────────────────────────────
-async function fetchCommits() {
-  const list = document.getElementById('commit-list');
-
-  function timeAgo(dateStr) {
-    try {
-      const diff = Date.now() - new Date(dateStr).getTime();
-      const rtf  = new Intl.RelativeTimeFormat(currentLang, { numeric: 'auto' });
-      const sec  = diff / 1000;
-      const min  = sec  / 60;
-      const hr   = min  / 60;
-      const day  = hr   / 24;
-      if (sec < 60)  return rtf.format(-Math.round(sec), 'second');
-      if (min < 60)  return rtf.format(-Math.round(min), 'minute');
-      if (hr  < 24)  return rtf.format(-Math.round(hr),  'hour');
-      if (day < 30)  return rtf.format(-Math.round(day), 'day');
-      return new Date(dateStr).toLocaleDateString(currentLang);
-    } catch { return new Date(dateStr).toLocaleDateString(); }
-  }
-
-  const results = await Promise.allSettled(
-    projects.map(p =>
-      fetch(`https://api.github.com/repos/${p.repo}/commits?per_page=1`)
-        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(data => ({
-          name: p.name,
-          msg:  (data[0]?.commit?.message || '—').split('\n')[0],
-          date: data[0]?.commit?.author?.date || null,
-        }))
-    )
-  );
-
-  list.innerHTML = '';
-  results.forEach((res, i) => {
-    const li = document.createElement('li');
-    li.className = 'commit-item';
-    if (res.status === 'fulfilled') {
-      const { name, msg, date } = res.value;
-      li.innerHTML = `
-        <span class="commit-repo">${name}</span>
-        <span class="commit-msg">${msg}</span>
-        <span class="commit-time">${date ? timeAgo(date) : t('commitsError')}</span>`;
-    } else {
-      li.innerHTML = `
-        <span class="commit-repo">${projects[i].name}</span>
-        <span class="commit-msg">—</span>
-        <span class="commit-time">${t('commitsError')}</span>`;
-    }
-    list.appendChild(li);
-    setTimeout(() => li.classList.add('visible'), i * 130);
-  });
-}
-
-fetchCommits();
 
 // ─────────────────────────────────────────────
 // TOAST
@@ -548,6 +816,96 @@ function showToast(msg) {
 }
 
 // ─────────────────────────────────────────────
+// COMMAND PALETTE (Cmd+K / Ctrl+K)
+// ─────────────────────────────────────────────
+const cmdPalette  = document.getElementById('cmd-palette');
+const cmdInput    = document.getElementById('cmd-input');
+const cmdList     = document.getElementById('cmd-list');
+const cmdBackdrop = document.getElementById('cmd-backdrop');
+
+let cmdOpen = false;
+let selectedIdx = 0;
+let currentCommands = [];
+
+function getCommands() {
+  return [
+    { icon: '↓', label: t('cmdGoAbout'),    action: () => { document.getElementById('about').scrollIntoView({ behavior: 'smooth' }); } },
+    { icon: '↓', label: t('cmdGoProjects'), action: () => { document.getElementById('projects').scrollIntoView({ behavior: 'smooth' }); } },
+    { icon: '↓', label: t('cmdGoStack'),    action: () => { document.getElementById('stack').scrollIntoView({ behavior: 'smooth' }); } },
+    { icon: '◐', label: t('cmdToggleTheme'), action: () => { cycleTheme(themeToggle); } },
+    { icon: '⟳', label: t('cmdToggleLang'),  action: () => {
+        currentLang = currentLang === 'en' ? 'fr' : 'en';
+        applyTranslations(currentLang);
+        renderGrid(activeFilter);
+        buildCommandList();
+    }},
+    { icon: '↗', label: t('cmdGitHub'),      action: () => { window.open('https://github.com/SanoBld', '_blank', 'noopener'); } },
+  ];
+}
+
+function buildCommandList(query = '') {
+  const cmds = getCommands().filter(c => !query || c.label.toLowerCase().includes(query.toLowerCase()));
+  currentCommands = cmds;
+  selectedIdx = 0;
+  cmdList.innerHTML = '';
+
+  if (!cmds.length) {
+    cmdList.innerHTML = `<li class="cmd-empty">${t('cmdEmpty')}</li>`;
+    return;
+  }
+
+  cmds.forEach((cmd, i) => {
+    const li = document.createElement('li');
+    li.className = 'cmd-item' + (i === 0 ? ' selected' : '');
+    li.innerHTML = `<span class="cmd-item-icon">${cmd.icon}</span>${cmd.label}`;
+    li.addEventListener('click', () => { closeCmd(); cmd.action(); playTick(800, 0.05, 0.05); });
+    li.addEventListener('mouseenter', () => {
+      cmdList.querySelectorAll('.cmd-item').forEach((el, j) => el.classList.toggle('selected', j === i));
+      selectedIdx = i;
+    });
+    cmdList.appendChild(li);
+  });
+}
+
+function openCmd() {
+  cmdOpen = true;
+  cmdPalette.classList.add('open');
+  cmdPalette.setAttribute('aria-hidden', 'false');
+  cmdInput.value = '';
+  buildCommandList();
+  setTimeout(() => cmdInput.focus(), 30);
+}
+
+function closeCmd() {
+  cmdOpen = false;
+  cmdPalette.classList.remove('open');
+  cmdPalette.setAttribute('aria-hidden', 'true');
+}
+
+cmdInput.addEventListener('input', e => buildCommandList(e.target.value));
+
+cmdInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape')     { closeCmd(); return; }
+  if (e.key === 'ArrowDown')  { e.preventDefault(); selectedIdx = Math.min(selectedIdx + 1, currentCommands.length - 1); }
+  if (e.key === 'ArrowUp')    { e.preventDefault(); selectedIdx = Math.max(selectedIdx - 1, 0); }
+  if (e.key === 'Enter' && currentCommands[selectedIdx]) {
+    closeCmd();
+    currentCommands[selectedIdx].action();
+    playTick(800, 0.05, 0.05);
+    return;
+  }
+  cmdList.querySelectorAll('.cmd-item').forEach((el, i) => el.classList.toggle('selected', i === selectedIdx));
+});
+
+cmdBackdrop.addEventListener('click', closeCmd);
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    cmdOpen ? closeCmd() : openCmd();
+  }
+});
+
+// ─────────────────────────────────────────────
 // RACCOURCIS CLAVIER + CODE KONAMI
 // ─────────────────────────────────────────────
 const KONAMI_SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown',
@@ -557,7 +915,7 @@ let konamiIdx = 0;
 window.addEventListener('keydown', e => {
   if (e.target.closest('input, textarea, select')) return;
 
-  // Suivi Konami
+  // Konami tracking
   if (e.key === KONAMI_SEQ[konamiIdx]) {
     konamiIdx++;
     if (konamiIdx === KONAMI_SEQ.length) {
@@ -569,17 +927,19 @@ window.addEventListener('keydown', e => {
     konamiIdx = 0;
   }
 
-  // Raccourcis simples (pas en conflit avec des combos)
   if (e.altKey || e.ctrlKey || e.metaKey) return;
 
   switch (e.key.toLowerCase()) {
     case 'd':
-      applyTheme(getEffectiveTheme() === 'dark' ? 'light' : 'dark');
+      cycleTheme(themeToggle);
       showToast(t('shortcutTheme'));
       break;
     case 'g':
       window.open('https://github.com/SanoBld', '_blank', 'noopener');
       showToast(t('shortcutGithub'));
+      break;
+    case 'k':
+      if (!cmdOpen) { openCmd(); }
       break;
     case '?':
       showToast(t('shortcutsHint'));
@@ -587,32 +947,90 @@ window.addEventListener('keydown', e => {
   }
 });
 
+// ─────────────────────────────────────────────
+// KONAMI — traînée dorée + haptic
+// ─────────────────────────────────────────────
+const trailCanvas  = document.getElementById('konami-trail');
+const trailCtx     = trailCanvas.getContext('2d');
+let   trailParticles = [];
+let   trailRaf     = null;
+let   konamiActive = false;
+let   trailMX = 0, trailMY = 0;
+
+function resizeTrail() {
+  trailCanvas.width  = window.innerWidth;
+  trailCanvas.height = window.innerHeight;
+}
+resizeTrail();
+window.addEventListener('resize', resizeTrail);
+
+document.addEventListener('mousemove', e => {
+  trailMX = e.clientX;
+  trailMY = e.clientY;
+  if (!konamiActive) return;
+  // spawn plusieurs particules
+  for (let i = 0; i < 3; i++) {
+    trailParticles.push({
+      x:    trailMX + (Math.random() - 0.5) * 12,
+      y:    trailMY + (Math.random() - 0.5) * 12,
+      vx:   (Math.random() - 0.5) * 1.6,
+      vy:   -(Math.random() * 1.4 + 0.4),
+      size: Math.random() * 4 + 2,
+      life: 1,
+    });
+  }
+});
+
+function trailTick() {
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+  trailParticles = trailParticles.filter(p => p.life > 0.02);
+  trailParticles.forEach(p => {
+    p.x    += p.vx;
+    p.y    += p.vy;
+    p.vy   += 0.035;  // gravité légère
+    p.life -= 0.025;
+    const alpha = Math.max(0, p.life);
+    trailCtx.save();
+    trailCtx.globalAlpha = alpha;
+    trailCtx.fillStyle   = `hsl(${38 + Math.random() * 14}, 88%, ${52 + Math.random() * 22}%)`;
+    trailCtx.beginPath();
+    trailCtx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+    trailCtx.fill();
+    trailCtx.restore();
+  });
+  if (konamiActive || trailParticles.length > 0) trailRaf = requestAnimationFrame(trailTick);
+  else trailRaf = null;
+}
+
 function activateKonami() {
   showToast(t('konamiMsg'));
   html.classList.add('konami-active');
-  setTimeout(() => html.classList.remove('konami-active'), 4000);
+  konamiActive = true;
+  trailCanvas.classList.add('active');
+
+  // Haptic (mobile)
+  if (navigator.vibrate) navigator.vibrate([8, 60, 8, 60, 30]);
+
+  // Son royal
+  playTick(523, 0.12, 0.09);
+  setTimeout(() => playTick(659, 0.12, 0.09), 130);
+  setTimeout(() => playTick(784, 0.20, 0.09), 260);
+
+  if (!trailRaf) trailRaf = requestAnimationFrame(trailTick);
+
+  setTimeout(() => {
+    html.classList.remove('konami-active');
+    konamiActive = false;
+    trailCanvas.classList.remove('active');
+  }, 4000);
 }
 
 // ─────────────────────────────────────────────
-// MESSAGE CONSOLE — pour les curieux
+// MESSAGE CONSOLE
 // ─────────────────────────────────────────────
 /* eslint-disable no-console */
-console.log(
-  '%c👑  SanoBld',
-  'color:#AA211F;font-size:30px;font-family:serif;font-weight:bold;padding:4px 0;'
-);
-console.log(
-  '%cDu code fait avec passion. Curieux de voir comment ça marche ? Bienvenue.\n'
-+ 'Made with passion. Curious how it works? Welcome.',
-  'color:#C98A35;font-size:12px;font-family:monospace;line-height:1.6;'
-);
-console.log(
-  '%cStack → HTML · CSS · Vanilla JS · Canvas API · Firebase · Last.fm API',
-  'color:#8a9baa;font-size:11px;font-family:monospace;'
-);
-console.log(
-  '%c→ github.com/SanoBld',
-  'color:#F2D99B;background:#1c2330;font-size:12px;font-family:monospace;'
-+ 'padding:3px 10px;border-radius:2px;'
-);
+console.log('%c👑  SanoBld','color:#AA211F;font-size:30px;font-family:serif;font-weight:bold;padding:4px 0;');
+console.log('%cDu code fait avec passion. Curieux de voir comment ça marche ? Bienvenue.\nMade with passion. Curious how it works? Welcome.','color:#C98A35;font-size:12px;font-family:monospace;line-height:1.6;');
+console.log('%cStack → HTML · CSS · Vanilla JS · Canvas API · Firebase · Last.fm API','color:#8a9baa;font-size:11px;font-family:monospace;');
+console.log('%c→ github.com/SanoBld','color:#F2D99B;background:#1c2330;font-size:12px;font-family:monospace;padding:3px 10px;border-radius:2px;');
 /* eslint-enable no-console */
