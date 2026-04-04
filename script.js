@@ -7,6 +7,7 @@ const projects = [
   { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',          category: 'musique', repo: 'SanoBld/Aura' },
   { name: "SO'BÔHÈME",   url: 'https://soboheme.github.io/Web/',           category: 'web',     repo: 'soboheme/Web' },
   { name: 'BioLinkMaker', url: 'https://sanobld.github.io/BioLinkMaker/', category: 'appjeu',  repo: 'SanoBld/BioLinkMaker' },
+  { name: 'Eco-Drive',    url: 'https://sanobld.github.io/Eco-Drive/',    category: 'appjeu',  repo: 'SanoBld/Eco-Drive' },
 ];
 
 const CATEGORY_LABELS = {
@@ -413,15 +414,13 @@ function fitLoaderText() {
 function dismissPreloader() {
   document.body.classList.add('loaded');
 
-  // Mesure : position du hero title (déjà dans le DOM, opacity 0)
   const heroRect = heroTitle.getBoundingClientRect();
   const logoRect = preloaderLogo.getBoundingClientRect();
 
-  // Centre hero vs centre logo
   const cx1 = logoRect.left  + logoRect.width  / 2;
-  const cy1  = logoRect.top   + logoRect.height / 2;
-  const cx2  = heroRect.left  + heroRect.width  / 2;
-  const cy2  = heroRect.top   + heroRect.height / 2;
+  const cy1 = logoRect.top   + logoRect.height / 2;
+  const cx2 = heroRect.left  + heroRect.width  / 2;
+  const cy2 = heroRect.top   + heroRect.height / 2;
 
   const dx    = cx2 - cx1;
   const dy    = cy2 - cy1;
@@ -430,21 +429,18 @@ function dismissPreloader() {
     heroRect.height / (logoRect.height || 1)
   );
 
-  // Le logo vole vers la position exacte du hero title (sans fade pendant le vol)
   preloaderLogo.classList.add('fly-out');
   preloaderLogo.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
 
-  // À l'arrivée (670ms) : crossfade simultané logo ↔ hero title
+  // Logo lands on heroTitle → instant reveal, no crossfade
+  // heroTitle switches on instantly (same font/text/size/position as logo)
+  // preloader fades over 0.5s — logo fades with it, heroTitle underneath is already there
   setTimeout(() => {
-    heroTitle.classList.add('appear');                        // hero apparaît
-    preloaderLogo.style.transition = 'opacity 0.22s ease';   // override fly-out
-    preloaderLogo.style.opacity    = '0';                    // logo disparaît
-
-    setTimeout(() => {
-      preloader.classList.add('out');
-      preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
-    }, 300);
-  }, 660);
+    heroTitle.style.transition = 'none';
+    heroTitle.classList.add('appear');
+    preloader.classList.add('out');
+    preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+  }, 700);
 }
 
 // Phase 1 : couronne (950ms) → Phase 2 : titre → dismiss
@@ -618,13 +614,17 @@ applyTranslations(currentLang);
   })();
 
   attachCursorListeners();
+  initStaticCursorTargets();
 })();
 
 function attachCursorListeners() {
-  document.querySelectorAll('[data-cursor="open"]').forEach(el => {
+  gridEl.querySelectorAll('[data-cursor="open"]').forEach(el => {
     el.addEventListener('mouseenter', () => document.body.classList.add('cursor-open'));
     el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-open'));
   });
+}
+
+function initStaticCursorTargets() {
   document.querySelectorAll('[data-cursor="link"]').forEach(el => {
     el.addEventListener('mouseenter', () => document.body.classList.add('cursor-link'));
     el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-link'));
@@ -671,15 +671,64 @@ function skewTick() {
   }
 }
 
+const navLogo = document.querySelector('.nav-logo');
+let heroExited = false;
+
+function animateNavLogoEntry() {
+  // logo flies in from where the hero title sits
+  const from = heroTitle.getBoundingClientRect();
+  const to   = navLogo.getBoundingClientRect();
+  if (!from.width || !to.width) return;
+
+  const dx = from.left + from.width  / 2 - (to.left + to.width  / 2);
+  const dy = from.top  + from.height / 2 - (to.top  + to.height / 2);
+  const sc = Math.min(from.width / to.width, 6);
+
+  const anim = navLogo.animate([
+    { transform: `translate(${dx}px,${dy}px) scale(${sc})`, opacity: 0 },
+    { transform: 'translate(0,0) scale(1)',                  opacity: 1 },
+  ], { duration: 580, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
+  anim.onfinish = () => { navLogo.style.animation = ''; anim.cancel(); };
+}
+
+function animateNavLogoExit() {
+  // logo flies back toward hero title
+  const from = navLogo.getBoundingClientRect();
+  const to   = heroTitle.getBoundingClientRect();
+  if (to.bottom < 0 || !to.width) return;
+
+  const dx = to.left + to.width  / 2 - (from.left + from.width  / 2);
+  const dy = to.top  + to.height / 2 - (from.top  + from.height / 2);
+  const sc = Math.min(to.width / from.width, 6);
+
+  navLogo.animate([
+    { transform: 'translate(0,0) scale(1)',                  opacity: 1 },
+    { transform: `translate(${dx}px,${dy}px) scale(${sc})`, opacity: 0 },
+  ], { duration: 400, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' });
+}
+
 function updateHeader(sy) {
-  const heroH = heroSection.offsetHeight;
-  if (sy < heroH * 0.78) {
+  const heroH  = heroSection.offsetHeight;
+  const inHero = sy < heroH * 0.78;
+
+  if (inHero) {
+    if (!siteHeader.classList.contains('header-in-hero')) {
+      animateNavLogoExit();
+    }
     siteHeader.classList.add('header-in-hero');
     siteHeader.classList.remove('header-hidden', 'scrolled');
+    heroExited = false;
     return;
   }
+
   siteHeader.classList.remove('header-in-hero');
   siteHeader.classList.add('scrolled');
+
+  if (!heroExited) {
+    animateNavLogoEntry();
+    heroExited = true;
+  }
+
   if (sy > lastScrollY + 5)      siteHeader.classList.add('header-hidden');
   else if (sy < lastScrollY - 3) siteHeader.classList.remove('header-hidden');
 }
@@ -708,8 +757,8 @@ updateHeader(window.scrollY);
 // PROGRESS BAR CHECKPOINTS
 // ─────────────────────────────────────────────
 const CHECKPOINT_SECTIONS = [
-  { id: 'about',    label: 'About'    },
   { id: 'projects', label: 'Projects' },
+  { id: 'about',    label: 'About'    },
 ];
 let checkpointEls = [];
 

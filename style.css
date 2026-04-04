@@ -121,7 +121,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.6s ease 0.15s;
+  transition: opacity 0.5s ease;
 }
 .preloader.out {
   opacity: 0;
@@ -182,7 +182,7 @@ body {
   position: fixed;
   top: 0; left: 0;
   width: 13px; height: 13px;
-  border: 1.5px solid var(--cursor-color);
+  border: 1.5px solid #fff;
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
@@ -190,7 +190,6 @@ body {
   transition: width 0.3s var(--ease-out),
               height 0.3s var(--ease-out),
               background 0.3s var(--ease-out),
-              border-color 0.3s var(--ease-out),
               opacity 0.3s ease;
   display: flex;
   align-items: center;
@@ -198,6 +197,7 @@ body {
   overflow: hidden;
   will-change: left, top;
   opacity: 0;
+  mix-blend-mode: difference;
 }
 .has-custom-cursor .cursor { opacity: 1; }
 
@@ -205,7 +205,7 @@ body {
   font-size: 0.44rem;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: var(--slate);
+  color: #fff;
   opacity: 0;
   transition: opacity 0.2s var(--ease-out);
   user-select: none;
@@ -213,13 +213,13 @@ body {
 }
 body.cursor-open .cursor {
   width: 68px; height: 68px;
-  background: var(--cursor-color);
-  border-color: var(--cursor-color);
+  background: #fff;
+  border-color: #fff;
 }
 body.cursor-open .cursor-label { opacity: 1; }
 body.cursor-link .cursor {
   width: 32px; height: 32px;
-  background: color-mix(in srgb, var(--cursor-color) 14%, transparent);
+  background: rgba(255,255,255,0.5);
 }
 
 /* ── Header / Nav ───────────────────────────── */
@@ -261,9 +261,11 @@ body.cursor-link .cursor {
   font-family: var(--font-serif);
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--red);
+  color: var(--mustard);
   letter-spacing: 0.04em;
   flex-shrink: 0;
+  will-change: transform;
+  display: inline-block;
 }
 
 /* Nav section links (À propos, Projets) */
@@ -363,12 +365,12 @@ body.cursor-link .cursor {
 }
 .hero-title.appear {
   opacity: 1;
-  transition: opacity 0.5s var(--ease-out);
 }
 
 /* ── About ──────────────────────────────────── */
 .about {
   padding: 7rem 3rem;
+  border-top: 1px solid var(--bg-dim);
   border-bottom: 1px solid var(--bg-dim);
   opacity: 0;
   transform: translateY(22px);
@@ -526,6 +528,7 @@ body.cursor-link .cursor {
 
 .project-card:nth-child(1) { grid-column: 1 / span 2; }
 .project-card:nth-child(4) { grid-column: 2 / span 2; }
+.project-card:nth-child(5) { grid-column: 1 / span 2; }
 
 .project-card:nth-child(5):last-child { grid-column: 1 / -1; }
 
@@ -586,25 +589,28 @@ body.cursor-link .cursor {
 /* Filigrane numéro */
 .card-ghost {
   position: absolute;
-  bottom: -0.12em;
+  bottom: 0.35em;
   right: -0.04em;
   font-family: var(--font-serif);
   font-size: clamp(8rem, 18vw, 16rem);
   font-weight: 700;
   color: transparent;
-  -webkit-text-stroke: 1.5px var(--bg-dim);
+  -webkit-text-stroke-width: 1.5px;
+  -webkit-text-stroke-color: var(--bg-dim);
   line-height: 1;
   user-select: none;
   pointer-events: none;
   z-index: 0;
   will-change: transform;
-  transition: opacity 0.4s var(--ease-out), transform 0.45s var(--ease-out);
+  transition: opacity 0.4s var(--ease-out),
+              transform 0.45s var(--ease-out),
+              -webkit-text-stroke-color 0.45s var(--ease-out);
   transform: translateY(var(--py, 0px));
 }
 .project-link:hover .card-ghost {
   transform: translateY(calc(var(--py, 0px) - 1.8rem));
   opacity: 0.82;
-  -webkit-text-stroke: 1.5px var(--text);
+  -webkit-text-stroke-color: var(--text);
 }
 
 .card-num {

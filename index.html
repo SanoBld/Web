@@ -46,14 +46,14 @@
     <nav class="nav">
       <span class="nav-logo">SanoBld</span>
       <div class="nav-sections" id="nav-sections">
-        <a href="#about"    class="nav-section-link" data-i18n="navAbout"    data-cursor="link">À propos</a>
         <a href="#projects" class="nav-section-link" data-i18n="navProjects" data-cursor="link">Projets</a>
+        <a href="#about"    class="nav-section-link" data-i18n="navAbout"    data-cursor="link">À propos</a>
       </div>
       <div class="nav-controls">
-        <button class="ctrl-btn" id="sound-toggle" aria-label="Toggle sound" title="Sons">♪</button>
-        <button class="ctrl-btn" id="anim-toggle"  aria-label="Toggle animations" title="Animations">◈</button>
-        <button class="ctrl-btn" id="lang-toggle" aria-label="Switch language">EN</button>
-        <button class="ctrl-btn theme-btn" id="theme-toggle" aria-label="Toggle theme">◐</button>
+        <button class="ctrl-btn" id="sound-toggle" data-cursor="link" aria-label="Toggle sound" title="Sons">♪</button>
+        <button class="ctrl-btn" id="anim-toggle"  data-cursor="link" aria-label="Toggle animations" title="Animations">◈</button>
+        <button class="ctrl-btn" id="lang-toggle" data-cursor="link" aria-label="Switch language">EN</button>
+        <button class="ctrl-btn theme-btn" id="theme-toggle" data-cursor="link" aria-label="Toggle theme">◐</button>
         <a href="https://github.com/SanoBld" target="_blank" rel="noopener" class="nav-link" data-cursor="link" data-i18n="navGithub">GitHub</a>
       </div>
     </nav>
@@ -63,6 +63,21 @@
 
     <section class="hero">
       <h1 class="hero-title" id="hero-title">SanoBld</h1>
+    </section>
+
+    <!-- Section Projets -->
+    <section class="projects" id="projects">
+      <div class="section-header">
+        <span class="section-tag" data-i18n="sectionTag">Travaux Choisis</span>
+        <h2 class="section-title" data-i18n="sectionTitle">Projets</h2>
+      </div>
+      <div class="filters" id="filters" role="tablist" aria-label="Filtrer les projets">
+        <button class="filter-btn active" data-filter="all"     role="tab" aria-selected="true"  data-cursor="link" data-i18n="filterAll">Tout</button>
+        <button class="filter-btn"        data-filter="musique" role="tab" aria-selected="false" data-cursor="link" data-i18n="filterMusique">Musique</button>
+        <button class="filter-btn"        data-filter="web"     role="tab" aria-selected="false" data-cursor="link" data-i18n="filterWeb">Web</button>
+        <button class="filter-btn"        data-filter="appjeu"  role="tab" aria-selected="false" data-cursor="link" data-i18n="filterAppjeu">App / Jeu</button>
+      </div>
+      <ul class="project-grid" id="project-grid"></ul>
     </section>
 
     <!-- Section À propos -->
@@ -80,21 +95,6 @@
           <li>Last.fm API</li>
         </ul>
       </div>
-    </section>
-
-    <!-- Section Projets -->
-    <section class="projects" id="projects">
-      <div class="section-header">
-        <span class="section-tag" data-i18n="sectionTag">Travaux Choisis</span>
-        <h2 class="section-title" data-i18n="sectionTitle">Projets</h2>
-      </div>
-      <div class="filters" id="filters" role="tablist" aria-label="Filtrer les projets">
-        <button class="filter-btn active" data-filter="all"     role="tab" aria-selected="true"  data-i18n="filterAll">Tout</button>
-        <button class="filter-btn"        data-filter="musique" role="tab" aria-selected="false" data-i18n="filterMusique">Musique</button>
-        <button class="filter-btn"        data-filter="web"     role="tab" aria-selected="false" data-i18n="filterWeb">Web</button>
-        <button class="filter-btn"        data-filter="appjeu"  role="tab" aria-selected="false" data-i18n="filterAppjeu">App / Jeu</button>
-      </div>
-      <ul class="project-grid" id="project-grid"></ul>
     </section>
 
     <section class="cta-section">
