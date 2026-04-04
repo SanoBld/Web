@@ -3,15 +3,16 @@
    ============================================================ */
 
 :root {
-  --bg:           #F2D99B;
-  --bg-dim:       #e8cc88;
-  --bg-hover:     #eccf7e;
-  --text:         #2B2B31;
-  --muted:        #556070;
-  --red:          #AA211F;
-  --slate:        #283543;
-  --mustard:      #C98A35;
-  --cursor-color: #1D2330;
+  --bg:             #F2D99B;
+  --bg-dim:         #e8cc88;
+  --bg-hover:       #eccf7e;
+  --text:           #2B2B31;
+  --muted:          #556070;
+  --red:            #AA211F;
+  --slate:          #283543;
+  --mustard:        #C98A35;
+  --cursor-color:   #1D2330;
+  --cursor-alt:     #C98A35;
 
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans:  'Montserrat', sans-serif;
@@ -28,7 +29,8 @@
   --bg-hover:     #1a2538;
   --text:         #F2D99B;
   --muted:        #8a9baa;
-  --cursor-color: #C88C3B;
+  --cursor-color: #C98A35;
+  --cursor-alt:   #1D2330;
 }
 [data-theme="light"] {
   --bg:           #F2D99B;
@@ -91,7 +93,7 @@ body {
   opacity: 0.6;
 }
 
-/* ── Theme Overlay (mask transition) ────────── */
+/* ── Theme Overlay (transition masque cercle) ── */
 .theme-overlay {
   position: fixed;
   inset: 0;
@@ -99,6 +101,19 @@ body {
   pointer-events: none;
   clip-path: circle(0px at 50% 50%);
   will-change: clip-path;
+}
+
+/* Empêche le fondu croisé par défaut de View Transitions API —
+   on gère nous-mêmes l'animation en clip-path depuis le curseur */
+@supports (view-transition-name: none) {
+  ::view-transition-old(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
 }
 
 /* ── Konami Trail Canvas ────────────────────── */
@@ -150,7 +165,8 @@ body {
   font-family: var(--font-serif);
   font-weight: 700;
   color: var(--text);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;   /* identique au hero-title */
+  line-height: 1;             /* identique au hero-title */
   white-space: nowrap;
   opacity: 0;
   transform: translateY(10px);
@@ -163,7 +179,7 @@ body {
   transform: translateY(0);
 }
 .preloader-logo.fly-out {
-  transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 /* ── Grain ──────────────────────────────────── */
@@ -177,19 +193,22 @@ body {
   background-size: 200px 200px;
 }
 
-/* ── Curseur custom ─────────────────────────── */
+/* ── Curseur custom — Cercle Réactif ─────────── */
 .cursor {
   position: fixed;
   top: 0; left: 0;
-  width: 13px; height: 13px;
-  border: 1.5px solid #fff;
+  width: 16px; height: 16px;
+  background: var(--cursor-color);
+  border: 2.5px solid var(--cursor-alt);
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  transition: width 0.3s var(--ease-out),
-              height 0.3s var(--ease-out),
-              background 0.3s var(--ease-out),
+  transition: width  0.38s var(--ease-out),
+              height 0.38s var(--ease-out),
+              background    0.3s var(--ease-out),
+              border-color  0.3s var(--ease-out),
+              border-width  0.3s var(--ease-out),
               opacity 0.3s ease;
   display: flex;
   align-items: center;
@@ -197,29 +216,56 @@ body {
   overflow: hidden;
   will-change: left, top;
   opacity: 0;
-  mix-blend-mode: difference;
 }
 .has-custom-cursor .cursor { opacity: 1; }
 
 .cursor-label {
-  font-size: 0.44rem;
+  font-family: var(--font-sans);
+  font-size: 0.40rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #fff;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.35;
+  color: var(--bg);
   opacity: 0;
-  transition: opacity 0.2s var(--ease-out);
+  transition: opacity 0.22s var(--ease-out), font-size 0.22s var(--ease-out);
   user-select: none;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 84px;
+  padding: 0 6px;
 }
+
+/* Survol carte projet → nom du projet (Aura, Pulse, BioLinkMaker…) */
 body.cursor-open .cursor {
-  width: 68px; height: 68px;
-  background: #fff;
-  border-color: #fff;
+  width: 96px; height: 96px;
+  border-width: 2px;
 }
-body.cursor-open .cursor-label { opacity: 1; }
+body.cursor-open .cursor-label {
+  opacity: 1;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+}
+
+/* Survol lien / filtre */
 body.cursor-link .cursor {
-  width: 32px; height: 32px;
-  background: rgba(255,255,255,0.5);
+  width: 88px; height: 88px;
+  border-width: 2px;
+}
+body.cursor-link .cursor-label {
+  opacity: 1;
+  font-size: 0.46rem;
+}
+
+/* Survol petit bouton (thème, son, langue…) */
+body.cursor-btn .cursor {
+  width: 64px; height: 64px;
+  border-width: 2px;
+}
+body.cursor-btn .cursor-label {
+  opacity: 1;
+  font-size: 0.44rem;
+  letter-spacing: 0.09em;
 }
 
 /* ── Header / Nav ───────────────────────────── */
@@ -231,22 +277,32 @@ body.cursor-link .cursor {
   display: flex;
   align-items: center;
   background: transparent;
-  transition: background var(--transition),
-              box-shadow var(--transition),
-              opacity 0.45s var(--ease-out),
-              transform 0.45s var(--ease-out);
+  will-change: transform, opacity;
+  /* Toutes les propriétés animées, durées légèrement décalées pour un effet naturel */
+  transition: background  0.38s var(--ease-out),
+              box-shadow  0.38s var(--ease-out),
+              transform   0.46s var(--ease-out),
+              opacity     0.38s var(--ease-out),
+              backdrop-filter 0.38s ease;
 }
+/* Fond semi-transparent avec flou quand on scrolle — plus lisible et plus premium */
 .site-header.scrolled {
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 1px 0 var(--bg-dim);
 }
-.site-header.header-in-hero {
+/* En hero : fond transparent, liens flottants — seul le logo est invisible */
+.site-header.header-in-hero .nav-logo {
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.3s ease;
 }
+/* Disparition en scroll descendant : glisse vers le haut + fondu */
 .site-header.header-hidden {
-  transform: translateY(-100%);
+  transform: translateY(-115%);
   opacity: 0;
+  pointer-events: none;
 }
 
 .nav {
@@ -377,6 +433,13 @@ body.cursor-link .cursor {
   transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
 }
 .about.visible { opacity: 1; transform: none; }
+
+.about-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
 
 .about-inner { max-width: 52rem; }
 

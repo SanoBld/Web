@@ -28,12 +28,14 @@ const i18n = {
     sectionTitle:    'Projects',
     ctaTitle:        'See the full picture',
     ctaBtn:          'View on GitHub',
-    footer:          '© 2025 SanoBld',
+    footer:          '© 2025 Sano Bld',
     cursorOpen:      'OPEN',
+    cursorLink:      'LEARN MORE',
     navGithub:       'GitHub',
     navAbout:        'About',
     navProjects:     'Projects',
-    aboutTag:        'About',
+    aboutTag:        'Identity',
+    aboutTitle:      'About',
     aboutText:       'Developer & designer based in France. I build refined web experiences in pure HTML, CSS and JavaScript — no frameworks, just deliberate code.',
     stackTag:        'Stack',
     stackTitle:      'Technologies',
@@ -63,12 +65,14 @@ const i18n = {
     sectionTitle:    'Projets',
     ctaTitle:        "Voir l'ensemble du travail",
     ctaBtn:          'Voir sur GitHub',
-    footer:          '© 2025 SanoBld',
+    footer:          '© 2025 Sano Bld',
     cursorOpen:      'VOIR',
+    cursorLink:      'EN SAVOIR PLUS',
     navGithub:       'GitHub',
     navAbout:        'À propos',
     navProjects:     'Projets',
-    aboutTag:        'À propos',
+    aboutTag:        'Identité',
+    aboutTitle:      'À propos',
     aboutText:       'Développeur & designer basé en France. Je construis des expériences web soignées en HTML, CSS et JavaScript pur — sans framework, juste du code réfléchi.',
     stackTag:        'Stack',
     stackTitle:      'Technologies',
@@ -417,30 +421,38 @@ function dismissPreloader() {
   const heroRect = heroTitle.getBoundingClientRect();
   const logoRect = preloaderLogo.getBoundingClientRect();
 
-  const cx1 = logoRect.left  + logoRect.width  / 2;
-  const cy1 = logoRect.top   + logoRect.height / 2;
-  const cx2 = heroRect.left  + heroRect.width  / 2;
-  const cy2 = heroRect.top   + heroRect.height / 2;
+  // Centre-à-centre
+  const dx = (heroRect.left + heroRect.width  / 2) - (logoRect.left + logoRect.width  / 2);
+  const dy = (heroRect.top  + heroRect.height / 2) - (logoRect.top  + logoRect.height / 2);
 
-  const dx    = cx2 - cx1;
-  const dy    = cy2 - cy1;
-  const scale = Math.min(
-    heroRect.width  / (logoRect.width  || 1),
-    heroRect.height / (logoRect.height || 1)
-  );
+  // Scale basé sur les font-size réels — bien plus précis que les bounding rects
+  // (les rects incluent les ascendeurs/descendeurs qui varient selon le texte)
+  const heroFs = parseFloat(getComputedStyle(heroTitle).fontSize);
+  const logoFs = parseFloat(preloaderLogo.style.fontSize) ||
+                 parseFloat(getComputedStyle(preloaderLogo).fontSize);
+  const scale  = heroFs / (logoFs || 1);
 
+  // Phase 1 : vol du logo vers la position du hero-title
   preloaderLogo.classList.add('fly-out');
   preloaderLogo.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
 
-  // Logo lands on heroTitle → instant reveal, no crossfade
-  // heroTitle switches on instantly (same font/text/size/position as logo)
-  // preloader fades over 0.5s — logo fades with it, heroTitle underneath is already there
+  const FLY_MS = 650;
+
   setTimeout(() => {
+    // 1) Affichage immédiat du hero-title (aucune transition = pas de flash)
     heroTitle.style.transition = 'none';
     heroTitle.classList.add('appear');
-    preloader.classList.add('out');
-    preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
-  }, 700);
+
+    // 2) Effacement instantané du logo pour éviter le doublon visible
+    preloaderLogo.style.transition = 'opacity 0s linear';
+    preloaderLogo.style.opacity    = '0';
+
+    // 3) Fondu du preloader entier (léger délai pour que le swap passe d'abord)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      preloader.classList.add('out');
+      preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+    }));
+  }, FLY_MS);
 }
 
 // Phase 1 : couronne (950ms) → Phase 2 : titre → dismiss
@@ -487,6 +499,9 @@ function applyTheme(theme, mode) {
   const m = mode || 'auto';
   themeToggle.textContent = THEME_ICONS[m] || '◐';
   themeToggle.setAttribute('data-mode', m);
+  // Titre lisible pour le curseur réactif
+  const LABELS = { light: 'Clair', dark: 'Sombre', auto: 'Auto' };
+  themeToggle.title = LABELS[m] || 'Thème';
   if (mode && mode !== 'auto') localStorage.setItem('theme', mode);
   else localStorage.removeItem('theme');
 }
@@ -517,53 +532,62 @@ function fireThemeRing(cx, cy) {
 }
 
 function cycleTheme(originEl) {
-  const cur = getCurrentMode();
+  const cur  = getCurrentMode();
   const next = cur === 'light' ? 'dark' : cur === 'dark' ? 'auto' : 'light';
   const nextTheme = getEffectiveTheme(next === 'auto' ? null : next);
 
   const rect = originEl.getBoundingClientRect();
   const cx   = rect.left + rect.width  / 2;
   const cy   = rect.top  + rect.height / 2;
+  const maxR = Math.hypot(
+    Math.max(cx, window.innerWidth  - cx),
+    Math.max(cy, window.innerHeight - cy)
+  ) + 20;
 
-  // Anneau orange systématique
+  // Anneau visuel discret au point de clic
   fireThemeRing(cx, cy);
 
-  // Animation masque cercle
+  // --- View Transitions API (Chrome/Edge) -----------------------------------
   if (typeof document.startViewTransition === 'function') {
-    const maxR = Math.hypot(
-      Math.max(cx, window.innerWidth  - cx),
-      Math.max(cy, window.innerHeight - cy)
-    ) + 20;
-
     const transition = document.startViewTransition(() => applyTheme(nextTheme, next));
     transition.ready.then(() => {
       document.documentElement.animate(
-        { clipPath: [`circle(0 at ${cx}px ${cy}px)`, `circle(${maxR}px at ${cx}px ${cy}px)`] },
-        { duration: 620, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' }
+        { clipPath: [`circle(0px at ${cx}px ${cy}px)`, `circle(${maxR}px at ${cx}px ${cy}px)`] },
+        { duration: 640, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' }
       );
     }).catch(() => {});
-  } else {
-    const maxR = Math.hypot(
-      Math.max(cx, window.innerWidth  - cx),
-      Math.max(cy, window.innerHeight - cy)
-    ) + 20;
-
-    // Overlay orange visible → puis thème appliqué
-    themeOverlay.style.background  = '#C98A35';
-    themeOverlay.style.opacity     = '0.18';
-    themeOverlay.style.clipPath    = `circle(0px at ${cx}px ${cy}px)`;
-    themeOverlay.style.transition  = 'none';
-    themeOverlay.offsetHeight;
-    themeOverlay.style.transition  = `clip-path 0.62s cubic-bezier(0.22, 1, 0.36, 1)`;
-    themeOverlay.style.clipPath    = `circle(${maxR}px at ${cx}px ${cy}px)`;
-
-    setTimeout(() => {
-      applyTheme(nextTheme, next);
-      themeOverlay.style.transition = 'none';
-      themeOverlay.style.clipPath   = `circle(0px at ${cx}px ${cy}px)`;
-      themeOverlay.style.opacity    = '1';
-    }, 580);
+    playWhoosh();
+    return;
   }
+
+  // --- Fallback propre pour les autres navigateurs --------------------------
+  // 1. Couvre l'écran avec l'ANCIENNE couleur de fond (masque le changement)
+  const oldBg = getComputedStyle(document.documentElement)
+    .getPropertyValue('--bg').trim() || '#F2D99B';
+
+  themeOverlay.style.transition  = 'none';
+  themeOverlay.style.background  = oldBg;
+  themeOverlay.style.clipPath    = `circle(${maxR}px at ${cx}px ${cy}px)`;
+  themeOverlay.style.opacity     = '1';
+  themeOverlay.offsetHeight; // force reflow
+
+  // 2. Applique le nouveau thème immédiatement sous l'overlay
+  applyTheme(nextTheme, next);
+
+  // 3. Réduit l'overlay depuis le point de clic → révèle le nouveau thème
+  requestAnimationFrame(() => {
+    themeOverlay.style.transition = `clip-path 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                                     opacity    0.65s cubic-bezier(0.22, 1, 0.36, 1)`;
+    themeOverlay.style.clipPath   = `circle(0px at ${cx}px ${cy}px)`;
+    themeOverlay.style.opacity    = '0.95';
+  });
+
+  // 4. Nettoyage une fois l'animation terminée
+  setTimeout(() => {
+    themeOverlay.style.transition = 'none';
+    themeOverlay.style.clipPath   = 'circle(0px at 50% 50%)';
+    themeOverlay.style.opacity    = '1';
+  }, 720);
 
   playWhoosh();
 }
@@ -592,16 +616,34 @@ document.getElementById('lang-toggle').addEventListener('click', () => {
 applyTranslations(currentLang);
 
 // ─────────────────────────────────────────────
-// CURSEUR CUSTOM
+// CURSEUR — Cercle réactif qui s'adapte à ce qu'on survole
 // ─────────────────────────────────────────────
+
+/**
+ * Trouve le meilleur texte à afficher dans le curseur pour un élément donné.
+ * Ordre de priorité : data-cursor-label → title → aria-label (si pertinent) → textContent
+ */
+function getCursorLabel(el) {
+  if (el.dataset.cursorLabel) return el.dataset.cursorLabel;
+  if (el.title)               return el.title;
+
+  const aria = el.getAttribute('aria-label');
+  if (aria && !/toggle/i.test(aria)) return aria;
+
+  // textContent brut, espaces normalisés — pas de troncature, le CSS gère
+  return el.textContent.trim().replace(/\s+/g, ' ');
+}
+
 (function initCursor() {
+  // Seulement sur desktop avec une souris précise
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
   document.body.classList.add('has-custom-cursor');
-  const cursor = document.querySelector('.cursor');
+  const cursor      = document.querySelector('.cursor');
+  const cursorLabel = document.querySelector('.cursor-label');
   let mx = window.innerWidth  / 2, my = window.innerHeight / 2;
   let cx = mx, cy = my;
-  const LERP = 0.22;
+  const LERP = 0.18;
 
   document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
 
@@ -618,24 +660,40 @@ applyTranslations(currentLang);
 })();
 
 function attachCursorListeners() {
+  const cursorLabel = document.querySelector('.cursor-label');
   gridEl.querySelectorAll('[data-cursor="open"]').forEach(el => {
-    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-open'));
+    el.addEventListener('mouseenter', () => {
+      document.body.classList.add('cursor-open');
+      // Affiche le nom du projet (ex: "Aura", "Pulse"…)
+      if (cursorLabel) cursorLabel.textContent = el.dataset.name || t('cursorOpen');
+    });
     el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-open'));
   });
 }
 
 function initStaticCursorTargets() {
+  const cursorLabel = document.querySelector('.cursor-label');
   document.querySelectorAll('[data-cursor="link"]').forEach(el => {
-    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-link'));
-    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-link'));
+    const isCtrl = el.classList.contains('ctrl-btn');
+
+    el.addEventListener('mouseenter', () => {
+      // Petits boutons de contrôle → cercle compact
+      if (isCtrl) {
+        document.body.classList.add('cursor-btn');
+      } else {
+        document.body.classList.add('cursor-link');
+      }
+      if (cursorLabel) cursorLabel.textContent = getCursorLabel(el);
+    });
+
+    el.addEventListener('mouseleave', () => {
+      document.body.classList.remove('cursor-link', 'cursor-btn');
+    });
   });
 }
 
 // ─────────────────────────────────────────────
-// STACK INTERACTIVE — supprimé
-// ─────────────────────────────────────────────
-// ─────────────────────────────────────────────
-// SCROLL : header · barre · parallaxe · skew
+// SCROLL — header · barre de progression · parallaxe · skew
 // ─────────────────────────────────────────────
 const siteHeader  = document.getElementById('site-header');
 const progressBar = document.getElementById('progress-bar');
@@ -712,7 +770,7 @@ function updateHeader(sy) {
   const inHero = sy < heroH * 0.78;
 
   if (inHero) {
-    if (!siteHeader.classList.contains('header-in-hero')) {
+    if (!siteHeader.classList.contains('header-in-hero') && heroExited) {
       animateNavLogoExit();
     }
     siteHeader.classList.add('header-in-hero');
@@ -729,8 +787,15 @@ function updateHeader(sy) {
     heroExited = true;
   }
 
-  if (sy > lastScrollY + 5)      siteHeader.classList.add('header-hidden');
-  else if (sy < lastScrollY - 3) siteHeader.classList.remove('header-hidden');
+  // Cache la nav quand on scrolle vers le bas, la montre quand on remonte.
+  // Le seuil asymétrique (8 / 4) rend l'animation plus naturelle.
+  const scrollingDown = sy > lastScrollY + 8;
+  const scrollingUp   = sy < lastScrollY - 4;
+  // Ne jamais cacher si on est encore très proche du haut de page
+  const farEnoughDown = sy > 120;
+
+  if (scrollingDown && farEnoughDown) siteHeader.classList.add('header-hidden');
+  else if (scrollingUp)               siteHeader.classList.remove('header-hidden');
 }
 
 window.addEventListener('scroll', () => {
@@ -792,7 +857,8 @@ window.addEventListener('load', () => setTimeout(initProgressCheckpoints, 400));
 window.addEventListener('resize', () => setTimeout(initProgressCheckpoints, 200));
 
 // ─────────────────────────────────────────────
-// SMOOTH SCROLL (desktop)
+// SCROLL FLUIDE — interpolation douce sur desktop
+// (désactivé sur mobile / tactile pour ne pas gêner le scroll natif)
 // ─────────────────────────────────────────────
 (function initSmoothScroll() {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
@@ -1011,7 +1077,8 @@ window.addEventListener('keydown', e => {
 });
 
 // ─────────────────────────────────────────────
-// KONAMI — traînée dorée + haptic
+// KONAMI — traînée de particules dorées + son royal
+// (↑ ↑ ↓ ↓ ← → ← → B A)
 // ─────────────────────────────────────────────
 const trailCanvas  = document.getElementById('konami-trail');
 const trailCtx     = trailCanvas.getContext('2d');
@@ -1092,7 +1159,7 @@ function activateKonami() {
 // MESSAGE CONSOLE
 // ─────────────────────────────────────────────
 /* eslint-disable no-console */
-console.log('%c👑  SanoBld','color:#AA211F;font-size:30px;font-family:serif;font-weight:bold;padding:4px 0;');
+console.log('%c👑  Sano Bld','color:#AA211F;font-size:30px;font-family:serif;font-weight:bold;padding:4px 0;');
 console.log('%cDu code fait avec passion. Curieux de voir comment ça marche ? Bienvenue.\nMade with passion. Curious how it works? Welcome.','color:#C98A35;font-size:12px;font-family:monospace;line-height:1.6;');
 console.log('%cStack → HTML · CSS · Vanilla JS · Canvas API · Firebase · Last.fm API','color:#8a9baa;font-size:11px;font-family:monospace;');
 console.log('%c→ github.com/SanoBld','color:#F2D99B;background:#1c2330;font-size:12px;font-family:monospace;padding:3px 10px;border-radius:2px;');
