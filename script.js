@@ -2,12 +2,13 @@
 // DONNÉES PROJETS
 // ─────────────────────────────────────────────
 const projects = [
+  { name: 'OmniMedia',    url: 'https://github.com/SanoBld/OmniMedia/releases/latest', category: 'appjeu',  repo: 'SanoBld/OmniMedia' },
   { name: 'LastStats',    url: 'https://sanobld.github.io/LastStats/',    category: 'musique', repo: 'SanoBld/LastStats' },
   { name: 'Pulse',        url: 'https://sanobld.github.io/Pulse/',         category: 'musique', repo: 'SanoBld/Pulse' },
   { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',          category: 'musique', repo: 'SanoBld/Aura' },
-  { name: "SO'BÔHÈME",   url: 'https://soboheme.github.io/Web/',           category: 'web',     repo: 'soboheme/Web' },
+  { name: "SO'BÔHÈME",    url: 'https://soboheme.github.io/Web/',          category: 'web',     repo: 'soboheme/Web' },
   { name: 'BioLinkMaker', url: 'https://sanobld.github.io/BioLinkMaker/', category: 'appjeu',  repo: 'SanoBld/BioLinkMaker' },
-  { name: 'Eco-Drive',    url: 'https://sanobld.github.io/Eco-Drive/',    category: 'appjeu',  repo: 'SanoBld/Eco-Drive' },
+  { name: 'Eco-Drive',    url: 'https://sanobld.github.io/Eco-Drive/',     category: 'appjeu',  repo: 'SanoBld/Eco-Drive' },
 ];
 
 const CATEGORY_LABELS = {
