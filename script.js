@@ -9,6 +9,7 @@ const projects = [
   { name: "SO'BÔHÈME",    url: 'https://soboheme.github.io/Web/',          category: 'web',     repo: 'soboheme/Web' },
   { name: 'BioLinkMaker', url: 'https://sanobld.github.io/BioLinkMaker/', category: 'appjeu',  repo: 'SanoBld/BioLinkMaker' },
   { name: 'Eco-Drive',    url: 'https://sanobld.github.io/Eco-Drive/',     category: 'appjeu',  repo: 'SanoBld/Eco-Drive' },
+  { name: 'OpenTrad',     url: 'https://sanobld.github.io/OpenTrad/',      category: 'appjeu',  repo: 'SanoBld/OpenTrad' },
 ];
 
 const CATEGORY_LABELS = {
