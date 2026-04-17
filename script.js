@@ -2,20 +2,23 @@
 // DONNÉES PROJETS
 // ─────────────────────────────────────────────
 const projects = [
-  { name: 'OmniMedia',    url: 'https://github.com/SanoBld/OmniMedia/releases/latest', category: 'appjeu',  repo: 'SanoBld/OmniMedia' },
-  { name: 'LastStats',    url: 'https://sanobld.github.io/LastStats/',    category: 'musique', repo: 'SanoBld/LastStats' },
-  { name: 'Pulse',        url: 'https://sanobld.github.io/Pulse/',         category: 'musique', repo: 'SanoBld/Pulse' },
-  { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',          category: 'musique', repo: 'SanoBld/Aura' },
-  { name: "SO'BÔHÈME",    url: 'https://soboheme.github.io/Web/',          category: 'web',     repo: 'soboheme/Web' },
-  { name: 'BioLinkMaker', url: 'https://sanobld.github.io/BioLinkMaker/', category: 'appjeu',  repo: 'SanoBld/BioLinkMaker' },
-  { name: 'Eco-Drive',    url: 'https://sanobld.github.io/Eco-Drive/',     category: 'appjeu',  repo: 'SanoBld/Eco-Drive' },
-  { name: 'OpenTrad',     url: 'https://sanobld.github.io/OpenTrad/',      category: 'appjeu',  repo: 'SanoBld/OpenTrad' },
+  { name: 'OmniMedia',    url: 'https://github.com/SanoBld/OmniMedia/releases/latest', category: 'appjeu',     repo: 'SanoBld/OmniMedia' },
+  { name: 'LastStats',    url: 'https://sanobld.github.io/LastStats/',    category: 'musique',    repo: 'SanoBld/LastStats' },
+  { name: 'Pulse',        url: 'https://sanobld.github.io/Pulse/',         category: 'musique',    repo: 'SanoBld/Pulse' },
+  { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',          category: 'musique',    repo: 'SanoBld/Aura' },
+  { name: "SO'BÔHÈME",    url: 'https://soboheme.github.io/Web/',          category: 'web',        repo: 'soboheme/Web' },
+  { name: 'Metrolist',    url: 'https://metrolist.cc/',                    category: 'web',        repo: 'MetrolistGroup/Metrolist' },
+  { name: 'BioLinkMaker', url: 'https://sanobld.github.io/BioLinkMaker/', category: 'appjeu',     repo: 'SanoBld/BioLinkMaker' },
+  { name: 'Eco-Drive',    url: 'https://sanobld.github.io/Eco-Drive/',     category: 'appjeu',     repo: 'SanoBld/Eco-Drive' },
+  { name: 'OpenTrad',     url: 'https://sanobld.github.io/OpenTrad/',      category: 'appjeu',     repo: 'SanoBld/OpenTrad' },
+  { name: 'Boids',        url: 'https://sanobld.github.io/Boids/',         category: 'experience', repo: 'SanoBld/Boids' },
 ];
 
 const CATEGORY_LABELS = {
-  musique: { en: 'Music',      fr: 'Musique' },
-  web:     { en: 'Web',        fr: 'Web' },
-  appjeu:  { en: 'App / Game', fr: 'App / Jeu' },
+  musique:    { en: 'Music',      fr: 'Musique' },
+  web:        { en: 'Web',        fr: 'Web' },
+  appjeu:     { en: 'App / Game', fr: 'App / Jeu' },
+  experience: { en: 'Experience', fr: 'Expérience' },
 };
 
 // Map pour stocker les commits par nom de projet
@@ -45,6 +48,7 @@ const i18n = {
     filterMusique:   'Music',
     filterWeb:       'Web',
     filterAppjeu:    'App / Game',
+    filterExperience:'Experience',
     shortcutTheme:   'Theme toggled',
     shortcutGithub:  'Opening GitHub…',
     shortcutsHint:   'D = Theme · G = GitHub · K = Palette',
@@ -82,6 +86,7 @@ const i18n = {
     filterMusique:   'Musique',
     filterWeb:       'Web',
     filterAppjeu:    'App / Jeu',
+    filterExperience:'Expérience',
     shortcutTheme:   'Thème changé',
     shortcutGithub:  'Ouverture GitHub…',
     shortcutsHint:   'D = Thème · G = GitHub · K = Palette',
@@ -217,6 +222,29 @@ function playWhoosh(vol = 0.04) {
   } catch (_) {}
 }
 
+// Son "glissement papier" — filtre grave court, pour les changements de filtre
+function playPaper(vol = 0.032) {
+  if (!soundEnabled) return;
+  try {
+    const ctx  = getAudioCtx();
+    const dur  = 0.13;
+    const buf  = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+    const src  = ctx.createBufferSource();
+    src.buffer = buf;
+    const lp   = ctx.createBiquadFilter();
+    lp.type    = 'lowpass';
+    lp.frequency.setValueAtTime(600, ctx.currentTime);
+    lp.frequency.linearRampToValueAtTime(180, ctx.currentTime + dur);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    src.connect(lp); lp.connect(gain); gain.connect(ctx.destination);
+    src.start();
+  } catch (_) {}
+}
+
 // ─────────────────────────────────────────────
 // RENDU D'UNE CARTE PROJET
 // ─────────────────────────────────────────────
@@ -255,6 +283,29 @@ function renderCard(project, i) {
 }
 
 // ─────────────────────────────────────────────
+// CALCUL DES SPANS — grille sans case vide
+// ─────────────────────────────────────────────
+function assignSpans(n) {
+  if (n <= 0) return [];
+  if (n === 1) return [3];
+  if (n === 2) return [2, 1];
+  if (n === 3) return [1, 1, 1];
+
+  const spans = [];
+  let i = 0, rowType = 0;
+  while (i < n) {
+    const rem = n - i;
+    if (rem === 1)                          { spans.push(3);       break; }
+    if (rem === 3 && rowType % 2 !== 0)     { spans.push(1, 1, 1); break; }
+    if (rowType % 2 === 0) spans.push(2, 1);
+    else                   spans.push(1, 2);
+    i += 2;
+    rowType++;
+  }
+  return spans;
+}
+
+// ─────────────────────────────────────────────
 // GRILLE PROJETS + FILTRE FLIP
 // ─────────────────────────────────────────────
 const gridEl      = document.getElementById('project-grid');
@@ -272,8 +323,13 @@ function renderGrid(filter) {
 
   // Re-render immédiat (pas de délai)
   gridEl.innerHTML = '';
-  gridEl.classList.toggle('grid-compact', filtered.length < 3);
-  filtered.forEach((proj, i) => gridEl.appendChild(renderCard(proj, i)));
+  const spans = assignSpans(filtered.length);
+  filtered.forEach((proj, i) => {
+    const card = renderCard(proj, i);
+    const span = spans[i] || 1;
+    if (span > 1) card.style.gridColumn = `span ${span}`;
+    gridEl.appendChild(card);
+  });
 
   attachCursorListeners();
   updateGhostParallax();
@@ -324,7 +380,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     });
     btn.classList.add('active');
     btn.setAttribute('aria-selected', 'true');
-    playTick(620, 0.06, 0.05);
+    playPaper();
     renderGrid(btn.dataset.filter);
   });
 });
@@ -380,6 +436,40 @@ async function fetchCommits() {
 fetchCommits();
 
 // ─────────────────────────────────────────────
+// STATS GITHUB — dépôts publics + langages
+// ─────────────────────────────────────────────
+async function fetchGitHubStats() {
+  const statsEl = document.getElementById('gh-stats');
+  if (!statsEl) return;
+  try {
+    const [userRes, reposRes] = await Promise.all([
+      fetch('https://api.github.com/users/SanoBld'),
+      fetch('https://api.github.com/users/SanoBld/repos?per_page=100'),
+    ]);
+    if (!userRes.ok || !reposRes.ok) return;
+    const user  = await userRes.json();
+    const repos = await reposRes.json();
+
+    // Compte les langages
+    const langs = {};
+    repos.forEach(r => { if (r.language) langs[r.language] = (langs[r.language] || 0) + 1; });
+    const topLangs = Object.entries(langs)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([l]) => l);
+
+    statsEl.innerHTML = `
+      <span class="gh-stat"><span class="gh-stat-val">${user.public_repos}</span> repos</span>
+      <span class="gh-stat-sep">·</span>
+      <span class="gh-stat"><span class="gh-stat-val">${user.followers}</span> followers</span>
+      <span class="gh-stat-sep">·</span>
+      <span class="gh-stat">${topLangs.join(' · ')}</span>`;
+    statsEl.classList.add('loaded');
+  } catch (_) {}
+}
+fetchGitHubStats();
+
+// ─────────────────────────────────────────────
 // GRAIN TEXTURE
 // ─────────────────────────────────────────────
 (function () {
@@ -395,6 +485,22 @@ fetchCommits();
   }
   ctx.putImageData(img, 0, 0);
   document.querySelector('.grain').style.backgroundImage = `url(${canvas.toDataURL()})`;
+
+  // Parallaxe léger : le grain se déplace très doucement avec la souris
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    const grainEl = document.querySelector('.grain');
+    let gx = 0, gy = 0, cgx = 0, cgy = 0;
+    document.addEventListener('mousemove', e => {
+      gx = (e.clientX / window.innerWidth  - 0.5) * 10;
+      gy = (e.clientY / window.innerHeight - 0.5) * 10;
+    });
+    (function grainTick() {
+      cgx += (gx - cgx) * 0.06;
+      cgy += (gy - cgy) * 0.06;
+      grainEl.style.backgroundPosition = `${cgx.toFixed(2)}px ${cgy.toFixed(2)}px`;
+      requestAnimationFrame(grainTick);
+    })();
+  }
 })();
 
 // ─────────────────────────────────────────────
@@ -406,55 +512,25 @@ const preloaderCrown = document.getElementById('preloader-crown');
 const heroTitle      = document.getElementById('hero-title');
 
 function fitLoaderText() {
-  preloaderLogo.style.fontSize = '10px';
-  const maxW = window.innerWidth * 0.82;
-  let lo = 10, hi = 700, mid;
-  while (lo < hi - 1) {
-    mid = (lo + hi) >> 1;
-    preloaderLogo.style.fontSize = mid + 'px';
-    preloaderLogo.scrollWidth > maxW ? (hi = mid) : (lo = mid);
-  }
-  preloaderLogo.style.fontSize = lo + 'px';
+  // On cale la taille exactement sur le hero-title rendu
+  // → les deux textes ont la même taille et la même position, la fusion est invisible
+  const heroFs = parseFloat(getComputedStyle(heroTitle).fontSize);
+  preloaderLogo.style.fontSize = heroFs + 'px';
 }
 
 function dismissPreloader() {
   document.body.classList.add('loaded');
 
-  const heroRect = heroTitle.getBoundingClientRect();
-  const logoRect = preloaderLogo.getBoundingClientRect();
+  // 1. Révèle le hero-title immédiatement, sans aucune transition
+  //    Il est centré exactement sous le preloader-logo (même police, même taille, même position)
+  heroTitle.style.transition = 'none';
+  heroTitle.classList.add('appear');
+  heroTitle.offsetHeight; // force reflow — garantit le rendu avant le fondu
 
-  // Centre-à-centre
-  const dx = (heroRect.left + heroRect.width  / 2) - (logoRect.left + logoRect.width  / 2);
-  const dy = (heroRect.top  + heroRect.height / 2) - (logoRect.top  + logoRect.height / 2);
-
-  // Scale basé sur les font-size réels — bien plus précis que les bounding rects
-  // (les rects incluent les ascendeurs/descendeurs qui varient selon le texte)
-  const heroFs = parseFloat(getComputedStyle(heroTitle).fontSize);
-  const logoFs = parseFloat(preloaderLogo.style.fontSize) ||
-                 parseFloat(getComputedStyle(preloaderLogo).fontSize);
-  const scale  = heroFs / (logoFs || 1);
-
-  // Phase 1 : vol du logo vers la position du hero-title
-  preloaderLogo.classList.add('fly-out');
-  preloaderLogo.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-
-  const FLY_MS = 650;
-
-  setTimeout(() => {
-    // 1) Affichage immédiat du hero-title (aucune transition = pas de flash)
-    heroTitle.style.transition = 'none';
-    heroTitle.classList.add('appear');
-
-    // 2) Effacement instantané du logo pour éviter le doublon visible
-    preloaderLogo.style.transition = 'opacity 0s linear';
-    preloaderLogo.style.opacity    = '0';
-
-    // 3) Fondu du preloader entier (léger délai pour que le swap passe d'abord)
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      preloader.classList.add('out');
-      preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
-    }));
-  }, FLY_MS);
+  // 2. Fondu du preloader entier (bg + logo disparaissent ensemble)
+  //    Le hero-title identique est déjà visible en dessous → fusion parfaite, imperceptible
+  preloader.classList.add('out');
+  preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
 }
 
 // Phase 1 : couronne (950ms) → Phase 2 : titre → dismiss
@@ -734,47 +810,16 @@ function skewTick() {
 const navLogo = document.querySelector('.nav-logo');
 let heroExited = false;
 
-function animateNavLogoEntry() {
-  // logo flies in from where the hero title sits
-  const from = heroTitle.getBoundingClientRect();
-  const to   = navLogo.getBoundingClientRect();
-  if (!from.width || !to.width) return;
-
-  const dx = from.left + from.width  / 2 - (to.left + to.width  / 2);
-  const dy = from.top  + from.height / 2 - (to.top  + to.height / 2);
-  const sc = Math.min(from.width / to.width, 6);
-
-  const anim = navLogo.animate([
-    { transform: `translate(${dx}px,${dy}px) scale(${sc})`, opacity: 0 },
-    { transform: 'translate(0,0) scale(1)',                  opacity: 1 },
-  ], { duration: 580, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
-  anim.onfinish = () => { navLogo.style.animation = ''; anim.cancel(); };
-}
-
-function animateNavLogoExit() {
-  // logo flies back toward hero title
-  const from = navLogo.getBoundingClientRect();
-  const to   = heroTitle.getBoundingClientRect();
-  if (to.bottom < 0 || !to.width) return;
-
-  const dx = to.left + to.width  / 2 - (from.left + from.width  / 2);
-  const dy = to.top  + to.height / 2 - (from.top  + from.height / 2);
-  const sc = Math.min(to.width / from.width, 6);
-
-  navLogo.animate([
-    { transform: 'translate(0,0) scale(1)',                  opacity: 1 },
-    { transform: `translate(${dx}px,${dy}px) scale(${sc})`, opacity: 0 },
-  ], { duration: 400, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' });
-}
+// Clic sur le logo → retour en haut
+navLogo.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
 function updateHeader(sy) {
   const heroH  = heroSection.offsetHeight;
   const inHero = sy < heroH * 0.78;
 
   if (inHero) {
-    if (!siteHeader.classList.contains('header-in-hero') && heroExited) {
-      animateNavLogoExit();
-    }
     siteHeader.classList.add('header-in-hero');
     siteHeader.classList.remove('header-hidden', 'scrolled');
     heroExited = false;
@@ -783,11 +828,7 @@ function updateHeader(sy) {
 
   siteHeader.classList.remove('header-in-hero');
   siteHeader.classList.add('scrolled');
-
-  if (!heroExited) {
-    animateNavLogoEntry();
-    heroExited = true;
-  }
+  heroExited = true;
 
   // Cache la nav quand on scrolle vers le bas, la montre quand on remonte.
   // Le seuil asymétrique (8 / 4) rend l'animation plus naturelle.
@@ -971,6 +1012,12 @@ function getCommands() {
         buildCommandList();
     }},
     { icon: '↗', label: t('cmdGitHub'),      action: () => { window.open('https://github.com/SanoBld', '_blank', 'noopener'); } },
+    // Projets dynamiques
+    ...projects.map(p => ({
+      icon: '◈',
+      label: p.name,
+      action: () => { window.open(p.url, '_blank', 'noopener'); }
+    })),
   ];
 }
 

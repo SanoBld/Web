@@ -322,6 +322,7 @@ body.cursor-btn .cursor-label {
   flex-shrink: 0;
   will-change: transform;
   display: inline-block;
+  cursor: pointer;
 }
 
 /* Nav section links (À propos, Projets) */
@@ -589,16 +590,7 @@ body.cursor-btn .cursor-label {
   transition: opacity 0.28s var(--ease-out), transform 0.28s var(--ease-out);
 }
 
-.project-card:nth-child(1) { grid-column: 1 / span 2; }
-.project-card:nth-child(4) { grid-column: 2 / span 2; }
-.project-card:nth-child(5) { grid-column: 1 / span 2; }
-
-.project-card:nth-child(5):last-child { grid-column: 1 / -1; }
-
-.project-grid.grid-compact { grid-template-columns: 1fr 1fr; }
-.project-grid.grid-compact .project-card:nth-child(1),
-.project-grid.grid-compact .project-card:nth-child(4) { grid-column: auto; }
-.project-grid.grid-compact .project-card:last-child { grid-column: auto; }
+/* Les grid-column span sont assignés dynamiquement par JS via assignSpans() */
 
 /* Overlay sur les cartes non-survolées */
 .project-card::after {
@@ -815,6 +807,33 @@ body.cursor-btn .cursor-label {
 }
 .cta-btn:hover { background: transparent; color: var(--mustard); }
 
+/* ── GitHub Stats ────────────────────────────── */
+.gh-stats {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gh-stats.loaded { opacity: 1; transform: none; }
+.gh-stat-val {
+  color: var(--mustard);
+  font-size: 0.85rem;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  margin-right: 0.15em;
+  letter-spacing: 0;
+}
+.gh-stat-sep { color: var(--bg-dim); }
+
 /* ── Footer ─────────────────────────────────── */
 .site-footer {
   background: #2B2B31;
@@ -1005,8 +1024,7 @@ body.no-anim .card-ghost { transform: translateY(0) !important; }
     grid-template-columns: 1fr;
     gap: 3px;
   }
-  .project-card:nth-child(1),
-  .project-card:nth-child(4) { grid-column: 1; }
+
   .project-card, .project-link { min-height: 20rem; }
   .card-ghost { font-size: clamp(6rem, 30vw, 10rem); }
   .cta-section { padding: 4rem 1.5rem; }

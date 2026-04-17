@@ -21,6 +21,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <script defer src="https://cloud.umami.is/script.js" data-website-id="adc52595-b992-434a-8eaf-2a4880979675"></script>
+
+  <!-- Données structurées pour le référencement -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "mainEntity": {
+      "@type": "Person",
+      "name": "Sano Bld",
+      "url": "https://sanobld.github.io",
+      "sameAs": ["https://github.com/SanoBld"],
+      "jobTitle": "Développeur & Designer",
+      "description": "Développeur & designer basé en France. Expériences web soignées en HTML, CSS et JavaScript pur.",
+      "knowsAbout": ["HTML", "CSS", "JavaScript", "Canvas API", "Firebase", "WebSockets", "PeerJS", "Last.fm API"]
+    }
+  }
+  </script>
+
+  <!-- Service Worker (PWA offline) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+    }
+  </script>
 </head>
 <body>
 
@@ -46,7 +70,7 @@
 
   <header class="site-header" id="site-header">
     <nav class="nav">
-      <span class="nav-logo">Sano Bld</span>
+      <span class="nav-logo" data-cursor="link">Sano Bld</span>
       <div class="nav-sections" id="nav-sections">
         <a href="#projects" class="nav-section-link" data-i18n="navProjects" data-cursor="link">Projets</a>
         <a href="#about"    class="nav-section-link" data-i18n="navAbout"    data-cursor="link">À propos</a>
@@ -78,6 +102,7 @@
         <button class="filter-btn"        data-filter="musique" role="tab" aria-selected="false" data-cursor="link" data-i18n="filterMusique">Musique</button>
         <button class="filter-btn"        data-filter="web"     role="tab" aria-selected="false" data-cursor="link" data-i18n="filterWeb">Web</button>
         <button class="filter-btn"        data-filter="appjeu"  role="tab" aria-selected="false" data-cursor="link" data-i18n="filterAppjeu">App / Jeu</button>
+        <button class="filter-btn"        data-filter="experience" role="tab" aria-selected="false" data-cursor="link" data-i18n="filterExperience">Expérience</button>
       </div>
       <ul class="project-grid" id="project-grid"></ul>
     </section>
@@ -99,6 +124,7 @@
           <li>PeerJS</li>
           <li>Last.fm API</li>
         </ul>
+        <div class="gh-stats" id="gh-stats" aria-label="GitHub statistics"></div>
       </div>
     </section>
 
