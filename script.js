@@ -1,14 +1,11 @@
-// ─────────────────────────────────────────────
-// DONNÉES PROJETS
-// ─────────────────────────────────────────────
+// projets
 const projects = [
-  { name: 'OmniMedia',    url: 'https://github.com/SanoBld/OmniMedia/releases/latest', category: 'appjeu',     repo: 'SanoBld/OmniMedia' },
   { name: 'LastStats',    url: 'https://sanobld.github.io/LastStats/',    category: 'musique',    repo: 'SanoBld/LastStats' },
-  { name: 'Pulse',        url: 'https://sanobld.github.io/Pulse/',         category: 'musique',    repo: 'SanoBld/Pulse' },
+  { name: 'OmniMedia',    url: 'https://github.com/SanoBld/OmniMedia/releases/latest', category: 'appjeu',     repo: 'SanoBld/OmniMedia' },
+  { name: 'Zenith',       url: 'https://sanobld.github.io/Zenith/',        category: 'web',        repo: 'SanoBld/Zenith' },
   { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',          category: 'musique',    repo: 'SanoBld/Aura' },
   { name: "SO'BÔHÈME",    url: 'https://soboheme.github.io/Web/',          category: 'web',        repo: 'soboheme/Web' },
   { name: 'Metrolist',    url: 'https://metrolist.cc/',                    category: 'web',        repo: 'MetrolistGroup/Metrolist' },
-  { name: 'BioLinkMaker', url: 'https://sanobld.github.io/BioLinkMaker/', category: 'appjeu',     repo: 'SanoBld/BioLinkMaker' },
   { name: 'Eco-Drive',    url: 'https://sanobld.github.io/Eco-Drive/',     category: 'appjeu',     repo: 'SanoBld/Eco-Drive' },
   { name: 'OpenTrad',     url: 'https://sanobld.github.io/OpenTrad/',      category: 'appjeu',     repo: 'SanoBld/OpenTrad' },
   { name: 'Boids',        url: 'https://sanobld.github.io/Boids/',         category: 'experience', repo: 'SanoBld/Boids' },
@@ -21,12 +18,10 @@ const CATEGORY_LABELS = {
   experience: { en: 'Experience', fr: 'Expérience' },
 };
 
-// Map pour stocker les commits par nom de projet
+// cache des derniers commits, rempli au chargement
 const commitCache = {};
 
-// ─────────────────────────────────────────────
-// i18n
-// ─────────────────────────────────────────────
+// traductions — deux langues, rien de compliqué
 const i18n = {
   en: {
     sectionTag:      'Selected Work',
@@ -41,7 +36,7 @@ const i18n = {
     navProjects:     'Projects',
     aboutTag:        'Identity',
     aboutTitle:      'About',
-    aboutText:       'Developer & designer based in France. I build refined web experiences in pure HTML, CSS and JavaScript — no frameworks, just deliberate code.',
+    aboutText:       'Developer & designer somewhere in France. HTML, CSS and vanilla JavaScript — no frameworks, just code that works.',
     stackTag:        'Stack',
     stackTitle:      'Technologies',
     filterAll:       'All',
@@ -79,7 +74,7 @@ const i18n = {
     navProjects:     'Projets',
     aboutTag:        'Identité',
     aboutTitle:      'À propos',
-    aboutText:       'Développeur & designer basé en France. Je construis des expériences web soignées en HTML, CSS et JavaScript pur — sans framework, juste du code réfléchi.',
+    aboutText:       'Développeur & designer quelque part en France. HTML, CSS et JavaScript pur — pas de framework, juste du code qui tient la route.',
     stackTag:        'Stack',
     stackTitle:      'Technologies',
     filterAll:       'Tout',
@@ -135,9 +130,7 @@ function applyTranslations(lang) {
   });
 }
 
-// ─────────────────────────────────────────────
-// PRÉFÉRENCES : SON + ANIMATIONS
-// ─────────────────────────────────────────────
+// son & animations — on mémorise le choix dans localStorage
 let soundEnabled = localStorage.getItem('sound') !== '0';
 let animEnabled  = localStorage.getItem('anim')  !== '0';
 
@@ -172,9 +165,7 @@ function initPreferenceToggles() {
 }
 initPreferenceToggles();
 
-// ─────────────────────────────────────────────
-// SON (Web Audio API) — très discrets
-// ─────────────────────────────────────────────
+// sons synthétisés via Web Audio — légers, quasi inaudibles
 let audioCtx = null;
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -222,7 +213,7 @@ function playWhoosh(vol = 0.04) {
   } catch (_) {}
 }
 
-// Son "glissement papier" — filtre grave court, pour les changements de filtre
+// bruit grave court pour les filtres
 function playPaper(vol = 0.032) {
   if (!soundEnabled) return;
   try {
@@ -245,9 +236,7 @@ function playPaper(vol = 0.032) {
   } catch (_) {}
 }
 
-// ─────────────────────────────────────────────
-// RENDU D'UNE CARTE PROJET
-// ─────────────────────────────────────────────
+// construit le HTML d'une carte projet
 function renderCard(project, i) {
   const idx    = String(i + 1).padStart(2, '0');
   const catLbl = (CATEGORY_LABELS[project.category] || {})[currentLang] || project.category;
@@ -282,9 +271,7 @@ function renderCard(project, i) {
   return li;
 }
 
-// ─────────────────────────────────────────────
-// CALCUL DES SPANS — grille sans case vide
-// ─────────────────────────────────────────────
+// calcule les largeurs de colonne pour éviter les cases vides dans la grille
 function assignSpans(n) {
   if (n <= 0) return [];
   if (n === 1) return [3];
@@ -305,9 +292,7 @@ function assignSpans(n) {
   return spans;
 }
 
-// ─────────────────────────────────────────────
-// GRILLE PROJETS + FILTRE FLIP
-// ─────────────────────────────────────────────
+// re-rend la grille avec animation FLIP au changement de filtre
 const gridEl      = document.getElementById('project-grid');
 let   activeFilter = 'all';
 
@@ -315,13 +300,13 @@ function renderGrid(filter) {
   activeFilter = filter;
   const filtered = filter === 'all' ? projects : projects.filter(p => p.category === filter);
 
-  // FLIP — Step 1 : snapshot positions actuelles
+  // FLIP — snapshot avant/après pour animer le déplacement
   const first = {};
   gridEl.querySelectorAll('.project-card').forEach(card => {
     if (card.dataset.name) first[card.dataset.name] = card.getBoundingClientRect();
   });
 
-  // Re-render immédiat (pas de délai)
+  // on vide et on reconstruit
   gridEl.innerHTML = '';
   const spans = assignSpans(filtered.length);
   filtered.forEach((proj, i) => {
@@ -334,7 +319,7 @@ function renderGrid(filter) {
   attachCursorListeners();
   updateGhostParallax();
 
-  // FLIP — Step 2 : animer depuis l'ancienne position
+  // animation depuis l'ancienne position
   requestAnimationFrame(() => {
     gridEl.querySelectorAll('.project-card').forEach((card, idx) => {
       card.classList.add('visible');
@@ -343,7 +328,7 @@ function renderGrid(filter) {
       const bef   = first[name];
 
       if (bef) {
-        // Carte déjà présente → FLIP translate
+        // carte déjà là → on translate depuis l'ancienne position
         const dx = bef.left - after.left;
         const dy = bef.top  - after.top;
         if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
@@ -356,7 +341,7 @@ function renderGrid(filter) {
           );
         }
       } else {
-        // Nouvelle carte → fade-in décalé
+        // nouvelle carte → fade-in décalé
         card.style.opacity   = '0';
         card.style.transform = 'translateY(14px) scale(0.97)';
         setTimeout(() => {
@@ -385,9 +370,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
-// ─────────────────────────────────────────────
-// COMMITS GITHUB → affichés sur chaque carte
-// ─────────────────────────────────────────────
+// dernier commit de chaque repo, affiché au bas de la carte
 function timeAgo(dateStr) {
   try {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -435,9 +418,7 @@ async function fetchCommits() {
 
 fetchCommits();
 
-// ─────────────────────────────────────────────
-// STATS GITHUB — dépôts publics + langages
-// ─────────────────────────────────────────────
+// stats GitHub — repos, followers, langages les plus utilisés
 async function fetchGitHubStats() {
   const statsEl = document.getElementById('gh-stats');
   if (!statsEl) return;
@@ -450,7 +431,7 @@ async function fetchGitHubStats() {
     const user  = await userRes.json();
     const repos = await reposRes.json();
 
-    // Compte les langages
+    // top 3 langages
     const langs = {};
     repos.forEach(r => { if (r.language) langs[r.language] = (langs[r.language] || 0) + 1; });
     const topLangs = Object.entries(langs)
@@ -469,9 +450,7 @@ async function fetchGitHubStats() {
 }
 fetchGitHubStats();
 
-// ─────────────────────────────────────────────
-// GRAIN TEXTURE
-// ─────────────────────────────────────────────
+// grain généré en canvas — plus léger qu'une image PNG
 (function () {
   const size = 200;
   const canvas = document.createElement('canvas');
@@ -486,7 +465,7 @@ fetchGitHubStats();
   ctx.putImageData(img, 0, 0);
   document.querySelector('.grain').style.backgroundImage = `url(${canvas.toDataURL()})`;
 
-  // Parallaxe léger : le grain se déplace très doucement avec la souris
+  // petit parallaxe souris sur le grain, desktop only
   if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
     const grainEl = document.querySelector('.grain');
     let gx = 0, gy = 0, cgx = 0, cgy = 0;
@@ -503,17 +482,14 @@ fetchGitHubStats();
   }
 })();
 
-// ─────────────────────────────────────────────
-// PRELOADER — couronne → titre fusionné hero
-// ─────────────────────────────────────────────
+// preloader — la couronne disparaît, le titre "vole" vers le hero
 const preloader      = document.getElementById('preloader');
 const preloaderLogo  = document.getElementById('preloader-logo');
 const preloaderCrown = document.getElementById('preloader-crown');
 const heroTitle      = document.getElementById('hero-title');
 
 function fitLoaderText() {
-  // On cale la taille exactement sur le hero-title rendu
-  // → les deux textes ont la même taille et la même position, la fusion est invisible
+  // même taille que le hero-title → la fusion est invisible
   const heroFs = parseFloat(getComputedStyle(heroTitle).fontSize);
   preloaderLogo.style.fontSize = heroFs + 'px';
 }
@@ -521,19 +497,17 @@ function fitLoaderText() {
 function dismissPreloader() {
   document.body.classList.add('loaded');
 
-  // 1. Révèle le hero-title immédiatement, sans aucune transition
-  //    Il est centré exactement sous le preloader-logo (même police, même taille, même position)
+  // révèle le titre sans transition (déjà en place sous le preloader)
   heroTitle.style.transition = 'none';
   heroTitle.classList.add('appear');
-  heroTitle.offsetHeight; // force reflow — garantit le rendu avant le fondu
+  heroTitle.offsetHeight;
 
-  // 2. Fondu du preloader entier (bg + logo disparaissent ensemble)
-  //    Le hero-title identique est déjà visible en dessous → fusion parfaite, imperceptible
+  // fond du preloader disparaît → le titre en dessous prend le relai
   preloader.classList.add('out');
   preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
 }
 
-// Phase 1 : couronne (950ms) → Phase 2 : titre → dismiss
+// couronne (950ms) → titre → dismiss
 setTimeout(() => {
   preloaderCrown.classList.add('out');
   fitLoaderText();
@@ -546,15 +520,12 @@ setTimeout(() => {
   }, 180);
 }, 950);
 
-// ─────────────────────────────────────────────
-// THÈME — 3 modes : light · dark · auto
-// Mode sauvegardé : 'light' | 'dark' | null (auto)
-// ─────────────────────────────────────────────
+// thème — 3 modes : light / dark / auto (suit le système)
 const html        = document.documentElement;
 const themeToggle = document.getElementById('theme-toggle');
 const themeOverlay = document.getElementById('theme-overlay');
 
-// Mapping mode → icône
+// icône du bouton selon le mode actif
 const THEME_ICONS = { light: '◐', dark: '◑', auto: '◎' };
 
 function getStoredMode() {
@@ -577,7 +548,7 @@ function applyTheme(theme, mode) {
   const m = mode || 'auto';
   themeToggle.textContent = THEME_ICONS[m] || '◐';
   themeToggle.setAttribute('data-mode', m);
-  // Titre lisible pour le curseur réactif
+  // label lisible pour le curseur
   const LABELS = { light: 'Clair', dark: 'Sombre', auto: 'Auto' };
   themeToggle.title = LABELS[m] || 'Thème';
   if (mode && mode !== 'auto') localStorage.setItem('theme', mode);
@@ -625,7 +596,7 @@ function cycleTheme(originEl) {
   // Anneau visuel discret au point de clic
   fireThemeRing(cx, cy);
 
-  // --- View Transitions API (Chrome/Edge) -----------------------------------
+  // View Transitions API si dispo (Chrome/Edge)
   if (typeof document.startViewTransition === 'function') {
     const transition = document.startViewTransition(() => applyTheme(nextTheme, next));
     transition.ready.then(() => {
@@ -638,8 +609,7 @@ function cycleTheme(originEl) {
     return;
   }
 
-  // --- Fallback propre pour les autres navigateurs --------------------------
-  // 1. Couvre l'écran avec l'ANCIENNE couleur de fond (masque le changement)
+  // fallback propre pour les autres navigateurs
   const oldBg = getComputedStyle(document.documentElement)
     .getPropertyValue('--bg').trim() || '#F2D99B';
 
@@ -660,7 +630,7 @@ function cycleTheme(originEl) {
     themeOverlay.style.opacity    = '0.95';
   });
 
-  // 4. Nettoyage une fois l'animation terminée
+  // nettoyage après l'animation
   setTimeout(() => {
     themeOverlay.style.transition = 'none';
     themeOverlay.style.clipPath   = 'circle(0px at 50% 50%)';
@@ -672,19 +642,17 @@ function cycleTheme(originEl) {
 
 themeToggle.addEventListener('click', () => cycleTheme(themeToggle));
 
-// Initialisation
+// init
 applyTheme(getEffectiveTheme(getStoredMode()), getCurrentMode());
 
-// Écoute system preference change (mode auto)
+// suit les préférences système si l'utilisateur est en mode auto
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
   if (!localStorage.getItem('theme')) {
     applyTheme(e.matches ? 'dark' : 'light', 'auto');
   }
 });
 
-// ─────────────────────────────────────────────
-// LANGUE
-// ─────────────────────────────────────────────
+// langue — bascule EN / FR
 document.getElementById('lang-toggle').addEventListener('click', () => {
   currentLang = currentLang === 'en' ? 'fr' : 'en';
   applyTranslations(currentLang);
@@ -693,14 +661,7 @@ document.getElementById('lang-toggle').addEventListener('click', () => {
 });
 applyTranslations(currentLang);
 
-// ─────────────────────────────────────────────
-// CURSEUR — Cercle réactif qui s'adapte à ce qu'on survole
-// ─────────────────────────────────────────────
-
-/**
- * Trouve le meilleur texte à afficher dans le curseur pour un élément donné.
- * Ordre de priorité : data-cursor-label → title → aria-label (si pertinent) → textContent
- */
+// curseur custom — cercle qui suit la souris et se transforme au survol
 function getCursorLabel(el) {
   if (el.dataset.cursorLabel) return el.dataset.cursorLabel;
   if (el.title)               return el.title;
@@ -713,7 +674,7 @@ function getCursorLabel(el) {
 }
 
 (function initCursor() {
-  // Seulement sur desktop avec une souris précise
+  // seulement sur desktop avec souris précise
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
   document.body.classList.add('has-custom-cursor');
@@ -742,7 +703,7 @@ function attachCursorListeners() {
   gridEl.querySelectorAll('[data-cursor="open"]').forEach(el => {
     el.addEventListener('mouseenter', () => {
       document.body.classList.add('cursor-open');
-      // Affiche le nom du projet (ex: "Aura", "Pulse"…)
+      // affiche le nom du projet dans le curseur
       if (cursorLabel) cursorLabel.textContent = el.dataset.name || t('cursorOpen');
     });
     el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-open'));
@@ -755,7 +716,7 @@ function initStaticCursorTargets() {
     const isCtrl = el.classList.contains('ctrl-btn');
 
     el.addEventListener('mouseenter', () => {
-      // Petits boutons de contrôle → cercle compact
+      // petits boutons → cercle compact
       if (isCtrl) {
         document.body.classList.add('cursor-btn');
       } else {
@@ -770,9 +731,7 @@ function initStaticCursorTargets() {
   });
 }
 
-// ─────────────────────────────────────────────
-// SCROLL — header · barre de progression · parallaxe · skew
-// ─────────────────────────────────────────────
+// scroll — header, barre de progression, parallaxe, skew
 const siteHeader  = document.getElementById('site-header');
 const progressBar = document.getElementById('progress-bar');
 const mainContent = document.getElementById('main-content');
@@ -810,7 +769,7 @@ function skewTick() {
 const navLogo = document.querySelector('.nav-logo');
 let heroExited = false;
 
-// Clic sur le logo → retour en haut
+// clic logo → retour en haut
 navLogo.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
@@ -830,8 +789,8 @@ function updateHeader(sy) {
   siteHeader.classList.add('scrolled');
   heroExited = true;
 
-  // Cache la nav quand on scrolle vers le bas, la montre quand on remonte.
-  // Le seuil asymétrique (8 / 4) rend l'animation plus naturelle.
+  // cache en scroll bas, réapparaît en scroll haut
+  // seuil asymétrique pour un rendu plus naturel
   const scrollingDown = sy > lastScrollY + 8;
   const scrollingUp   = sy < lastScrollY - 4;
   // Ne jamais cacher si on est encore très proche du haut de page
@@ -861,9 +820,7 @@ window.addEventListener('scroll', () => {
 
 updateHeader(window.scrollY);
 
-// ─────────────────────────────────────────────
-// PROGRESS BAR CHECKPOINTS
-// ─────────────────────────────────────────────
+// points sur la barre de progression qui correspondent aux sections
 const CHECKPOINT_SECTIONS = [
   { id: 'projects', label: 'Projects' },
   { id: 'about',    label: 'About'    },
@@ -895,14 +852,11 @@ function updateProgressCheckpoints(currentPct) {
   });
 }
 
-// Init après chargement complet (positions stables)
+// on attend que tout soit chargé avant de calculer les positions
 window.addEventListener('load', () => setTimeout(initProgressCheckpoints, 400));
 window.addEventListener('resize', () => setTimeout(initProgressCheckpoints, 200));
 
-// ─────────────────────────────────────────────
-// SCROLL FLUIDE — interpolation douce sur desktop
-// (désactivé sur mobile / tactile pour ne pas gêner le scroll natif)
-// ─────────────────────────────────────────────
+// scroll fluide interpolé — desktop uniquement, le natif est meilleur sur mobile
 (function initSmoothScroll() {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
@@ -951,7 +905,7 @@ window.addEventListener('resize', () => setTimeout(initProgressCheckpoints, 200)
   });
 })();
 
-// Smooth scroll sur les liens de nav
+// liens de nav → scroll doux vers la section
 document.querySelectorAll('.nav-section-link').forEach(link => {
   link.addEventListener('click', e => {
     const href = link.getAttribute('href');
@@ -962,9 +916,7 @@ document.querySelectorAll('.nav-section-link').forEach(link => {
   });
 });
 
-// ─────────────────────────────────────────────
-// INTERSECTION OBSERVER
-// ─────────────────────────────────────────────
+// apparition des sections au scroll
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
@@ -976,9 +928,7 @@ const revealObs = new IntersectionObserver(entries => {
 const aboutSection = document.querySelector('.about');
 if (aboutSection) revealObs.observe(aboutSection);
 
-// ─────────────────────────────────────────────
-// TOAST
-// ─────────────────────────────────────────────
+// notification flottante temporaire
 let toastTimer;
 function showToast(msg) {
   const toast = document.getElementById('toast');
@@ -988,9 +938,7 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
 }
 
-// ─────────────────────────────────────────────
-// COMMAND PALETTE (Cmd+K / Ctrl+K)
-// ─────────────────────────────────────────────
+// palette de commandes — Cmd+K / Ctrl+K
 const cmdPalette  = document.getElementById('cmd-palette');
 const cmdInput    = document.getElementById('cmd-input');
 const cmdList     = document.getElementById('cmd-list');
@@ -1012,7 +960,7 @@ function getCommands() {
         buildCommandList();
     }},
     { icon: '↗', label: t('cmdGitHub'),      action: () => { window.open('https://github.com/SanoBld', '_blank', 'noopener'); } },
-    // Projets dynamiques
+    // projets directement accessibles depuis la palette
     ...projects.map(p => ({
       icon: '◈',
       label: p.name,
@@ -1083,9 +1031,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ─────────────────────────────────────────────
-// RACCOURCIS CLAVIER + CODE KONAMI
-// ─────────────────────────────────────────────
+// raccourcis clavier globaux + code Konami
 const KONAMI_SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown',
                     'ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
 let konamiIdx = 0;
@@ -1093,7 +1039,7 @@ let konamiIdx = 0;
 window.addEventListener('keydown', e => {
   if (e.target.closest('input, textarea, select')) return;
 
-  // Konami tracking
+  // konami code — on suit la séquence touche par touche
   if (e.key === KONAMI_SEQ[konamiIdx]) {
     konamiIdx++;
     if (konamiIdx === KONAMI_SEQ.length) {
@@ -1125,10 +1071,8 @@ window.addEventListener('keydown', e => {
   }
 });
 
-// ─────────────────────────────────────────────
-// KONAMI — traînée de particules dorées + son royal
+// traînée de particules dorées quand le Konami est actif
 // (↑ ↑ ↓ ↓ ← → ← → B A)
-// ─────────────────────────────────────────────
 const trailCanvas  = document.getElementById('konami-trail');
 const trailCtx     = trailCanvas.getContext('2d');
 let   trailParticles = [];
@@ -1147,7 +1091,7 @@ document.addEventListener('mousemove', e => {
   trailMX = e.clientX;
   trailMY = e.clientY;
   if (!konamiActive) return;
-  // spawn plusieurs particules
+  // 3 particules par mouvement de souris
   for (let i = 0; i < 3; i++) {
     trailParticles.push({
       x:    trailMX + (Math.random() - 0.5) * 12,
@@ -1166,7 +1110,7 @@ function trailTick() {
   trailParticles.forEach(p => {
     p.x    += p.vx;
     p.y    += p.vy;
-    p.vy   += 0.035;  // gravité légère
+    p.vy   += 0.035;  // gravité
     p.life -= 0.025;
     const alpha = Math.max(0, p.life);
     trailCtx.save();
@@ -1187,10 +1131,10 @@ function activateKonami() {
   konamiActive = true;
   trailCanvas.classList.add('active');
 
-  // Haptic (mobile)
+  // vibration mobile si dispo
   if (navigator.vibrate) navigator.vibrate([8, 60, 8, 60, 30]);
 
-  // Son royal
+  // accord do-mi-sol
   playTick(523, 0.12, 0.09);
   setTimeout(() => playTick(659, 0.12, 0.09), 130);
   setTimeout(() => playTick(784, 0.20, 0.09), 260);
@@ -1204,9 +1148,7 @@ function activateKonami() {
   }, 4000);
 }
 
-// ─────────────────────────────────────────────
-// MESSAGE CONSOLE
-// ─────────────────────────────────────────────
+// message de bienvenue pour les curieux qui ouvrent la console
 /* eslint-disable no-console */
 console.log('%c👑  Sano Bld','color:#AA211F;font-size:30px;font-family:serif;font-weight:bold;padding:4px 0;');
 console.log('%cDu code fait avec passion. Curieux de voir comment ça marche ? Bienvenue.\nMade with passion. Curious how it works? Welcome.','color:#C98A35;font-size:12px;font-family:monospace;line-height:1.6;');

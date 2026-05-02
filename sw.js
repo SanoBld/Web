@@ -1,6 +1,4 @@
-// ─────────────────────────────────────────────
-// Service Worker — Sano Bld Portfolio (PWA offline)
-// ─────────────────────────────────────────────
+// service worker — mise en cache basique pour le mode offline
 const CACHE = 'sanobld-v1';
 const STATIC = [
   '/',
@@ -11,14 +9,14 @@ const STATIC = [
   '/logo1.png',
 ];
 
-// Installation : mise en cache des assets statiques
+// à l'install on met les fichiers en cache
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll(STATIC)).then(() => self.skipWaiting())
   );
 });
 
-// Activation : nettoyage des anciens caches
+// à l'activation on nettoie les anciens caches
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
@@ -27,11 +25,11 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch : cache-first pour les assets locaux, network-first pour les APIs
+// fetch — cache-first pour les assets locaux, réseau pour le reste
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // APIs externes (GitHub, fonts, umami) → réseau d'abord, pas de cache
+  // APIs externes (GitHub, fonts…) → réseau direct, pas de cache
   if (!url.origin.includes(self.location.origin)) {
     e.respondWith(
       fetch(e.request).catch(() => new Response('', { status: 503 }))
@@ -39,7 +37,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Assets locaux → cache-first
+  // assets locaux → cache d'abord
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
