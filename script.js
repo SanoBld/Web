@@ -2,6 +2,8 @@
 const projects = [
   { name: 'LastStats',    url: 'https://sanobld.github.io/LastStats/',    category: 'musique',    repo: 'SanoBld/LastStats' },
   { name: 'OmniMedia',    url: 'https://github.com/SanoBld/OmniMedia/releases/latest', category: 'appjeu',     repo: 'SanoBld/OmniMedia' },
+ { name: 'SnapNote',    url: '  https://github.com/SanoBld/SnapNote
+',                    category: 'appjeu',        repo: 'SanoBld/SnapNote' },
   { name: 'Zenith',       url: 'https://sanobld.github.io/Zenith/',        category: 'web',        repo: 'SanoBld/Zenith' },
   { name: 'Aura',         url: 'https://sanobld.github.io/Aura/',          category: 'musique',    repo: 'SanoBld/Aura' },
   { name: "SO'BÔHÈME",    url: 'https://soboheme.github.io/Web/',          category: 'web',        repo: 'soboheme/Web' },
