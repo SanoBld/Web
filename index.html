@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sano Bld — Développeur & Designer. Expériences web soignées en HTML, CSS et JavaScript pur." />
   <title>Sano Bld</title>
   <link rel="icon" type="image/png" href="logo1.png" />
 
-  <!-- Prévention du flash thème : s'exécute avant tout rendu -->
+  <!-- prevent theme flash before render -->
   <script>
     (function(){
       var s = localStorage.getItem('theme');
-      var isDark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      if (!s) document.documentElement.setAttribute('data-theme-mode', 'auto');
+      var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
     })();
   </script>
 
@@ -20,9 +20,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+
   <script defer src="https://cloud.umami.is/script.js" data-website-id="adc52595-b992-434a-8eaf-2a4880979675"></script>
 
-  <!-- Données structurées pour le référencement -->
+  <!-- structured data for SEO -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -32,106 +33,120 @@
       "name": "Sano Bld",
       "url": "https://sanobld.github.io",
       "sameAs": ["https://github.com/SanoBld"],
-      "jobTitle": "Développeur & Designer",
-      "description": "Développeur & designer basé en France. Expériences web soignées en HTML, CSS et JavaScript pur.",
-      "knowsAbout": ["HTML", "CSS", "JavaScript", "Canvas API", "Firebase", "WebSockets", "PeerJS", "Last.fm API"]
+      "jobTitle": "Développeur & Designer"
     }
   }
   </script>
 
-  <!-- Service Worker (PWA offline) -->
+  <!-- PWA offline support -->
   <script>
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator)
       window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
-    }
   </script>
 </head>
 <body>
 
-  <!-- Barre de progression de lecture -->
+  <!-- top reading progress bar -->
   <div class="progress-bar" id="progress-bar" aria-hidden="true"></div>
 
-  <!-- Overlay d'animation de transition de thème -->
+  <!-- section milestone ticks on the progress bar -->
+  <div class="progress-milestones" id="progress-milestones" aria-hidden="true"></div>
+
+  <!-- circle wipe overlay for theme transitions -->
   <div class="theme-overlay" id="theme-overlay" aria-hidden="true"></div>
 
-  <!-- Canvas pour la traînée dorée Konami -->
-  <canvas class="konami-trail-canvas" id="konami-trail" aria-hidden="true"></canvas>
+  <!-- konami trail particles canvas -->
+  <canvas class="konami-canvas" id="konami-canvas" aria-hidden="true"></canvas>
 
-  <!-- Preloader : couronne → titre plein écran -->
+  <!-- full-screen preloader: crown → title -->
   <div class="preloader" id="preloader" aria-hidden="true">
-    <img class="preloader-crown" id="preloader-crown" src="logo.png" alt="" aria-hidden="true" />
-    <span class="preloader-logo" id="preloader-logo">Sano Bld</span>
+    <img class="preloader-crown" id="preloader-crown" src="logo.png" alt="" />
+    <span class="preloader-title" id="preloader-title">Sano Bld</span>
   </div>
 
-  <div class="cursor" aria-hidden="true">
-    <span class="cursor-label" data-i18n="cursorOpen">VOIR</span>
-  </div>
+  <!-- film grain overlay -->
   <div class="grain" aria-hidden="true"></div>
+
+  <!-- custom cursor (desktop only) -->
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <span class="cursor-label" id="cursor-label">VOIR</span>
+  </div>
 
   <header class="site-header" id="site-header">
     <nav class="nav">
-      <span class="nav-logo" data-cursor="link">Sano Bld</span>
-      <div class="nav-sections" id="nav-sections">
+      <span class="nav-logo" id="nav-logo" data-cursor="link">Sano Bld</span>
+      <div class="nav-links">
         <a href="#projects" class="nav-section-link" data-i18n="navProjects" data-cursor="link">Projets</a>
         <a href="#about"    class="nav-section-link" data-i18n="navAbout"    data-cursor="link">À propos</a>
       </div>
       <div class="nav-controls">
-        <button class="ctrl-btn" id="sound-toggle" data-cursor="link" aria-label="Toggle sound" title="Sons">♪</button>
-        <button class="ctrl-btn" id="anim-toggle"  data-cursor="link" aria-label="Toggle animations" title="Animations">◈</button>
-        <button class="ctrl-btn" id="lang-toggle" data-cursor="link" aria-label="Switch language">EN</button>
-        <button class="ctrl-btn theme-btn" id="theme-toggle" data-cursor="link" aria-label="Toggle theme">◐</button>
-        <a href="https://github.com/SanoBld" target="_blank" rel="noopener" class="nav-link" data-cursor="link" data-i18n="navGithub">GitHub</a>
+        <button class="ctrl-btn" id="sound-toggle" aria-label="Sound"      data-cursor="link" title="Son">♪</button>
+        <button class="ctrl-btn" id="anim-toggle"  aria-label="Animations" data-cursor="link" title="Animations">◈</button>
+        <button class="ctrl-btn" id="lang-toggle"  aria-label="Language"   data-cursor="link">EN</button>
+        <button class="ctrl-btn theme-btn" id="theme-toggle" aria-label="Theme" data-cursor="link">◐</button>
+        <a href="https://github.com/SanoBld" target="_blank" rel="noopener" class="nav-gh" data-cursor="link" data-i18n="navGithub">GitHub</a>
       </div>
     </nav>
   </header>
 
-  <main id="main-content">
+  <main id="main">
 
-    <section class="hero">
-      <h1 class="hero-title" id="hero-title">Sano Bld</h1>
+    <!-- hero section with particle canvas -->
+    <section class="hero" id="hero">
+      <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-content">
+        <h1 class="hero-title" id="hero-title">Sano Bld</h1>
+        <p class="hero-sub" id="hero-sub" data-i18n="heroSub">Développeur &amp; Designer</p>
+      </div>
+      <a href="#projects" class="hero-scroll" aria-label="Scroll to projects">
+        <span class="hero-scroll-line"></span>
+      </a>
     </section>
 
-    <!-- Section Projets -->
+    <!-- projects grid -->
     <section class="projects" id="projects">
       <div class="section-header">
         <span class="section-tag" data-i18n="sectionTag">Travaux Choisis</span>
         <h2 class="section-title" data-i18n="sectionTitle">Projets</h2>
       </div>
-      <div class="filters" id="filters" role="tablist" aria-label="Filtrer les projets">
-        <button class="filter-btn active" data-filter="all"     role="tab" aria-selected="true"  data-cursor="link" data-i18n="filterAll">Tout</button>
-        <button class="filter-btn"        data-filter="musique" role="tab" aria-selected="false" data-cursor="link" data-i18n="filterMusique">Musique</button>
-        <button class="filter-btn"        data-filter="web"     role="tab" aria-selected="false" data-cursor="link" data-i18n="filterWeb">Web</button>
-        <button class="filter-btn"        data-filter="appjeu"  role="tab" aria-selected="false" data-cursor="link" data-i18n="filterAppjeu">App / Jeu</button>
-        <button class="filter-btn"        data-filter="experience" role="tab" aria-selected="false" data-cursor="link" data-i18n="filterExperience">Expérience</button>
+      <div class="filters" id="filters" role="tablist" aria-label="Filter projects">
+        <button class="filter-btn active" data-filter="all"   role="tab" aria-selected="true"  data-cursor="link" data-i18n="filterAll">Tout</button>
+        <button class="filter-btn"        data-filter="music" role="tab" aria-selected="false" data-cursor="link" data-i18n="filterMusic">Musique</button>
+        <button class="filter-btn"        data-filter="web"   role="tab" aria-selected="false" data-cursor="link" data-i18n="filterWeb">Web</button>
+        <button class="filter-btn"        data-filter="app"   role="tab" aria-selected="false" data-cursor="link" data-i18n="filterApp">App</button>
       </div>
       <ul class="project-grid" id="project-grid"></ul>
     </section>
 
-    <!-- Section À propos -->
+    <!-- about section -->
     <section class="about" id="about">
       <div class="about-inner">
         <div class="about-header">
           <span class="section-tag" data-i18n="aboutTag">Identité</span>
           <h2 class="section-title" data-i18n="aboutTitle">À propos</h2>
         </div>
-        <p class="about-text" data-i18n="aboutText">Développeur &amp; designer quelque part en France. HTML, CSS et JavaScript pur — pas de framework, juste du code qui tient la route.</p>
-        <ul class="skills-list" aria-label="Technologies">
+        <p class="about-text" data-i18n="aboutText">
+          Développeur &amp; designer quelque part en France. HTML, CSS et JavaScript pur — pas de framework, juste du code qui tient la route.
+        </p>
+        <ul class="skills-list" aria-label="Stack">
           <li>HTML / CSS</li>
           <li>JavaScript ES6+</li>
+          <li>Flutter / Dart</li>
+          <li>Last.fm API</li>
+          <li>YouTube Music</li>
           <li>Canvas API</li>
           <li>Firebase</li>
           <li>WebSockets</li>
-          <li>PeerJS</li>
-          <li>Last.fm API</li>
         </ul>
-        <div class="gh-stats" id="gh-stats" aria-label="GitHub statistics"></div>
+        <div class="gh-stats" id="gh-stats" aria-label="GitHub stats"></div>
       </div>
     </section>
 
+    <!-- call to action -->
     <section class="cta-section">
       <div class="cta-inner">
         <h2 class="cta-title" data-i18n="ctaTitle">Voir l'ensemble du travail</h2>
-        <a href="https://github.com/SanoBld" target="_blank" rel="noopener" class="cta-btn" data-cursor="link" data-i18n="ctaBtn">Voir sur GitHub</a>
+        <a href="https://github.com/SanoBld" target="_blank" rel="noopener" class="cta-btn" data-cursor="link" data-i18n="ctaBtn">GitHub ↗</a>
       </div>
     </section>
 
@@ -142,21 +157,23 @@
     <a href="https://github.com/SanoBld" target="_blank" rel="noopener" data-cursor="link">github.com/SanoBld</a>
   </footer>
 
-  <!-- Toast notifications -->
+  <!-- floating toast notification -->
   <div class="toast" id="toast" aria-live="polite"></div>
 
-  <!-- Command Palette -->
+  <!-- command palette (⌘K) -->
   <div class="cmd-palette" id="cmd-palette" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="cmd-backdrop" id="cmd-backdrop"></div>
     <div class="cmd-panel">
       <div class="cmd-input-wrap">
         <span class="cmd-icon">⌘</span>
-        <input class="cmd-input" id="cmd-input" type="text" autocomplete="off" spellcheck="false" data-i18n-placeholder="cmdPlaceholder" placeholder="Taper une commande…" />
+        <input class="cmd-input" id="cmd-input" type="text" autocomplete="off" spellcheck="false"
+               data-i18n-placeholder="cmdPlaceholder" placeholder="Taper une commande…" />
       </div>
       <ul class="cmd-list" id="cmd-list"></ul>
     </div>
   </div>
 
+  <script src="data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
